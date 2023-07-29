@@ -3,9 +3,9 @@
 (defvar *entity-id-counter* 0)
 
 (defclass entity ()
-  ((id :initarg :id :initform (incf *entity-id-counter*))
-   (label :initarg :label :initform nil)
-   (proto :initarg :proto :initform nil)
+  ((id :initarg :id :initform (incf *entity-id-counter*) :reader entity-id)
+   (label :initarg :label :initform nil :reader entity-label)
+   (proto :initarg :proto :initform nil :reader entity-proto)
    (ancestry :initarg :ancestry :initform nil)
    (attributes :initarg :attributes :initform (make-hash-table))
    (behaviors :initform nil)))
@@ -81,34 +81,6 @@
                                            ,@body))))
        ,actor)))
 
-#|
-
-The flow when running behaviors is:
-
-1. Start with the observer, the action, and the arguments to that action.
-
-2. Get a list of all applicable behaviors for the action in the order they
-should be applied: (? observer 'behaviors action).
-
-3. Get the tail of the list whose car is the first behavior that matches the
-arguments.
-
-4. Call the behavior function. If it returns :continue, remove it from the list
-and return to step 3.
-
-5. Stop when the list is empty.
-
-6. If the last function called returned :disallow, then do not proceed with the
-action. This applies only in the before phase.
-
-|#
-
-(defun everyp (pred &rest lists)
-  (if (position-if #'null lists)
-      t
-      (when-let ((x (apply pred (mapcar #'car lists))))
-        (apply #'everyp pred (mapcar #'cdr lists)))))
-
 (defun match-constraints (constraints args)
   (labels ((match-constraint (constraint arg)
              (typecase constraint
@@ -130,12 +102,4 @@ action. This applies only in the before phase.
 
 (sethash :brief *attribute-transforms* #'parse-noun)
 
-;;; TEST:
-
-(defentity foo ()
-  (:name "Bob"
-   :brief "a human"
-   :age 33)
-
-  (:before-enter (actor location entry)
-    (print 123)))
+(sethash :pose *attribute-transforms* #'parse-verb)
