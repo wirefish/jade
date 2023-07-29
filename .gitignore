@@ -1,0 +1,7 @@
+.DS_Store
+*.fasl
+genfiles/
+client/icons/
+client/images/
+client/fonts/
+assets/
