@@ -4,7 +4,7 @@
 (in-package :jade)
 
 ;;; A prototype for items that defines generally-required attributes. Optional
-;;; attributes that define item behavior are described below.
+;;; attributes that influence item behavior are described below.
 
 (defentity item ()
   (:brief "an item"
@@ -12,10 +12,11 @@
    :full "The item is unremarkable."
    :icon :pouch
    :size +small+
+   :level 0
    :item-group :miscellany))
 
 ;;; The optional `:materials' attribute describes the composition of an item.
-;;; Its value is a list of `material' structs.
+;;; If present it must be a list of `material' structs.
 
 (defstruct material
   label
@@ -39,3 +40,9 @@
 
 (defmethod decode-value ((entity entity) (name (eql :materials)) value)
   (mapcar #'symbol-value value))
+
+;;; The optional `required-skill' attribute specifies a skill and minimum rank
+;;; in that skill that are required in order to use the item. If present it must
+;;; be a two-element list containing a skill and an integer rank.
+
+;;;
