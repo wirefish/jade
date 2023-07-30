@@ -41,7 +41,7 @@ prototype and attributes initialized from `keys-values'."
 (defgeneric transform-initval (type name expr)
   (:method (type name expr)
     (typecase expr
-      (list `(list ,@expr))
+      (list (if (eql (car expr) 'quote) expr `(list ,@expr)))
       (t expr))))
 
 (defmacro defentity (name (&optional proto) attributes &body behaviors)

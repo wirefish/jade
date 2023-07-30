@@ -16,7 +16,9 @@
 
 (defmacro defmaterial (name &body args)
   `(defparameter ,name
-     (make-material :name ',name ,@args)))
+     (make-material :name ',name
+                    ,@(loop for (key value) on args by #'cddr
+                            nconc (list key (transform-initval 'material key value))))))
 
 (defmethod transform-initval (type (name (eql :materials)) value)
   `(list ,@value))
