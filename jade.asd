@@ -23,4 +23,8 @@
              (:file "behavior")
              (:file "item")
 
-             (:file "server")))))
+             (:file "server")))
+
+   (:module "world" :components
+            ((:module "lib" :components
+                      ((:file "materials")))))))

@@ -11,6 +11,7 @@
            #:defentity
            #:with-attributes
            #:defbehaviors
+           #:defmaterial
            #:if-let
            #:if-let*
            #:when-let

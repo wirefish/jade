@@ -56,15 +56,6 @@ prototype and attributes initialized from `keys-values'."
        (export ',name)
        ,name)))
 
-(defentity foo ()
-  (:name "Bob"
-   :brief "a human"
-   :pose "is here"
-   :alts ("a man" "an idiot")
-   :children ("Ann" "Xerxes")
-   :size +miniscule+
-   :age 27))
-
 (defmethod slot-missing (class (instance entity) slot-name
                          (operation (eql 'slot-value)) &optional new-value)
   (declare (ignore new-value))
