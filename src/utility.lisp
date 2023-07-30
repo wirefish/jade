@@ -123,9 +123,7 @@ there was no such value, returns `default'."
          (keys-values (if args (cdr forms) forms))
          (table (gensym)))
     `(let ((,table (make-hash-table ,@args)))
-       ,@(loop :for tail :on keys-values by #'cddr :while keys-values
-               :collect `(sethash ,(car tail) ,table ,(cadr tail)))
-       ,table)))
+       (sethash* ,table ,@keys-values))))
 
 (set-dispatch-macro-character #\# #\h #'|#h-reader|)
 
