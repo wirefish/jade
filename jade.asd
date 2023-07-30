@@ -13,6 +13,7 @@
              (:file "buffer")
              (:file "queue")
              (:file "random")
+             (:file "json")
              (:file "text")
              (:file "http")
              (:file "websocket")
