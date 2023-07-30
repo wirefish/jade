@@ -18,6 +18,9 @@
   `(defparameter ,name
      (make-material :name ',name ,@args)))
 
+(defmethod transform-initval (type (name (eql :materials)) value)
+  `(list ,@value))
+
 (defmethod encode-value ((entity entity) (name (eql :materials)) value)
   (mapcar #'material-name value))
 
@@ -36,5 +39,6 @@
    :pose "is here."
    :full "The item is unremarkable."
    :icon :pouch
+   :materials (gold)
    :size +small+
    :item-group :miscellany))

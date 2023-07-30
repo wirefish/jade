@@ -21,6 +21,13 @@
 (defun entity-isa (entity label)
   (numberp (position label (slot-value entity 'ancestry))))
 
+(defun make-entity (label proto &rest keys-values)
+  "Creates a named entity with a given prototype."
+  (let ((entity (make-instance (if proto (type-of proto) 'entity)
+                               :label label :proto proto)))
+    (apply #'sethash* (slot-value entity 'attributes) keys-values)
+    entity))
+
 (defun clone-entity (entity &rest keys-values)
   "Creates an anonymous entity (i.e. one without a label) with `entity' as its
 prototype and attributes initialized from `keys-values'."
@@ -28,25 +35,35 @@ prototype and attributes initialized from `keys-values'."
     (apply #'sethash* (slot-value clone 'attributes) keys-values)
     clone))
 
-(defvar *attribute-transforms* (make-hash-table :test 'eq))
+;;; A mechanism for transforming initializer forms in `defproto' and similar
+;;; macros.
 
-(defun transform-attributes (&rest keys-values)
-  (let ((attributes (make-hash-table)))
-    (loop for (key value) on keys-values by #'cddr do
-      (sethash key attributes
-               (funcall (or (gethash key *attribute-transforms*) #'identity) value)))
-    attributes))
+(defgeneric transform-initval (type name expr)
+  (:method (type name expr)
+    (typecase expr
+      (list `(list ,@expr))
+      (t expr))))
 
-(defmacro defentity (name (&optional base-name) attributes &body behaviors)
-  `(progn
-     (defparameter ,name
-       (make-instance 'entity
-                      :label ',name
-                      :proto ,base-name
-                      :attributes (transform-attributes ,@attributes)))
-     (defbehaviors ,name ,@behaviors)
-     (export ',name)
-     ,name))
+(defmacro defentity (name (&optional proto) attributes &body behaviors)
+  (let ((type (if proto (class-of (symbol-value proto)) (find-class 'entity))))
+    `(progn
+       (defparameter ,name
+         (make-entity ',name ,proto
+                      ,@(loop for (key value) on attributes by #'cddr
+                              nconc (list key
+                                          (transform-initval type key value)))))
+       ,@(when behaviors `((defbehaviors ,name ,@behaviors)))
+       (export ',name)
+       ,name)))
+
+(defentity foo ()
+  (:name "Bob"
+   :brief "a human"
+   :pose "is here"
+   :alts ("a man" "an idiot")
+   :children ("Ann" "Xerxes")
+   :size +miniscule+
+   :age 27))
 
 (defmethod slot-missing (class (instance entity) slot-name
                          (operation (eql 'slot-value)) &optional new-value)
@@ -109,22 +126,26 @@ all attributes."
       (setf (slot-value entity name) (decode-value entity name slot-data)))
     entity))
 
-;;; Standard entity attributes. Each may define a transform used when parsing
-;;; the attribute's value in `defentity', or a set of expected values.
+;;; Standard entity attributes. Each may define a transform method used when
+;;; parsing the attribute's value in `defentity' and similar macros, or a set of
+;;; expected values.
 
 ;; The `:brief' attribute is a noun phrase used to describe the entity when it
 ;; does not have a proper name. It is also used when matching against user
 ;; input.
-(sethash :brief *attribute-transforms* #'parse-noun)
+(defmethod transform-initval (type (name (eql :brief)) value)
+  `(parse-noun ,value))
 
 ;; The `:pose' attribute is a verb phrase that describes how observers see the
 ;; entity, e.g. "is standing against the wall." Note the trailing punctuation is
 ;; included.
-(sethash :pose *attribute-transforms* #'parse-verb)
+(defmethod transform-initval (type (name (eql :pose)) value)
+  `(parse-verb ,value))
 
 ;; The `:alts' attribute is an optional list of additional noun phrases which
 ;; can be used when matching the entity against user input.
-(sethash :alts *attribute-transforms* (lambda (x) (mapcar #'parse-noun x)))
+(defmethod transform-initval (type (name (eql :alts)) value)
+  `(list ,@(mapcar (lambda (x) `(parse-noun ,x)) value)))
 
 ;; Possible values of the `:size' attribute, with examples of how they apply to
 ;; different classes of entities. The values are a rough representation of
