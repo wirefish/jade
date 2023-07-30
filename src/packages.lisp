@@ -10,6 +10,7 @@
            #:entity-isa
            #:defentity
            #:with-attributes
+           #:defbehaviors
            #:if-let
            #:if-let*
            #:when-let
