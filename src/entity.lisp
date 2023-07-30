@@ -60,14 +60,27 @@ prototype and attributes initialized from `keys-values'."
 (defmethod slot-missing (class (instance entity) slot-name
                          (operation (eql 'slot-value)) &optional new-value)
   (declare (ignore new-value))
-  (with-slots (attributes proto) instance
-    (let ((value (gethash slot-name attributes)))
-      (or value (when proto (slot-value proto slot-name))))))
+  (if (keywordp slot-name)
+      (with-slots (attributes proto) instance
+        (let ((value (gethash slot-name attributes)))
+          (or value (when proto (slot-value proto slot-name)))))
+      (call-next-method)))
 
 (defmethod slot-missing (class (instance entity) slot-name
                          (operation (eql 'setf)) &optional new-value)
-  (with-slots (attributes) instance
-    (sethash slot-name attributes new-value)))
+  (if (keywordp slot-name)
+      (with-slots (attributes) instance
+        (sethash slot-name attributes new-value))
+      (call-next-method)))
+
+(defun has-attributes (entity &rest names)
+  (with-slots (attributes) entity
+    (loop for name in names do
+      (multiple-value-bind (value found) (gethash name attributes)
+        (declare (ignore value))
+        (unless found
+          (return-from has-attributes nil))))
+    t))
 
 (defmacro with-attributes ((&rest names) entity &body body)
   (let ((all-names (remove '&optional names))

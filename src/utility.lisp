@@ -186,7 +186,9 @@ there was no such value, returns `default'."
   (:method ((obj list) key &rest keys-and-value)
     (setf (nth key obj) (first keys-and-value)))
   (:method ((obj hash-table) key &rest keys-and-value)
-    (sethash key obj (first keys-and-value))))
+    (sethash key obj (first keys-and-value)))
+  (:method ((obj standard-object) key &rest keys-and-value)
+    (setf (slot-value obj key) (first keys-and-value))))
 
 (defsetf ? generic-setf)
 
