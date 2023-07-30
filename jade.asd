@@ -20,5 +20,6 @@
              (:file "websocket")
 
              (:file "entity")
+             (:file "behavior")
 
              (:file "server")))))

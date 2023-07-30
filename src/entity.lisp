@@ -6,7 +6,8 @@
   ((id :initarg :id :initform (incf *entity-id-counter*) :reader entity-id)
    (label :initarg :label :initform nil :reader entity-label)
    (proto :initarg :proto :initform nil :reader entity-proto)
-   (ancestry :initarg :ancestry :initform nil)
+   (ancestry :initarg :ancestry :initform nil :reader entity-ancestry)
+   (container :initarg :container :initform nil)
    (attributes :initarg :attributes :initform (make-hash-table))
    (behaviors :initform nil)))
 
@@ -20,6 +21,13 @@
 (defun entity-isa (entity label)
   (numberp (position label (slot-value entity 'ancestry))))
 
+(defun clone-entity (entity &rest keys-values)
+  "Creates an anonymous entity (i.e. one without a label) with `entity' as its
+prototype and attributes initialized from `keys-values'."
+  (let ((clone (make-instance (type-of entity) :proto entity)))
+    (apply #'sethash* (slot-value clone 'attributes) keys-values)
+    clone))
+
 (defvar *attribute-transforms* (make-hash-table :test 'eq))
 
 (defun transform-attributes (&rest keys-values)
@@ -30,14 +38,15 @@
     attributes))
 
 (defmacro defentity (name (&optional base-name) attributes &body behaviors)
-  `(prog1
+  `(progn
      (defparameter ,name
        (make-instance 'entity
                       :label ',name
                       :proto ,base-name
                       :attributes (transform-attributes ,@attributes)))
      (defbehaviors ,name ,@behaviors)
-     (export ',name)))
+     (export ',name)
+     ,name))
 
 (defmethod slot-missing (class (instance entity) slot-name
                          (operation (eql 'slot-value)) &optional new-value)
@@ -58,48 +67,72 @@
        (when (and ,@required-names)
          ,@body))))
 
-;;; Behaviors.
+;;; Encoding and decoding.
 
-(defstruct behavior constraints fn)
+(defgeneric encode-value (entity name value)
+  (:documentation "Returns the encoded form of `value' for the slot or attribute named `name' in
+entity `entity'.")
+  (:method ((entity entity) name value)
+    value))
 
-(defun push-behavior (actor action constraints fn)
-  (with-slots (behaviors) actor
-    (when (null behaviors)
-      (setf behaviors (make-hash-table)))
-    (push (make-behavior :constraints constraints :fn fn) (gethash action behaviors))))
+(defgeneric encoded-slots (entity)
+  (:documentation "Returns a list of symbols naming slots to encode for entity `entity'. The
+'proto slot and all attributes are always encoded.")
+  (:method ((entity entity))
+    nil))
 
-(defmacro defbehaviors (actor &body clauses)
-  (labels ((second-or-nil (x) (when (listp x) (second x)))
-           (first-or-self (x) (if (listp x) (first x) x)))
-    `(progn
-       ,@(loop for (action spec . body) in (reverse clauses)
-               collect (let ((constraints (mapcar #'second-or-nil spec))
-                             (params (mapcar #'first-or-self spec)))
-                         `(push-behavior ,actor ',action ',constraints
-                                         (lambda (self ,@params)
-                                           (declare (ignorable self ,@params))
-                                           ,@body))))
-       ,actor)))
+(defun encode-entity (entity)
+  "Encodes an entity, including values for slots selected by `encoded-slots' and
+all attributes."
+  ;; Only anonymous entities (i.e. those created with `clone-entity') should
+  ;; ever be encoded.
+  (assert (and (null (entity-label entity)) (entity-proto entity)))
+  (cons (first (entity-ancestry entity))
+        (nconc
+         (loop for name in (encoded-slots entity)
+               nconc (list name (encode-value entity name (slot-value entity name))))
+         (with-slots (attributes) entity
+           (loop for key being the hash-keys in attributes using (hash-value value)
+               nconc (list key (encode-value entity key (gethash key attributes))))))))
 
-(defun match-constraints (constraints args)
-  (labels ((match-constraint (constraint arg)
-             (typecase constraint
-               (null t)
-               (symbol (and (typep arg 'entity)
-                            (entity-isa arg constraint)))
-               (otherwise nil))))
-    (when (= (length constraints) (length args))
-      (everyp #'match-constraint constraints args))))
+(defgeneric decode-value (entity name data)
+  (:documentation "Returns the result of decoding `data' into a value for the slot or attribute
+  named `name' in entity `entity'.")
+  (:method ((entity entity) name data)
+    data))
 
-(defun run-behaviors (observer action &rest args)
-  (let ((behaviors (? observer 'behaviors action)))
-    (loop for behavior in behaviors do
-      (when (match-constraints (behavior-constraints behavior) args)
-        (unless (eql (apply #'behavior-fn observer args) :continue)
-          (return))))))
+(defun decode-entity (data)
+  (let* ((proto (symbol-value (first data)))
+         (initargs (rest data))
+         (entity (make-instance (type-of proto) :proto proto)))
+    (loop for (name slot-data) on initargs by #'cddr do
+      (setf (slot-value entity name) (decode-value entity name slot-data)))
+    entity))
 
-;;; Standard attribute transforms.
+;;; Standard entity attributes. Each may define a transform used when parsing
+;;; the attribute's value in `defentity', or a set of expected values.
 
+;; The `:brief' attribute is a noun phrase used to describe the entity when it
+;; does not have a proper name. It is also used when matching against user
+;; input.
 (sethash :brief *attribute-transforms* #'parse-noun)
 
+;; The `:pose' attribute is a verb phrase that describes how observers see the
+;; entity, e.g. "is standing against the wall." Note the trailing punctuation is
+;; included.
 (sethash :pose *attribute-transforms* #'parse-verb)
+
+;; The `:alts' attribute is an optional list of additional noun phrases which
+;; can be used when matching the entity against user input.
+(sethash :alts *attribute-transforms* (lambda (x) (mapcar #'parse-noun x)))
+
+;; Possible values of the `:size' attribute, with examples of how they apply to
+;; different classes of entities. The values are a rough representation of
+;; relative volume between entities in the same class.
+(defconstant +miniscule+ 1/512 "a butterfly; a coin")
+(defconstant +tiny+ 1/64 "a bird; a necklace")
+(defconstant +small+ 1/8 "a small dog; a dagger; a shoe")
+(defconstant +medium+ 1 "a human; a sword; a breastplate")
+(defconstant +large+ 8 "a troll; a treasure chest")
+(defconstant +huge+ 64 "a storm giant; a four-poster bed")
+(defconstant +gigantic+ 512 "a titan; a house")
