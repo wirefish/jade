@@ -224,7 +224,7 @@ there was no such value, returns `default'."
                ,@(last args)
              ,@(when *ignored-bindings*
                  `((declare (ignore ,@*ignored-bindings*))))))
-        `(let (,arg1 ,arg2))))
+        `(let ((,arg1 ,arg2)))))
   (:method ((arg1 list) (arg2 (eql '&slots)) &rest args)
     `(with-slots ,arg1 ,(first args)))
   (:method ((arg1 list) arg2 &rest args)
