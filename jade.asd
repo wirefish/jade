@@ -8,6 +8,15 @@
   :components
   ((:module "src" :components
             ((:file "packages")
+
              (:file "utility")
+             (:file "buffer")
+             (:file "queue")
+             (:file "random")
              (:file "text")
-             (:file "entity")))))
+             (:file "http")
+             (:file "websocket")
+
+             (:file "entity")
+
+             (:file "server")))))
