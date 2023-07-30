@@ -93,12 +93,23 @@ elements."
   "Sets `value' for `key' in `hash-table'."
   (setf (gethash key hash-table) value))
 
+(defun sethash* (hash-table &rest keys-and-values)
+  (loop for (key value) on keys-and-values by #'cddr do
+    (sethash key hash-table value))
+  hash-table)
+
+(defun gethash* (hash-table &rest keys)
+  (apply #'values (loop for key in keys collect (gethash key hash-table))))
+
 (declaim (inline pophash))
 (defun pophash (key hash-table &optional default)
   "Removes the value associated with `key' from `hash-table' and returns it. If
 there was no such value, returns `default'."
   (prog1 (gethash key hash-table default)
     (remhash key hash-table)))
+
+(defun pophash* (hash-table &rest keys)
+  (apply #'values (loop for key in keys collect (pophash key hash-table))))
 
 ;;; Enable #h(...) syntax for hash-table literals. If the number of elements is
 ;;; odd, the first is a list of arguments to pass to `make-hash-table'.
