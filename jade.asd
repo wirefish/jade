@@ -22,6 +22,7 @@
              (:file "entity")
              (:file "behavior")
              (:file "item")
+             (:file "location")
 
              (:file "server")))
 

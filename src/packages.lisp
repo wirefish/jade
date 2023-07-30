@@ -8,10 +8,17 @@
            #:entity-label
            #:entity-proto
            #:entity-isa
+           #:clone-entity
            #:defentity
            #:with-attributes
+
            #:defbehaviors
+
+           #:item
            #:defmaterial
+
+           #:deflocation
+
            #:if-let
            #:if-let*
            #:when-let
