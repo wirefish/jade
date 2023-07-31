@@ -122,7 +122,7 @@ Slime REPL:
 ```
 M-x slime ; starts the REPL
 ,load-system jade ; loads jade.asd
-C-c M-p jade ; changes to the jade package
+,in-package jade ; changes to the jade package
 (run-server) ; starts the game server
 ```
 
