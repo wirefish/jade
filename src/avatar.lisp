@@ -18,18 +18,16 @@
 ;;; additional slots used internally by the server.
 
 (defclass avatar (entity)
-  ((avatar-id :initarg :avatar-id :initform nil :reader avatar-id)
-   (session :initform nil)
-   ;;
-   (tutorials-on :initform t)
-   (tutorials-seen :initform (make-hash-table))
-   (dirty-tutorials :initform nil)  ; list of tutorials for which state has changed since save
-   ;;
-   (active-quests :initform nil)  ; alist of (quest-name . state)
-   (finished-quests :initform (make-hash-table))  ; quest-name -> completion time
-   (dirty-quests :initform nil)  ; names of quests for which state has changed since save
-   ;;
-   (pending-offer :initform nil)))  ; function to call if player enters "accept"
+  ;; TODO: document slots
+  ((avatar-id :initarg :avatar-id :initform nil :accessor avatar-id)
+   (session :initform nil :accessor avatar-session)
+   (tutorials-on :initform t :accessor tutorials-on)
+   (tutorials-seen :initform (make-hash-table) :accessor tutorials-seen)
+   (dirty-tutorials :initform nil :accessor dirty-tutorials)
+   (active-quests :initform nil :accessor active-quests)
+   (finished-quests :initform (make-hash-table) :accessor finished-quests)
+   (dirty-quests :initform nil :accessor dirty-quests)
+   (pending-offer :initform nil :accessor pending-offer)))
 
 (export (defparameter avatar (make-instance 'avatar :label 'avatar)))
 
