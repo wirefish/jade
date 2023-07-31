@@ -63,9 +63,3 @@
                              collect `(register-exit ,dir ',dest
                                                      ,@(if (listp portal-spec) portal-spec
                                                            (list portal-spec)))))))
-
-(deflocation foyer ()
-  (:name "Foyer"
-   :brief "a foyer"
-   :exits ((tunnel :west kitchen :east library)
-            ((tunnel :color :blue) :south greathall))))
