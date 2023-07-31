@@ -23,6 +23,7 @@
              (:file "behavior")
              (:file "item")
              (:file "location")
+             (:file "avatar")
 
              (:file "server")))
 
