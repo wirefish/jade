@@ -7,6 +7,10 @@
   `(let ,(mapcar (lambda (name) `(,name (gensym))) names)
      ,@body))
 
+(defun curry (fn &rest args)
+  (lambda (&rest more)
+    (multiple-value-call fn (values-list args) (values-list more))))
+
 ;;; Flow control macros.
 
 (defmacro when-let (bindings &body body)
@@ -34,6 +38,17 @@ non-nil, or `else' otherwise."
 non-nil, or `else' otherwise."
   `(let* ,bindings
      (if (and ,@(mapcar #'first bindings)) ,then ,else)))
+
+;;; Sequence utilities.
+
+(declaim (inline emptyp))
+(defun emptyp (sequence)
+  (= (length sequence) 0))
+
+(defun starts-with (value sequence &key (test #'eql))
+  (when (typep sequence 'sequence)
+    (unless (emptyp sequence)
+      (funcall test (elt sequence 0) value))))
 
 ;;; String utilities.
 
