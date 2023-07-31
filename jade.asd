@@ -25,6 +25,7 @@
              (:file "location")
              (:file "avatar")
 
+             (:file "session")
              (:file "server")))
 
    (:module "world" :components
