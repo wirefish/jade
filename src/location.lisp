@@ -50,7 +50,8 @@
 ;;; Use `deflocation' to create an actual location the world.
 
 (defparameter *locations* (make-hash-table)
-  "A table of all locations defined with `deflocation'.")
+  "A table of all locations defined with `deflocation'. This is used to facilitate
+starting and stopping simulation.")
 
 (defmacro deflocation (name (&optional proto) attributes &body behaviors)
   `(progn

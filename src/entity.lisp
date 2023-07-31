@@ -9,7 +9,7 @@
    (ancestry :initarg :ancestry :initform nil :reader entity-ancestry)
    (container :initarg :container :initform nil)
    (attributes :initarg :attributes :initform (make-hash-table))
-   (behaviors :initform nil)))
+   (behavior :initform nil)))
 
 (defmethod initialize-instance :after ((entity entity) &key)
   (with-slots (label proto ancestry) entity
@@ -45,7 +45,7 @@ prototype and attributes initialized from `keys-values'."
       (list (if (eql (car expr) 'quote) expr `(list ,@expr)))
       (t expr))))
 
-(defmacro defentity (name (&optional proto) attributes &body behaviors)
+(defmacro defentity (name (&optional proto) attributes &body behavior)
   (let ((type (if proto (class-of (symbol-value proto)) (find-class 'entity))))
     `(progn
        (defparameter ,name
@@ -53,7 +53,7 @@ prototype and attributes initialized from `keys-values'."
                       ,@(loop for (key value) on attributes by #'cddr
                               nconc (list key
                                           (transform-initval type key value)))))
-       ,@(when behaviors `((defbehaviors ,name ,@behaviors)))
+       ,@(when behavior `((defbehavior ,name ,@behavior)))
        (export ',name)
        ,name)))
 

@@ -13,6 +13,9 @@
            #:with-attributes
 
            #:defbehaviors
+           #:disallow-action
+           #:call-next-handler
+           #:self
 
            #:item
            #:defmaterial

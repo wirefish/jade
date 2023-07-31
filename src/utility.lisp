@@ -78,6 +78,14 @@ leaf node of `tree'. The results are returned in depth-first order."
       (recurse tree)
       (nreverse results))))
 
+(defun tree-contains (value tree &key (test #'eql))
+    (labels ((recurse (node)
+               (etypecase node
+                 (atom (when (funcall test node value)
+                         (return-from tree-contains t)))
+                 (list (dolist (child node) (recurse child))))))
+      (recurse tree)))
+
 (defun split-list (list n)
   "Splits `list' into two lists and returns the results as two values. If `n' is
 non-negative, the first value contains the first `n' elements of `list' and the

@@ -25,10 +25,15 @@
              (:file "location")
              (:file "avatar")
 
+             ;(:file "move")
+
              (:file "database")
              (:file "session")
-             (:file "server")))
+             ;(:file "server")
+             ))
 
    (:module "world" :components
             ((:module "lib" :components
-                      ((:file "materials")))))))
+                      ((:file "avatar")
+                       (:file "materials")))
+             (:file "isle-of-dawn")))))
