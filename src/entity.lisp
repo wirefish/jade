@@ -162,3 +162,22 @@ all attributes."
 (defconstant +large+ 8 "a troll; a treasure chest")
 (defconstant +huge+ 64 "a storm giant; a four-poster bed")
 (defconstant +gigantic+ 512 "a titan; a house")
+
+;;;
+
+(defvar *default-brief* (parse-noun "an entity"))
+
+(defun describe-brief (entity &key (quantity 1) article capitalize)
+  (or (? entity :name)
+      (format-noun (or (? entity :brief) *default-brief*)
+                   :quantity quantity :article article :capitalize capitalize)))
+
+(defvar *default-pose* (parse-verb "is here."))
+
+(defun describe-pose (entity &key (quantity 1))
+  (format-verb (or (? entity :pose) *default-pose*) :quantity quantity))
+
+(defun describe-full (entity)
+  (or (? entity :full)
+      (format nil "~a is unexceptional in every way."
+              (describe-brief entity :article :definite :capitalize t))))

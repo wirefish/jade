@@ -73,6 +73,30 @@ examples showing the resulting article, singular, and plural:
                    :singular singular
                    :plural plural))))
 
+(defun format-noun (noun &key (quantity 1) (article :indefinite) (capitalize nil))
+  (let ((s
+          (cond
+            ;; If it has no article, it's a proper noun and always appears as-is.
+            ((not (noun-article noun))
+             (noun-singular noun))
+            ;; In the singular case, prepend the appropriate article.
+            ((eql quantity 1)
+             (case article
+               (:definite (format nil "the ~a" (noun-singular noun)))
+               (:indefinite (format nil "~a ~a" (noun-article noun) (noun-singular noun)))
+               (t (noun-singular noun))))
+            ;; In the plural case, prepend the actual number unless quantity is
+            ;; t, in which case optionally prepend the definite article.
+            ((eq quantity t)
+             (if (eq article :definite)
+                 (format nil "the ~a" (noun-plural noun))
+                 (noun-plural noun)))
+            (t
+             (format nil "~a ~a" quantity (noun-plural noun))))))
+    (when capitalize
+      (setf (elt s 0) (char-upcase (elt s 0))))
+    s))
+
 ;;; Enable #n"..." syntax for creating a noun phrase.
 
 (defun |#n-reader| (stream char arg)
@@ -108,8 +132,8 @@ examples showing the resulting article, singular, and plural:
         (make-verb :singular s
                    :plural (strcat (guess-plural-verb prefix) (if sep (subseq s sep) ""))))))
 
-(defun format-verb (verb &key (count 1) stream)
-  (format stream "~a" (if (= count 1) (verb-singular verb) (verb-plural verb))))
+(defun format-verb (verb &key (quantity 1) stream)
+  (format stream "~a" (if (= quantity 1) (verb-singular verb) (verb-plural verb))))
 
 ;;; Enable #v"..." syntax for creating a verb phrase.
 

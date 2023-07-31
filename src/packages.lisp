@@ -3,7 +3,18 @@
   (:use :cl)
   (:import-from :cl-async :with-delay)
   (:shadow :inspect)
-  (:export #:entity
+  (:export #:if-let
+           #:if-let*
+           #:when-let
+           #:when-let*
+           #:strcat
+           #:string-starts-with
+           #:string-ends-with
+           #:?
+           #:->
+           #:bind
+
+           #:entity
            #:entity-id
            #:entity-label
            #:entity-proto
@@ -20,18 +31,7 @@
            #:item
            #:defmaterial
 
-           #:deflocation
-
-           #:if-let
-           #:if-let*
-           #:when-let
-           #:when-let*
-           #:strcat
-           #:string-starts-with
-           #:string-ends-with
-           #:?
-           #:->
-           #:bind))
+           #:deflocation))
 
 (defpackage :jade.lib
   (:documentation "General game definitions not tied to a particular location.")

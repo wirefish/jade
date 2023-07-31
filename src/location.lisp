@@ -47,6 +47,13 @@
   ;; later.
   (make-exit :dir dir :dest dest :portal (apply #'clone-entity portal-proto portal-args)))
 
+(defun describe-exit (exit)
+  (format nil "~a leads ~a."
+          (if-let ((portal (exit-portal exit)))
+            (describe-brief portal :article :definite :capitalize t)
+            "The exit")
+          (direction-name (exit-dir exit))))
+
 ;;; Use `deflocation' to create an actual location the world.
 
 (defparameter *locations* (make-hash-table)
