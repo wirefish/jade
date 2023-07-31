@@ -10,7 +10,7 @@
 (defmethod encode-json ((value float) stream)
   (write value :stream stream))
 
-(defconstant +json-char-substitutions+
+(defparameter *json-char-substitutions*
   #h(#\\ "\\\\"
      #\" "\\\""
      #\Backspace "\\b"
@@ -22,7 +22,7 @@
 (defmethod encode-json ((value string) stream)
   (write-char #\" stream)
   (loop for ch across value do
-       (let ((sub (gethash ch +json-char-substitutions+)))
+       (let ((sub (gethash ch *json-char-substitutions*)))
          (if sub
              (write-string sub stream)
              (write-char ch stream))))
