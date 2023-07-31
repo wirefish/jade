@@ -53,6 +53,9 @@
   "A table of all locations defined with `deflocation'. This is used to facilitate
 starting and stopping simulation.")
 
+(defun find-location (name)
+  (gethash name *locations*))
+
 (defmacro deflocation (name (&optional proto) attributes &body behaviors)
   `(progn
      (defentity ,name (,proto) ,attributes ,@behaviors)

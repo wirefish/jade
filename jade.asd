@@ -25,8 +25,9 @@
              (:file "location")
              (:file "avatar")
 
-             ;(:file "move")
+             (:file "move")
 
+             (:file "config")
              (:file "database")
              (:file "session")
              ;(:file "server")

@@ -27,7 +27,7 @@
 ;;; The event phases work as follows:
 ;;;
 ;;; * allow: In this phase a handler can call `disallow-action' to prevent the
-;;;   action from occuring.
+;;;   action from occuring. Most, but not all, actions include this phase.
 ;;;
 ;;; * before: Handlers in this phase are called before the action actually
 ;;;   happens, but after it is known that it will happen.
@@ -111,3 +111,10 @@ handler."
   (dolist (observer observers)
     (when observer
       (apply #'observe-event observer event args))))
+
+(defun observers-allow-p (observers event &rest args)
+  (dolist (observer observers)
+    (when (and observer
+               (eq (apply #'observe-event observer event args) :disallow-action))
+      (return-from observers-allow-p nil)))
+  t)
