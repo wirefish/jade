@@ -24,6 +24,8 @@
              (:file "item")
              (:file "location")
              (:file "avatar")
+             (:file "match")
+             (:file "command")
 
              (:file "move")
 
