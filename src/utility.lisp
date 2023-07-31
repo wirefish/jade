@@ -48,6 +48,14 @@ non-nil, or `else' otherwise."
   (let ((start (- (length string) (length suffix))))
     (and (>= start 0) (string= string suffix :start1 start))))
 
+(defun to-string (value)
+  (with-output-to-string (s)
+    (write value :stream s)))
+
+(defun from-string (s)
+  (with-input-from-string (stream s)
+    (read stream)))
+
 ;;; List utilities.
 
 (defun mapleaves (fn tree)
