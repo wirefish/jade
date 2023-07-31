@@ -25,6 +25,7 @@
              (:file "location")
              (:file "avatar")
 
+             (:file "database")
              (:file "session")
              (:file "server")))
 
