@@ -199,10 +199,9 @@ request."
                   (http-request-get-header request "X-Real-IP")
                   (http-request-path request))
           (buffer-consume buffer (+ end-of-headers (length *crlfcrlf*)))
-          (let ((handler (gethash (http-request-path request) *request-handlers*)))
-            (if handler
-                (funcall handler socket request)
-                (send-response socket request 404 "Not Found"))))))))
+          (if-let ((handler (gethash (http-request-path request) *request-handlers*)))
+            (funcall handler socket request)
+            (send-response socket request 404 "Not Found")))))))
 
 (defun close-session (session)
   ;; TODO: save the avatar

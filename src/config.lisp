@@ -5,7 +5,7 @@
 (defparameter *config*
   #h(;; Where the server listens for player requests.
      :server-address "127.0.0.1"
-     :server-port 5000
+     :server-port 7755
      ;; Timeout to disconnect an idle player.
      :session-idle-seconds* 1800
      ;; The directory that contains data files required by the server.
