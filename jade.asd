@@ -26,17 +26,20 @@
              (:file "avatar")
              (:file "match")
              (:file "command")
-
-             (:file "move")
-
              (:file "config")
              (:file "database")
              (:file "session")
+
+             (:file "help")
+             (:file "move")
+
              ;(:file "server")
              ))
 
    (:module "world" :components
             ((:module "lib" :components
                       ((:file "avatar")
-                       (:file "materials")))
-             (:file "isle-of-dawn")))))
+                       (:file "materials")
+                       ))
+             (:file "isle-of-dawn")
+             ))))
