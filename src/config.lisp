@@ -11,5 +11,5 @@
      ;; The directory that contains data files required by the server.
      :root-directory "/Users/craig/local/var/jade/"
      ;; Default properties for new avatars.
-     :new-avatar-proto jade.lib:new-avatar
-     :new-avatar-location jade.isle-of-dawn:hilltop))
+     :new-avatar-proto 'jade.lib::new-avatar
+     :new-avatar-location 'jade.isle-of-dawn::hilltop))
