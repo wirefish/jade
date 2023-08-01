@@ -7,9 +7,9 @@
    (label :initarg :label :initform nil :reader entity-label)
    (proto :initarg :proto :initform nil :reader entity-proto)
    (ancestry :initarg :ancestry :initform nil :reader entity-ancestry)
-   (container :initarg :container :initform nil)
-   (attributes :initarg :attributes :initform (make-hash-table))
-   (behavior :initform nil)))
+   (container :initarg :container :initform nil :accessor entity-container)
+   (attributes :initarg :attributes :initform (make-hash-table) :accessor entity-attributes)
+   (behavior :initform nil :accessor entity-behavior)))
 
 (defmethod initialize-instance :after ((entity entity) &key)
   (with-slots (label proto ancestry) entity

@@ -33,7 +33,7 @@
              (:file "help")
              (:file "move")
 
-             ;(:file "server")
+             (:file "server")
              ))
 
    (:module "world" :components

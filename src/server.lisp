@@ -210,7 +210,7 @@
   ;; TODO: save the avatar
   (format-log :info "closing session ~s" (session-key session))
   (let ((avatar (session-avatar session)))
-    (exit-location avatar (location avatar) nil :force t)
+    (exit-location avatar (entity-container avatar) nil :force t)
     (exit-world avatar))
   (as:close-socket (session-socket session))
   (remhash (session-key session) *sessions*))
@@ -248,11 +248,11 @@
   ;; Save all avatars and remove them from the world.
   (format-log :info "closing ~d sessions" (hash-table-count *sessions*))
   (maphash-values #'(lambda (session)
-                      (with-slots (account-id (av avatar)) session
-                        (let ((location (location av)))
-                          (exit-location av location nil)
-                          (exit-world av)
-                          (save-avatar av (proto-name location)))))
+                      (with-slots (account-id (ava avatar)) session
+                        (let ((location (entity-container ava)))
+                          (exit-location ava location nil)
+                          (exit-world ava)
+                          (save-avatar ava (? location 'proto 'label)))))
                   *sessions*)
   ;; Remove each location from the world.
   (format-log :info "stopping ~d locations" (hash-table-count *locations*))
