@@ -62,8 +62,7 @@ header for `request`."
        (dolist (header (http-response-headers response))
          (format result "~a: ~a~a" (car header) (cdr header) eol))
        ;; FIXME: The body content length doesn't handle changes due to encoding.
-       (when body
-         (format result "Content-Length: ~d~a" (length body) eol))
+       (format result "Content-Length: ~d~a" (if body (length body) 0) eol)
        (write-string eol result)
        (when body
          (write-string body result))))))
