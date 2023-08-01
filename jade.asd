@@ -25,7 +25,7 @@
              (:file "location")
              (:file "avatar")
              (:file "match")
-             ;(:file "command")
+             (:file "command")
 
              (:file "move")
 
