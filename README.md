@@ -99,11 +99,8 @@ static content and provide TLS functionality.
 After installing NGINX, you can start it as follows:
 
 ```
-sudo nginx -c $JADE/config/nginx.conf
+nginx -c $JADE/config/nginx.conf
 ```
-
-By default, NGINX listens on ports 80/443. If you cannot use the standard ports
-you will need to modify the configuration file.
 
 ### Create the Database
 
