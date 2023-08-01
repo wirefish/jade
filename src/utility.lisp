@@ -61,12 +61,6 @@ elements."
       (values (subseq list 0 n) (subseq list n))
       (values (butlast list (- n)) (last list (- n)))))
 
-(defun everyp (pred &rest lists)
-  (if (position-if #'null lists)
-      t
-      (when-let ((x (apply pred (mapcar #'car lists))))
-        (apply #'everyp pred (mapcar #'cdr lists)))))
-
 ;;; Hash table utilities.
 
 (declaim (inline sethash))
