@@ -19,30 +19,26 @@
      password-bytes :salt salt :digest :sha1 :iterations 10000)))
 
 (defun validate-username (username)
-  "Checks that a proposed username meets some arbitrary requirements. Returns t on
-success or nil on failure. If present, the second return value is a string
-describing the reason for failure."
+  "Checks that a proposed username meets some arbitrary requirements. Returns nil
+on success or a string describing the reason for failure."
   (cond
     ((< (length username) 3)
-     (values nil "Username must be at least 3 characters long."))
+     "Username must be at least 3 characters long.")
     ((> (length username) 40)
-     (values nil "Username may be no more than 40 characters long."))
+     "Username may be no more than 40 characters long.")
     ((not (cl-ppcre:scan "^[\\w.,@+-]+$" username))
-     (values nil "Invalid character in username."))
-    (t t)))
+     "Invalid character in username.")))
 
 (defun validate-password (password)
-  "Checks that a proposed password meets some arbitrary requirements. Returns t on
-success or nil on failure. If present, the second return value is a string
-describing the problem with the password."
+  "Checks that a proposed password meets some arbitrary requirements. Returns nil
+on success or a string describing the reason for failure."
   (cond
     ((< (length password) 8)
-     (values nil "Password must be at least 8 characters long."))
+     "Password must be at least 8 characters long.")
     ((> (length password) 40)
-     (values nil "Password may be no more than 40 characters long."))
+     "Password may be no more than 40 characters long.")
     ((find-if-not #'graphic-char-p password)
-     (values nil "Invalid character in password."))
-    (t t)))
+     "Invalid character in password.")))
 
 (defun create-account (username password avatar location)
   "Tries to create an account. Returns the account ID on success or nil on

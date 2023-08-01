@@ -7,7 +7,6 @@
                                       :version (http-request-version request))))
     (dolist (cookie cookies)
       (destructuring-bind (name . value) cookie
-        (format t "~s ~s~%" name value)
         (http-response-set-cookie response name value)))
     (as:write-socket-data socket (encode-http-response response)
                           :write-cb #'as:close-socket)))
@@ -41,7 +40,7 @@
         ;; The client's session key is still valid; return success with the
         ;; username in the body.
         (send-response socket request 200 "OK"
-                       :body (format nil "{\"username\": ~s}" (session-username session)))
+                       :body (format nil "{\"username\": ~s}~%" (session-username session)))
         ;; The client needs to login.
         (send-response socket request 401 "Unauthorized"))))
 
@@ -53,13 +52,13 @@
     (format-log :info "created session ~a for user ~a" (session-key session) username)
     (send-response socket request 200 "OK"
                    :cookies (list (cons *session-key-cookie* (session-key session)))
-                   :body (format nil "{\"username\": ~s}" username))))
+                   :body (format nil "{\"username\": ~s}~%" username))))
 
 (defun handle-login-request (socket request)
   "If the request contains an Authorization header, extracts the username and
-  password and attempts to create a new session for the user. On success, sends
-  a 200 response with the username in the body; otherwise, sends a 401 response.
-  If no Authorization header is present, sends a 400 response."
+password and attempts to create a new session for the user. On success, sends a
+200 response with the username in the body; otherwise, sends a 401 response. If
+no Authorization header is present, sends a 400 response."
   (let ((auth (get-authorization-for-request request)))
     (if auth
         ;; Check the username and password.
@@ -69,7 +68,7 @@
             (create-session socket request account-id username)
             ;; Authentication failed.
             (send-response socket request 401 "Unauthorized"
-                           :body "Invalid username or password.")))
+                           :body (format nil "Invalid username or password.~%"))))
         ;; The request is invalid.
         (send-response socket request 400 "Bad Request"))))
 
@@ -80,27 +79,26 @@
 
 (defun handle-create-request (socket request)
   "If the request contains an Authorization header, attempts to create a new
-  account. On success, sends a 200 response with the username in the body. If
-  the username or password is invalid or the username is already in use, sends a
-  401 response with a description of the problem in the body. If the
-  Authorization header is missing, sends a 400 response."
-  (let ((auth (get-authorization-for-request request)))
-    (if auth
-        ;; The request contains a proposed username and password.
-        (destructuring-bind (username password) auth
-          (if-let ((problem (or (validate-username username) (validate-password password))))
-            ;; The username and/or password is structurally invalid.
-            (send-response socket request 401 "Unauthorized" :body problem)
-            (if-let ((account-id (create-account username password (create-avatar)
-                                                 (gethash :new-avatar-location *config*))))
-              ;; The account was created. Create a new session.
-              (create-session socket request account-id username)
-              ;; The account could not be created, generally because the
-              ;; account name is already in use.
-              (send-response socket request 401 "Unauthorized"
-                             :body "Username already exists."))))
-        ;; The request is invalid.
-        (send-response socket request 400 "Bad Request"))))
+account. On success, sends a 200 response with the username in the body. If the
+username or password is invalid or the username is already in use, sends a 401
+response with a description of the problem in the body. If the Authorization
+header is missing, sends a 400 response."
+  (if-let ((auth (get-authorization-for-request request)))
+    ;; The request contains a proposed username and password.
+    (destructuring-bind (username password) auth
+      (if-let ((problem (or (validate-username username) (validate-password password))))
+        ;; The username and/or password is not structurally valid.
+        (send-response socket request 401 "Unauthorized" :body (format nil "~s~%" problem))
+        (if-let ((account-id (create-account username password (create-avatar)
+                                             (gethash :new-avatar-location *config*))))
+          ;; The account was created. Create a new session.
+          (create-session socket request account-id username)
+          ;; The account could not be created, generally because the
+          ;; account name is already in use.
+          (send-response socket request 401 "Unauthorized"
+                         :body (format nil "Username already exists.~%")))))
+    ;; The request is invalid.
+    (send-response socket request 400 "Bad Request")))
 
 (setf (gethash "/create" *request-handlers*) #'handle-create-request)
 
@@ -114,8 +112,8 @@
 (setf (gethash "/logout" *request-handlers*) #'handle-logout-request)
 
 (defun start-session (socket session)
-  "Called when the user creates a websocket connection associated with a
-  specific session. This can occur multiple times for a single session."
+  "Called when the user creates a websocket connection associated with a specific
+session. This can occur multiple times for a single session."
   ;; TODO: load avatar if not already present in session. Send intro text, map
   ;; update, room description and contents, etc.
   (format-log :info "starting session ~a for user ~a"
@@ -126,10 +124,10 @@
   (connect-session session socket))
 
 (defun handle-session-request (socket request)
-  "Validates the request headers to ensure this is a websocket handshake. If
-  not, return 400. Validate the session key cookie; if it is not valid return
-  401. On success, send the server handshake and change the read-cb to start
-  reading websocket messages. Also write initial updates to the client."
+  "Validates the request headers to ensure this is a websocket handshake. If not,
+return 400. Validate the session key cookie; if it is not valid return 401. On
+success, send the server handshake and change the read-cb to start reading
+websocket messages. Also write initial updates to the client."
   (let ((client-key (websocket-validate-headers request)))
     (if (null client-key)
         ;; The websocket handshake is not valid.
@@ -189,9 +187,9 @@
 
 (defun read-request-headers (socket data)
   "Appends `data` to the buffer for `socket` and interprets all buffered data as
-  HTTP request headers. If a complete set of headers is present, consumes them
-  from the buffer and dispatches the request based on the path specified in the
-  request."
+HTTP request headers. If a complete set of headers is present, consumes them
+from the buffer and dispatches the request based on the path specified in the
+request."
   (let ((buffer (as:socket-data socket)))
     (buffer-push buffer data)
     (let ((end-of-headers (buffer-find buffer *crlfcrlf*)))
@@ -273,10 +271,12 @@
 
     ;; Start the server.
     (as:tcp-server
-     (gethash :server-address *config*) (gethash :server-port *config*)
+     (? *config* :server-address) (? *config* :server-port)
      #'read-request-headers
      :event-cb #'(lambda (event) (format t "ev: ~a~%" event))
      :connect-cb #'handle-connection)
+
+    (format-log :info "listening at ~a:~d" (? *config* :server-address) (? *config* :server-port))
 
     ;; Arrange to exit the event loop on SIGINT.
     (as:signal-handler
