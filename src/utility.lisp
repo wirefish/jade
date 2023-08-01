@@ -1,55 +1,5 @@
 (in-package :jade)
 
-;;; Miscellaneous utilities.
-
-(defmacro with-gensyms ((&rest names) &body body)
-  "Provides gensyms for `names'."
-  `(let ,(mapcar (lambda (name) `(,name (gensym))) names)
-     ,@body))
-
-(defun curry (fn &rest args)
-  (lambda (&rest more)
-    (multiple-value-call fn (values-list args) (values-list more))))
-
-;;; Flow control macros.
-
-(defmacro when-let (bindings &body body)
-  "Evaluates bindings as with `let' then executes `body' only if all bound values
-are non-nil."
-  `(let ,bindings
-     (when (and ,@(mapcar #'first bindings))
-       ,@body)))
-
-(defmacro when-let* (bindings &body body)
-  "Evaluates bindings as with `let*' then executes `body' only if all bound values
-are non-nil."
-  `(let* ,bindings
-     (when (and ,@(mapcar #'first bindings))
-       ,@body)))
-
-(defmacro if-let (bindings then &optional else)
-  "Evaluates bindings as with `let' and executes `then' if all bound values are
-non-nil, or `else' otherwise."
-  `(let ,bindings
-     (if (and ,@(mapcar #'first bindings)) ,then ,else)))
-
-(defmacro if-let* (bindings then &optional else)
-  "Evalulates bindings as with `let*' and executes `then' if all bound values are
-non-nil, or `else' otherwise."
-  `(let* ,bindings
-     (if (and ,@(mapcar #'first bindings)) ,then ,else)))
-
-;;; Sequence utilities.
-
-(declaim (inline emptyp))
-(defun emptyp (sequence)
-  (= (length sequence) 0))
-
-(defun starts-with (value sequence &key (test #'eql))
-  (when (typep sequence 'sequence)
-    (unless (emptyp sequence)
-      (funcall test (elt sequence 0) value))))
-
 ;;; String utilities.
 
 (defun strcat (&rest strings)
@@ -223,18 +173,10 @@ there was no such value, returns `default'."
 
 (defsetf ? generic-setf)
 
-;;; Closure-like threading operator.
+;;; Provide a closure-style name for the threading operator.
 
-(defmacro -> (expr &rest forms)
-  (if (first forms)
-      (let* ((form (first forms))
-             (threaded (if (listp form)
-                           (if (member '% form)
-                               `(funcall (lambda (%) ,form) ,expr)
-                               `(,(first form) ,expr ,@(rest form)))
-                           `(,form ,expr))))
-        `(-> ,threaded ,@(rest forms)))
-      expr))
+(defmacro -> (&rest forms)
+  `(line-up-first ,@forms))
 
 ;;; More expressive binding.
 

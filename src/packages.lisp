@@ -1,13 +1,9 @@
 (defpackage :jade
   (:documentation "Core server functionality.")
-  (:use :cl)
+  (:use :cl :alexandria-2)
   (:import-from :cl-async :with-delay)
   (:shadow :inspect)
-  (:export #:if-let
-           #:if-let*
-           #:when-let
-           #:when-let*
-           #:strcat
+  (:export #:strcat
            #:string-starts-with
            #:string-ends-with
            #:?
@@ -35,7 +31,7 @@
 
 (defpackage :jade.lib
   (:documentation "General game definitions not tied to a particular location.")
-  (:use :cl :jade))
+  (:use :cl :alexandria-2 :jade))
 
 ;;; Define a package associated with each region of the game world.
 
@@ -43,7 +39,7 @@
   `(progn
      ,@(loop for name in names
              collect `(defpackage ,name
-                        (:use :cl :jade :jade.lib)))))
+                        (:use :cl :alexandria-2 :jade :jade.lib)))))
 
 (jade/defregionpackages
   :jade.isle-of-dawn
