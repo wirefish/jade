@@ -59,7 +59,7 @@ sent later when `connect-session' is called."
 (defun send-client-command (session command &rest args)
   "Sends a message that contains a JSON array whose first element is a command
 name and whose subsequent elements are arguments to that command."
-  (let ((message (with-output-to-string (s) (encode-json (cons command args) s))))
+  (let ((message (with-output-to-string (s) (encode-json #h(:fn command :args args) s))))
     (if session
         (send-message session message)
         (print message))
