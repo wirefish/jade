@@ -508,7 +508,7 @@ MessageHandler.prototype.showLocation = function(brief, description, exits, cont
     var elements = [makeTextElement('h1', brief)];
     Array.prototype.push.apply(elements, formatText(description));
 
-    if (exits.length) {
+    if (exits != null) {
         var exit_links = [makeTextElement('span', 'Exits:')].concat(
             exits.map(function (dir) {
                 var link = makeTextElement('span', dir, 'link list');
@@ -518,9 +518,11 @@ MessageHandler.prototype.showLocation = function(brief, description, exits, cont
         elements.push(wrapElements('p', exit_links));
     }
 
-    for (var i = 0; i < contents.length; ++i) {
-        var [key, brief, pose] = contents[i];
-        elements.push(this.formatEmote(key, brief, pose));
+    if (contents != null) {
+        for (var i = 0; i < contents.length; ++i) {
+            var [key, brief, pose] = contents[i];
+            elements.push(this.formatEmote(key, brief, pose));
+        }
     }
 
     appendBlock(wrapElements('div', elements));
