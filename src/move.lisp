@@ -62,12 +62,12 @@ entering its initial location."))
 
 (defmethod enter-world ((actor avatar))
   ;; FIXME: start regen behavior
-  (with-slots (name race level xp) actor
+  (with-attributes (name race icon level xp) actor
     (update-avatar
      actor
      :name name
      :race (describe-brief race :article nil)
-     :icon (describe-icon actor)
+     :icon icon
      :level level
      :xp xp
      :max-xp (xp-required-for-level (1+ level)))))
@@ -86,17 +86,21 @@ entering its initial location."))
     (notify-observers observers :after-enter-location actor location entry)))
 
 (defmethod enter-location (actor location entry)
-  (dolist (observer (contents location))
+  (dolist (observer (? location :contents))
     (update-neighbor observer actor))
-  (add-to-container location actor :force t))
+  (push actor (? location :contents))
+  (setf (entity-container actor) location))
 
 (defmethod enter-location ((actor avatar) location entry)
   (call-next-method)
-  (show-location location actor)
-  (when-let ((msg (tutorial location)))
-    (show-tutorial actor (proto-name location) msg))
+  (show-location location actor))
+
+#| FIXME:
+  (when-let ((msg (? location :tutorial)))
+    (show-tutorial actor (entity-label location) msg))
   (show-map actor 3)
-  (show-neighbors actor))
+(show-neighbors actor))
+|#
 
 ;;; Combine exit-location and enter-location.
 

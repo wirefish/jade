@@ -109,7 +109,14 @@ name and whose subsequent elements are arguments to that command."
   (when-let ((session (get-session target)))
     (send-client-command session "showLinks" heading prefix links)))
 
-#|
+(defun update-avatar (avatar &rest properties)
+  (when-let ((session (get-session avatar)))
+    (send-client-command session "updateAvatar" (plist-hash-table properties))))
+
+(defun update-neighbor (avatar obj &rest properties)
+  ;; FIXME:
+  (declare (ignore avatar obj properties)))
+
 (defun show-location (location viewer)
   "Shows a description of `location' to `viewer'."
   (when-let ((session (get-session viewer)))
@@ -117,14 +124,15 @@ name and whose subsequent elements are arguments to that command."
      session
      "showLocation"
      (? location :name)
-     (? location :full)
+     (? location :description)
      (loop for exit in (? location :exits)
-           when (visiblep exit viewer)
+           when t  ; FIXME: (visiblep exit viewer)
              collect (exit-dir exit))
      (loop for obj in (? location :contents)
-           when (and (not (eq obj viewer)) (not (? obj :implicit)) (visiblep obj viewer))
-             collect (list (id obj) (describe-brief obj) (describe-pose obj))))))
+           when (and (not (eq obj viewer)) (not (? obj :implicit)))  ; FIXME: (visiblep obj viewer))
+             collect (list (entity-id obj) (describe-brief obj) (describe-pose obj))))))
 
+#|
 (defun tell (speaker target control-string &rest args)
   (when-let ((session (get-session target)))
     (send-client-command
@@ -138,10 +146,6 @@ name and whose subsequent elements are arguments to that command."
     (dolist (x (contents location))
       (show-notice x message))))
 
-(defun update-avatar (avatar &rest properties)
-  (when-let ((session (get-session avatar)))
-    (send-client-command session "updateAvatar" (plist-hash-table properties))))
-
 ;;; Functions that manage the pane which displays entities in the same location
 ;;; as the player, aka neighbors.
 
@@ -150,7 +154,7 @@ name and whose subsequent elements are arguments to that command."
     be sent to the client."))
 
 (defmethod neighbor-properties ((obj entity))
-  (plist-hash-table (list :key (id obj)
+  (plist-hash-table (list :key (entity-id obj)
                           :brief (describe-brief obj :article nil)
                           :icon (describe-icon obj))))
 
