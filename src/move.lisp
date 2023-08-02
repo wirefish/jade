@@ -20,7 +20,7 @@ true, do not allow observers to disallow the action."))
 
 (defmethod exit-location (actor location exit &key force)
   (declare (ignore force))
-  nil)
+  (remove actor (? location :contents)))
 
 #|
 (defmethod exit-location (actor location exit &key)
