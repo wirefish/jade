@@ -224,10 +224,10 @@ request."
                      ((= opcode +websocket-op-text+)
                       (process-input (session-avatar session) payload))
                      (t
-                      (format-log :warn "got unsupported websocket opcode ~d" opcode)
+                      (format-log :warning "got unsupported websocket opcode ~d" opcode)
                       (close-session session)))))
       (websocket-error (err)
-        (format-log :warn "read invalid message, terminating session: ~s"
+        (format-log :warning "read invalid message, terminating session: ~s"
                     (apply #'format nil
                            (simple-condition-format-control err)
                            (simple-condition-format-arguments err)))
@@ -249,7 +249,7 @@ request."
                         (let ((location (entity-container ava)))
                           (exit-location ava location nil)
                           (exit-world ava)
-                          (save-avatar ava (? location 'proto 'label)))))
+                          (save-avatar ava (entity-label location)))))
                   *sessions*)
   ;; Remove each location from the world.
   (format-log :info "stopping ~d locations" (hash-table-count *locations*))
