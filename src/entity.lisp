@@ -82,11 +82,24 @@ prototype and attributes initialized from `keys-values'."
           (return-from has-attributes nil))))
     t))
 
-(defmacro with-attributes ((&rest names) entity &body body)
-  (let ((all-names (remove '&optional names))
-        (required-names (subseq names 0 (position '&optional names))))
-    `(with-slots (,@all-names) ,entity
-       (when (and ,@required-names)
+(defmacro with-attributes ((&rest attrs) entity &body body)
+  "Executes `body' with variables bound to attributes of `entity'. Each
+attribute is specified by either a symbol or a two-element list. In the latter
+case, the first element is a symbol and the second is a default value if the
+attribute's value is nil."
+  `(let ,(loop for attr in attrs
+               collect
+               (typecase attr
+                 (symbol `(,attr (? ,entity ,(make-keyword attr))))
+                 (list `(,(first attr) (or (? ,entity ,(make-keyword (first attr)))
+                                           ,(second attr))))))
+     ,@body))
+
+(defmacro when-attributes ((&rest attrs) entity &body body)
+  (let ((all-attrs (remove '&optional attrs))
+        (required-attrs (subseq attrs 0 (position '&optional attrs))))
+    `(with-attributes (,@all-attrs) ,entity
+       (when (and ,@required-attrs)
          ,@body))))
 
 ;;; Encoding and decoding.
