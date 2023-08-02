@@ -180,9 +180,9 @@ all attributes."
 
 (defvar *default-brief* (parse-noun "an entity"))
 
-(defun describe-brief (entity &key (quantity 1) article capitalize)
+(defun describe-brief (entity &key (quantity 1) (article :indefinite) capitalize)
   (or (? entity :name)
-      (format-noun (or (? entity :brief) *default-brief*)
+      (format-noun (or (? entity :brief) (? entity :race :brief) *default-brief*)
                    :quantity quantity :article article :capitalize capitalize)))
 
 (defvar *default-pose* (parse-verb "is here."))
