@@ -18,6 +18,11 @@
           (setf ancestry (if label (cons label proto-ancestry) proto-ancestry)))
         (when label (setf ancestry (list label))))))
 
+(defmethod print-object ((obj entity) stream)
+  (print-unreadable-object (obj stream :type t :identity t)
+    (with-slots (id label proto) obj
+      (write (or label (list (entity-label proto) id)) :stream stream))))
+
 (defun entity-isa (entity label)
   (numberp (position label (slot-value entity 'ancestry))))
 
