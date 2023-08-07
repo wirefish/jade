@@ -27,7 +27,9 @@
            #:item
            #:defmaterial
 
-           #:deflocation))
+           #:deflocation
+
+           #:avatar))
 
 (defpackage :jade.lib
   (:documentation "General game definitions not tied to a particular location.")

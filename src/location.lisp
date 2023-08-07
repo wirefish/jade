@@ -41,11 +41,12 @@
 
 (defstruct exit dir dest portal)
 
-(defun register-exit (dir dest portal-proto &rest portal-args)
+(defun register-exit (dir dest portal-label &rest portal-args)
   ;; FIXME: check for a matching exit; if found, pop it from the registry and
   ;; share its portal. Otherwise, create a new exit and register it to be found
   ;; later.
-  (make-exit :dir dir :dest dest :portal (apply #'clone-entity portal-proto portal-args)))
+  (let ((portal (find-entity portal-label)))
+    (make-exit :dir dir :dest dest :portal (apply #'clone-entity portal portal-args))))
 
 (defun describe-exit (exit)
   (format nil "~a leads ~a."
@@ -64,13 +65,17 @@ starting and stopping simulation.")
   (gethash name *locations*))
 
 (defmacro deflocation (name (&optional proto) attributes &body behaviors)
-  `(progn
-     (defentity ,name (,proto) ,attributes ,@behaviors)
-     (sethash ',name *locations* ,name)))
+  (with-gensyms (loc)
+    `(let ((,loc (defentity ,name (,proto) ,attributes ,@behaviors)))
+       (sethash ',name *locations* ,loc)
+       ,loc)))
 
-(defmethod transform-initval (type (name (eql :exits)) value)
-  `(list ,@(loop for (portal-spec . dirs-dests) in value
-                 nconc (loop for (dir dest) on dirs-dests by #'cddr
-                             collect `(register-exit ,dir ',dest
-                                                     ,@(if (listp portal-spec) portal-spec
-                                                           (list portal-spec)))))))
+(defmethod transform-initval ((name (eql :exits)) value)
+  (labels ((transform-exit-group (group)
+             (bind (((portal-spec &rest dirs-dests) group)
+                    (portal-name (if (listp portal-spec) (first portal-spec) portal-spec))
+                    (portal-args (when (listp portal-spec) (rest portal-spec))))
+               (loop for (dir dest) on dirs-dests by #'cddr
+                     collect `(register-exit ,dir ',dest ',portal-name ,@portal-args)))))
+    `(list ,@(loop for group in value
+                   nconc (transform-exit-group group)))))

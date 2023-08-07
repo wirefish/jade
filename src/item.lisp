@@ -26,13 +26,17 @@
   (traits nil)
   (level 0))
 
-(defmacro defmaterial (label &body args)
-  `(export (defparameter ,label
-             (make-material :label ',label
-                            ,@(loop for (key value) on args by #'cddr
-                                    nconc (list key (transform-initval 'material key value)))))))
+(defparameter *materials* (make-hash-table))
 
-(defmethod transform-initval (type (name (eql :materials)) value)
+(defmacro defmaterial (label &body args)
+  (with-gensyms (material)
+    `(let ((,material (make-material :label ',label
+                                    ,@(loop for (key value) on args by #'cddr
+                                            nconc (list key (transform-initval key value))))))
+       (sethash ',label *materials* ,material)
+       ,material)))
+
+(defmethod transform-initval ((name (eql :materials)) value)
   `(list ,@value))
 
 (defmethod encode-value ((entity entity) (name (eql :materials)) value)

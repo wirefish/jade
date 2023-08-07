@@ -14,6 +14,9 @@
            (make-race :name ',name ,@body))  ;; FIXME: transforms
      (export ',name)))
 
+(defun find-race (name)
+  (gethash name *races*))
+
 ;;; An avatar is an entity that represents a player in the world. It defines
 ;;; additional slots used internally by the server.
 
@@ -29,13 +32,16 @@
    (dirty-quests :initform nil :accessor dirty-quests)
    (pending-offer :initform nil :accessor pending-offer)))
 
-(export (defparameter avatar (make-instance 'avatar :label 'avatar)))
+(sethash 'avatar *named-entities* (make-instance 'avatar))
 
 (defmethod print-object ((obj avatar) stream)
   (print-unreadable-object (obj stream :type t :identity t)
     (write (avatar-id obj) :stream stream)))
 
-;;; Encoding and decoding for avatars slots and attributes.
+(defmethod transform-initval ((name (eql :race)) value)
+  `(find-race ',value))
+
+;;; Encoding and decoding for avatar slots and attributes.
 
 (defmethod encoded-slots ((entity avatar))
   '(tutorials-on active-quests))
