@@ -9,8 +9,7 @@
 true, do not allow observers to disallow the action."))
 
 (defmethod exit-location :around (actor location exit &key force)
-  (let ((observers (list* location (and exit (exit-portal exit))
-                          (? location :contents))))
+  (let ((observers (list* location exit (? location :contents))))
     (when (or force
               (observers-allow-p observers :allow-exit-location actor location exit))
       (notify-observers observers :before-exit-location actor location exit)
@@ -79,8 +78,7 @@ entering its initial location."))
   no allow phase."))
 
 (defmethod enter-location :around (actor location entry)
-  (let ((observers (list* actor location (and entry (exit-portal entry))
-                          (? location :contents))))
+  (let ((observers (list* actor location entry (? location :contents))))
     (notify-observers observers :before-enter-location actor location entry)
     (call-next-method)
     (notify-observers observers :after-enter-location actor location entry)))

@@ -55,6 +55,9 @@
             "The exit")
           (direction-name (exit-dir exit))))
 
+(defmethod observe-event ((observer exit) event &rest args)
+  (apply #'observe-event (exit-portal observer) event args))
+
 ;;; Use `deflocation' to create an actual location the world.
 
 (defparameter *locations* (make-hash-table)

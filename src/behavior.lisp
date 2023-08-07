@@ -99,22 +99,23 @@ handler."
                            ,(make-event-handler-fn event params body))))
        ,entity)))
 
-(defun observe-event (observer event &rest args)
-  (let ((handlers (? observer 'behavior event)))
-    (loop for handler in handlers do
-      (when (apply (event-handler-test handler) args)
-        (let ((x (apply (event-handler-fn handler) observer args)))
-          (unless (eq x :call-next-handler)
-            (return-from observe-event x)))))))
+(defgeneric observe-event (observer event &rest args)
+  (:method ((observer null) event &rest args)
+    (declare (ignore args)))
+  (:method ((observer entity) event &rest args)
+    (let ((handlers (? observer 'behavior event)))
+      (loop for handler in handlers do
+        (when (apply (event-handler-test handler) args)
+          (let ((x (apply (event-handler-fn handler) observer args)))
+            (unless (eq x :call-next-handler)
+              (return-from observe-event x))))))))
 
 (defun notify-observers (observers event &rest args)
   (dolist (observer observers)
-    (when observer
-      (apply #'observe-event observer event args))))
+    (apply #'observe-event observer event args)))
 
 (defun observers-allow-p (observers event &rest args)
   (dolist (observer observers)
-    (when (and observer
-               (eq (apply #'observe-event observer event args) :disallow-action))
+    (when (eq (apply #'observe-event observer event args) :disallow-action)
       (return-from observers-allow-p nil)))
   t)
