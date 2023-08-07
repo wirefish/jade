@@ -37,7 +37,7 @@
 (defun clone-entity (entity &rest keys-values)
   "Creates an anonymous entity (i.e. one without a label) with `entity' as its
 prototype and attributes initialized from `keys-values'."
-  (let* ((proto (if (symbolp entity) (symbol-value entity) entity))
+  (let* ((proto (if (symbolp entity) (find-entity entity) entity))
          (clone (make-instance (type-of proto) :proto proto)))
     (apply #'sethash* (slot-value clone 'attributes) keys-values)
     clone))

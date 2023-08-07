@@ -103,11 +103,11 @@ header is missing, sends a 400 response."
 (setf (gethash "/create" *request-handlers*) #'handle-create-request)
 
 (defun handle-logout-request (socket request)
-  (let ((session (get-session-for-request request)))
-    (when session
-      ;; TODO: close the session.
-      (remhash (session-key session) *sessions*))
-    (send-response socket request 200 "OK")))
+  (if-let ((session (get-session-for-request request)))
+    (progn
+      (close-session session)
+      (send-response socket request 200 "OK"))
+    (send-response socket request 400 "Bad Request")))
 
 (setf (gethash "/logout" *request-handlers*) #'handle-logout-request)
 
@@ -155,7 +155,7 @@ websocket messages. Also write initial updates to the client."
                     (setf (session-avatar session) avatar)
                     (setf (avatar-session avatar) session)
                     (enter-world avatar)
-                    (enter-location avatar (symbol-value location-id) nil)))
+                    (enter-location avatar (find-location location-id) nil)))
                 (start-session socket session))
               ;; The session key is missing or invalid; the player needs to
               ;; authenticate.
