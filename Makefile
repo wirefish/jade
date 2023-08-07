@@ -47,7 +47,18 @@ $(IMAGEDIR)/%: client/images/% | $(IMAGEDIR)
 $(IMAGEDIR):
 	@mkdir -p $@
 
-icons: $(IMAGEDIR)/icons.png
-$(IMAGEDIR)/icons.png: tools/make_icons.py client/icons.txt | $(IMAGEDIR)
-	tools/make_icons.py client/icons.txt -o $(IMAGEDIR)
-	mv $(IMAGEDIR)/icons.css $(CLIENTDIR)
+.PHONY: ui_icons
+
+icons: $(IMAGEDIR)/entity_icons.png ui_icons
+
+$(IMAGEDIR)/entity_icons.png: tools/make_icons.py client/entity_icons.txt | $(IMAGEDIR)
+	tools/make_icons.py -b entity_icons -s 24 -o $(IMAGEDIR) client/entity_icons.txt
+	mv $(IMAGEDIR)/entity_icons.css $(CLIENTDIR)
+
+ICONDIR = $(CLIENTDIR)/icons
+ICONS = $(wildcard client/icons/*.png)
+ui_icons: $(ICONS:%=$(BUILDDIR)/%)
+$(ICONDIR)/%: client/icons/% | $(ICONDIR)
+	cp $< $@
+$(ICONDIR):
+	@mkdir -p $@

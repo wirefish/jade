@@ -1,6 +1,7 @@
 .DS_Store
 *.fasl
 build/
+client/icons/
 client/images/
 client/fonts/
 assets/
