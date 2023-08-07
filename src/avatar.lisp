@@ -41,6 +41,11 @@
 (defmethod transform-initval ((name (eql :race)) value)
   `(find-race ',value))
 
+(defmacro for-avatars-in ((var location) &body body)
+  `(dolist (,var (? ,location :contents))
+     (when (entity-isa ,var 'avatar)
+       ,@body)))
+
 ;;; Encoding and decoding for avatar slots and attributes.
 
 (defmethod encoded-slots ((entity avatar))

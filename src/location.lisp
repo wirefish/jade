@@ -58,9 +58,9 @@
 (defmethod observe-event ((observer exit) event &rest args)
   (apply #'observe-event (exit-portal observer) event args))
 
-;;; Use `deflocation' to create an actual location the world.
+;;; Use `deflocation' to create an actual location in the world.
 
-(defparameter *locations* (make-hash-table)
+(defvar *locations* (make-hash-table)
   "A table of all locations defined with `deflocation'. This is used to facilitate
 starting and stopping simulation.")
 

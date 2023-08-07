@@ -19,7 +19,9 @@ true, do not allow observers to disallow the action."))
 
 (defmethod exit-location (actor location exit &key force)
   (declare (ignore force))
-  (remove actor (? location :contents)))
+  (remove actor (? location :contents))
+  (for-avatars-in (avatar location)
+    (remove-neighbor avatar actor)))
 
 #|
 (defmethod exit-location (actor location exit &key)
