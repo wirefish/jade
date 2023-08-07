@@ -122,7 +122,6 @@ name and whose subsequent elements are arguments to that command."
            when (and (not (eq obj viewer)) (not (? obj :implicit)))  ; FIXME: (visiblep obj viewer))
              collect (list (entity-id obj) (describe-brief obj) (describe-pose obj))))))
 
-#|
 (defun tell (speaker target control-string &rest args)
   (when-let ((session (get-session target)))
     (send-client-command
@@ -131,6 +130,7 @@ name and whose subsequent elements are arguments to that command."
      (format nil "~a says" (describe-brief speaker :capitalize t :article :definite))
      (format-text control-string args))))
 
+#|
 (defun show-announce (location control-string &rest args)
   (let ((message (format-text control-string args)))
     (dolist (x (contents location))

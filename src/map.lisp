@@ -25,7 +25,7 @@ visited only if `cross-domains' is t."
                      (when (and dest (null (gethash (entity-label dest) visited)))
                        (recursive-walk (+ x dx) (+ y dy) (+ z dz) dest)))))))))
       (recursive-walk 0 0 0 origin)
-      result)))
+      (nreverse result))))
 
 (defun exit-visible-p (exit observer)
   ;; FIXME:

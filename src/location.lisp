@@ -73,6 +73,12 @@ starting and stopping simulation.")
        (sethash ',name *locations* ,loc)
        ,loc)))
 
+(defmethod transform-initval ((name (eql :contents)) value)
+  `(list ,@(loop for spec in value
+                 collect (let ((proto (if (listp spec) (first spec) spec))
+                               (args (when (listp spec) (rest spec))))
+                           `(clone-entity ',proto ,@args)))))
+
 (defmethod transform-initval ((name (eql :exits)) value)
   (labels ((transform-exit-group (group)
              (bind (((portal-spec &rest dirs-dests) group)
