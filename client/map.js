@@ -177,12 +177,12 @@ Map.prototype.render = function()
     var room_size = cell_size - inset * 2;
 
     for (var j = 0; j < this.rooms.length; ++j) {
-        var [id, x, y, name, icon, state, surface, surrounding, domain] = this.rooms[j];
+        var [x, y, name, icon, surface, surround, domain, state] = this.rooms[j];
 
         var left = center_left + x * cell_size, top = center_top + y * cell_size;
 
         // Fill the cell background.
-        var style = surrounding ? surface_styles[surrounding] : domain_styles[domain];
+        var style = surround ? surface_styles[surround] : domain_styles[domain];
         if (style) {
             context.fillStyle = style;
             context.fillRect(left, top, cell_size, cell_size);

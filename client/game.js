@@ -158,7 +158,7 @@ MessageHandler.prototype.showHelp = function(text) {
     this.showText(text, 'help');
 }
 
-MessageHandler.prototype.showMap = function(location_name, region, subregion, radius, rooms) {
+MessageHandler.prototype.showMap = function(location_name, region, subregion, radius, ...rooms) {
     var sep = "\u2002\u00b7\u2002";
 
     document.getElementById("location_name").innerHTML = location_name;
