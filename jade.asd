@@ -29,6 +29,7 @@
              (:file "config")
              (:file "database")
              (:file "session")
+             (:file "map")
              (:file "client")
 
              (:file "help")

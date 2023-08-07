@@ -93,7 +93,8 @@ entering its initial location."))
 
 (defmethod enter-location ((actor avatar) location entry)
   (call-next-method)
-  (show-location location actor))
+  (show-location location actor)
+  (show-map actor))
 
 #| FIXME:
   (when-let ((msg (? location :tutorial)))

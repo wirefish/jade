@@ -2,6 +2,40 @@
 
 (in-package :jade)
 
+#|
+
+The client UI state comprises the the following components:
+
+- Avatar state (across the top): icon, name, level, race, auras,
+  health/energy/xp bars.
+
+- A list of neighboring entities (left column): each has icon, brief, and
+  optional health bar and auras.
+
+- Map (upper right): location name, region and subregion names, grid of map
+  cells.
+
+- Inventory: each item has icon, brief, quantity, group, subgroup.
+
+- Equipment: each item has icon, brief, slot.
+
+- Combat stats: names and values.
+
+- Skills: unspent karma, each skill has name, rank, max rank.
+
+- Chat: stream of text messages from other players.
+
+- Location: name, description, (contents?), exits.
+
+- Primary text: stream of text messages describing events, NPC interactions, etc.
+
+- Activity status: either a castbar (for non-modal activities) or specific state
+  for each modal activity such as combat or crafting.
+
+All updates for an avatar are collected and then sent as a single message.
+
+|#
+
 (defun send-message (session message)
   "Sends a message to the socket associated with the session. If the session is
 not connected (i.e. its socket is nil) then the message is queued so it can be
@@ -150,7 +184,7 @@ name and whose subsequent elements are arguments to that command."
                                          (describe-brief item :article nil))))))))))
 |#
 
-;;;
+;;; Cast bar for a non-modal activity.
 
 (defun start-casting (avatar duration)
   (when-let ((session (get-session avatar)))
@@ -159,3 +193,26 @@ name and whose subsequent elements are arguments to that command."
 (defun stop-casting (avatar)
   (when-let ((session (get-session avatar)))
     (send-client-command session "stopPlayerCast")))
+
+;;; Map.
+
+(defun show-map (avatar &key (radius 3))
+  (when-let ((session (avatar-session avatar)))
+    (let* ((origin (entity-container avatar))
+           (z-offset (? origin :z-offset))
+           (map (walk-map origin radius :observer avatar)))
+      (apply #'send-client-command
+             session "showMap"
+             (? origin :name)
+             (or (? origin :region) "")
+             (or (? origin :subregion) "")
+             radius
+             (loop for (x y z location) in map
+                   if (eql (? location :z-offset) z-offset)
+                     collect (list x y
+                                   (? location :name)
+                                   (or (? location :icon) "")
+                                   (or (? location :surface) "")
+                                   (or (? location :surround) "")
+                                   (or (? location :domain) "")
+                                   (location-state location avatar)))))))
