@@ -1,16 +1,48 @@
 (in-package :jade)
 
-;;; Sessions.
+;;; Session keys.
 
-(defvar *avatars* (make-hash-table)
-  "A mapping from account-id to avatar object for all avatars present in the
-world.")
+(defparameter *signing-key* (ironclad:random-data 32)
+  "A secret key used when signing and validating session keys.")
+
+(defparameter *signature-length* 32
+  "The length of the array returned by the `signature' function.")
+
+(defparameter *session-key-valid-seconds* 30
+  "The maximum allowed time between the generation of a session key and its
+first use to create a new session.")
 
 (defparameter *session-key-cookie* "jade-session-key"
   "The name of the cookie used to store the session key.")
 
+(defun signature (data)
+  (let ((mac (ironclad:make-mac :hmac *signing-key* :sha256)))
+    (ironclad:update-mac mac data)
+    (ironclad:produce-mac mac)))
+
+(defun make-session-key (username account-id)
+  (let* ((msg (write-to-string (list username account-id (get-universal-time))))
+         (data (babel:string-to-octets msg :encoding :utf-8))
+         (sig (signature data)))
+    (cl-base64:usb8-array-to-base64-string (concatenate '(vector (unsigned-byte 8)) data sig))))
+
+(defun validate-session-key (key)
+  (ignore-errors
+   (let* ((key (cl-base64:base64-string-to-usb8-array key))
+          (sep (- (length key) *signature-length*))
+          (msg (subseq key 0 sep)))
+     (when (equalp (subseq key sep) (signature msg))
+       (let ((msg (babel:octets-to-string msg :encoding :utf-8)))
+         (read-from-string msg))))))
+
 (defun get-session-key (request)
   (http-request-get-cookie-value *session-key-cookie* request))
+
+;;;
+
+(defvar *avatars* (make-hash-table)
+  "A mapping from account-id to avatar object for all avatars present in the
+world.")
 
 (defun start-session (avatar socket request)
   (setf (avatar-socket avatar) socket)

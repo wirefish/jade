@@ -28,7 +28,6 @@
              (:file "command")
              (:file "config")
              (:file "database")
-             (:file "session")
              (:file "map")
              (:file "client")
 

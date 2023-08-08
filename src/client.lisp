@@ -52,7 +52,7 @@ name and whose subsequent elements are arguments to that command."
   (let ((message (with-output-to-string (s) (encode-json #h(:fn command :args args) s))))
     (send-message avatar message)))
 
-;;;; Functions used to send information to the client.
+;;; Functions that display formatted text in the main text pane.
 
 (defun format-text (control-string args)
   (if args (apply #'format nil control-string args) control-string))
@@ -80,7 +80,18 @@ name and whose subsequent elements are arguments to that command."
   (show-text target "showHelp" message))
 
 (defun show-links (avatar heading prefix links)
-  (send-client-command avatar "showLinks" heading prefix links)))
+  (when links
+    (send-client-command avatar "showLinks" heading prefix links)))
+
+(defun tell (speaker target control-string &rest args)
+  (when (typep target 'avatar)
+    (send-client-command
+     target
+     "showSay"
+     (format nil "~a says" (describe-brief speaker :capitalize t :article :definite))
+     (format-text control-string args))))
+
+;;; Functions that update various UI elements.
 
 (defun update-avatar (avatar &rest properties)
   (send-client-command avatar "updateAvatar" (plist-hash-table properties)))
@@ -89,28 +100,18 @@ name and whose subsequent elements are arguments to that command."
   ;; FIXME:
   (declare (ignore avatar obj properties)))
 
-(defun show-location (location viewer)
-  "Shows a description of `location' to `viewer'."
-  (when-let ((session (get-session viewer)))
-    (send-client-command
-     session
-     "showLocation"
-     (? location :name)
-     (? location :description)
-     (loop for exit in (? location :exits)
-           when t  ; FIXME: (visiblep exit viewer)
-             collect (exit-dir exit))
-     (loop for obj in (? location :contents)
-           when (and (not (eq obj viewer)) (not (? obj :implicit)))  ; FIXME: (visiblep obj viewer))
-             collect (list (entity-id obj) (describe-brief obj) (describe-pose obj))))))
+(defun show-location (location avatar)
+  (send-client-command
+   avatar "showLocation"
+   (? location :name)
+   (? location :description)
+   (loop for exit in (? location :exits)
+         when t  ; FIXME: (visiblep exit avatar)
+           collect (exit-dir exit))
+   (loop for obj in (? location :contents)
+         when (and (not (eq obj avatar)) (not (? obj :implicit)))  ; FIXME: (visiblep obj viewer))
+           collect (list (entity-id obj) (describe-brief obj) (describe-pose obj)))))
 
-(defun tell (speaker target control-string &rest args)
-  (when-let ((session (get-session target)))
-    (send-client-command
-     session
-     "showSay"
-     (format nil "~a says" (describe-brief speaker :capitalize t :article :definite))
-     (format-text control-string args))))
 
 #|
 (defun show-announce (location control-string &rest args)
@@ -179,22 +180,21 @@ name and whose subsequent elements are arguments to that command."
 ;;; Map.
 
 (defun show-map (avatar &key (radius 3))
-  (when-let ((session (avatar-session avatar)))
-    (let* ((origin (entity-container avatar))
-           (z-offset (? origin :z-offset))
-           (map (walk-map origin radius :observer avatar)))
-      (apply #'send-client-command
-             session "showMap"
-             (? origin :name)
-             (or (? origin :region) "")
-             (or (? origin :subregion) "")
-             radius
-             (loop for (x y z location) in map
-                   if (eql (? location :z-offset) z-offset)
-                     collect (list x y
-                                   (? location :name)
-                                   (or (? location :icon) "")
-                                   (or (? location :surface) "")
-                                   (or (? location :surround) "")
-                                   (or (? location :domain) "")
-                                   (location-state location avatar)))))))
+  (let* ((origin (entity-container avatar))
+         (z-offset (? origin :z-offset))
+         (map (walk-map origin radius :observer avatar)))
+    (apply #'send-client-command
+           avatar "showMap"
+           (? origin :name)
+           (or (? origin :region) "")
+           (or (? origin :subregion) "")
+           radius
+           (loop for (x y z location) in map
+                 if (eql (? location :z-offset) z-offset)
+                   collect (list x y
+                                 (? location :name)
+                                 (or (? location :icon) "")
+                                 (or (? location :surface) "")
+                                 (or (? location :surround) "")
+                                 (or (? location :domain) "")
+                                 (location-state location avatar))))))
