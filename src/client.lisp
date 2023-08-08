@@ -46,6 +46,14 @@ sent later when `connect-session' is called."
         (as:write-socket-data socket data)
         (queue-push data (avatar-output-queue avatar)))))
 
+(defun send-queued-messages (avatar)
+  "Sends any queued messages to `avatar'. This is generally called after the
+player reconnects while the avatar is already in the world."
+  (when-let ((socket (avatar-socket avatar)))
+    (loop while (not (queue-empty (avatar-output-queue avatar))) do
+      (let ((data (queue-pop (avatar-output-queue avatar))))
+        (as:write-socket-data socket data)))))
+
 (defun send-client-command (avatar command &rest args)
   "Sends a message that contains a JSON array whose first element is a command
 name and whose subsequent elements are arguments to that command."
@@ -100,17 +108,18 @@ name and whose subsequent elements are arguments to that command."
   ;; FIXME:
   (declare (ignore avatar obj properties)))
 
-(defun show-location (location avatar)
-  (send-client-command
-   avatar "showLocation"
-   (? location :name)
-   (? location :description)
-   (loop for exit in (? location :exits)
-         when t  ; FIXME: (visiblep exit avatar)
-           collect (exit-dir exit))
-   (loop for obj in (? location :contents)
-         when (and (not (eq obj avatar)) (not (? obj :implicit)))  ; FIXME: (visiblep obj viewer))
-           collect (list (entity-id obj) (describe-brief obj) (describe-pose obj)))))
+(defun show-location (avatar &optional location)
+  (let ((location (or location (entity-container avatar))))
+    (send-client-command
+     avatar "showLocation"
+     (? location :name)
+     (? location :description)
+     (loop for exit in (? location :exits)
+           when t  ; FIXME: (visiblep exit avatar)
+             collect (exit-dir exit))
+     (loop for obj in (? location :contents)
+           when (and (not (eq obj avatar)) (not (? obj :implicit)))  ; FIXME: (visiblep obj viewer))
+             collect (list (entity-id obj) (describe-brief obj) (describe-pose obj))))))
 
 
 #|

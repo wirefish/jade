@@ -44,25 +44,54 @@ first use to create a new session.")
   "A mapping from account-id to avatar object for all avatars present in the
 world.")
 
-(defun start-session (avatar socket request)
+(defun setup-session (avatar socket request)
+  "Initializes the relationship between an avatar and a new websocket."
   (setf (avatar-socket avatar) socket)
   (setf (avatar-remote-ip avatar) (http-request-get-header request "X-Real-IP"))
   (setf (avatar-input-buffer avatar) (as:socket-data socket))
   (setf (as:socket-data socket) avatar)
   ;; NOTE: This write serves only to change the read callback.
-  (as:write-socket-data socket "" :read-cb #'read-websocket-message)
-  avatar)
+  (as:write-socket-data socket "" :read-cb #'read-websocket-message))
 
-(defun close-session (avatar)
-  (save-avatar avatar (entity-label (entity-container avatar)))
-  ;; TODO: save the avatar
-  (format-log :info "(~a) closing session for account-id ~d"
+(defun start-session (avatar location-id socket request)
+  "Creates a new session for an avatar that is not already in the world."
+  (sethash (avatar-account-id avatar) *avatars* avatar)
+  (setup-session avatar socket request)
+  (format-log :info "(~a) starting session for account-id ~d"
+              (avatar-remote-ip avatar) (avatar-account-id avatar))
+  (enter-world avatar)
+  (enter-location avatar (find-location location-id) nil))
+
+(defun disconnect-session (avatar)
+  "Disconnects the avatar from its socket but does not remove the avatar from
+the world, as when the player navigates away from the game page."
+  (with-slots (socket) avatar
+    (when socket
+      (format-log :info "(~a) disconnected account-id ~d"
+                  (avatar-remote-ip avatar) (avatar-account-id avatar))
+      (as:close-socket socket)
+      (setf socket nil))))
+
+(defun reconnect-session (avatar socket request)
+  "Reconnects an avatar already in the world to a new socket."
+  (setup-session avatar socket request)
+  (format-log :info "(~a) reconnected account-id ~d"
+              (avatar-remote-ip avatar) (avatar-account-id avatar))
+  (send-queued-messages avatar)
+  ;; TODO: other UI updates.
+  (show-location avatar))
+
+(defun end-session (avatar)
+  "Removes the avatar from the world, saves it, and closes the associated
+websocket, if any."
+  (format-log :info "(~a) ending session for account-id ~d"
               (avatar-remote-ip avatar)
               (avatar-account-id avatar))
-  (exit-location avatar (entity-container avatar) nil :force t)
-  (exit-world avatar)
-  (as:close-socket (avatar-socket avatar))
-  (setf (avatar-socket avatar) nil)
+  (let ((location-id (entity-label (entity-container avatar))))
+    (exit-location avatar (entity-container avatar) nil :force t)
+    (exit-world avatar)
+    (save-avatar avatar location-id))
+  (disconnect-session avatar)
   (remhash (avatar-account-id avatar) *avatars*))
 
 ;;;
@@ -132,9 +161,6 @@ response."
 
 (setf (gethash "/login" *request-handlers*) #'handle-login-request)
 
-(defun create-avatar ()
-  (clone-entity (gethash :new-avatar-proto *config*)))
-
 (defun handle-create-request (socket request)
   "If the request contains an Authorization header, attempts to create a new
 account. On success, sends a 200 response with the username in the body and a
@@ -147,7 +173,8 @@ response."
     (destructuring-bind (username password) auth
       (if-let ((problem (or (validate-username username) (validate-password password))))
         (send-response socket request 401 "Unauthorized" :body (format nil "~s~%" problem))
-        (if-let ((account-id (create-account username password (create-avatar)
+        (if-let ((account-id (create-account username password
+                                             (clone-entity (gethash :new-avatar-proto *config*))
                                              (gethash :new-avatar-location *config*))))
           (send-login-response username account-id socket request)
           (send-response socket request 401 "Unauthorized"
@@ -157,11 +184,10 @@ response."
 (setf (gethash "/create" *request-handlers*) #'handle-create-request)
 
 (defun handle-logout-request (socket request)
-  (if-let ((session-key (get-session-key request)))
+  (if-let ((account-id (cadr (validate-session-key (get-session-key request)))))
     (progn
-      (when-let ((avatar (gethash session-key *sessions*)))
-        ;; FIXME: remove the avatar from the world and close the session.
-        t)
+      (when-let ((avatar (gethash account-id *avatars*)))
+        (end-session avatar))
       (send-response socket request 200 "OK"
                      :cookies (list (cons *session-key-cookie* "invalid"))))
     (send-response socket request 400 "Bad Request")))
@@ -177,19 +203,16 @@ the client."
   (if-let ((client-key (websocket-validate-headers request)))
     (if-let ((session-key-values (validate-session-key (get-session-key request))))
       (bind (((username account-id nil) session-key-values))
-        ;; FIXME: don't reload avatar if it's in the world already.
-        (bind ((avatar location-id (load-avatar account-id)))
-          (format-log :info "loaded avatar for user ~a (account-id ~d) at location ~s"
-                      username account-id location-id)
-
-          ;; FIXME: why can this first write not successfully change the read-cb?
-          (as:write-socket-data socket (encode-http-response
-                                        (websocket-make-accept-response client-key)))
-
-          (start-session avatar socket request)
-          (enter-world avatar)
-          (enter-location avatar (find-location location-id) nil)))
-
+        ;; Complete the websocket handshake. FIXME: why can this first write
+        ;; not successfully change the read-cb?
+        (as:write-socket-data socket (encode-http-response
+                                      (websocket-make-accept-response client-key)))
+        (if-let ((avatar (gethash account-id *avatars*)))
+          (reconnect-session avatar socket request)
+          (bind ((avatar location-id (load-avatar account-id)))
+            (format-log :info "loaded avatar for user ~a (account-id ~d) at location ~s"
+                        username account-id location-id)
+            (start-session avatar location-id socket request))))
       (send-response socket request 401 "Unauthorized"))
     (send-response socket request 400 "Bad Request")))
 
@@ -197,8 +220,11 @@ the client."
 
 (defun handle-who-request (socket request)
   "Responds with a JSON-encoded summary of all connected players."
-  ;; FIXME: implement this.
-  (send-response socket request 200 "OK" :body "[]"))
+  (if (string= (http-request-method request) "HEAD")
+      (send-response socket request 200 "OK"
+                     :headers (list (cons "X-Num-Players" (hash-table-count *avatars*))))
+      ;; FIXME: implement this.
+      (send-response socket request 200 "OK" :body "[]")))
 
 (setf (gethash "/who" *request-handlers*) #'handle-who-request)
 
@@ -240,17 +266,17 @@ request."
               do
                  (destructuring-bind (opcode . payload) message
                    (cond
-                     ((= opcode +websocket-op-text+)
-                      (process-input avatar payload))
+                     ((= opcode +websocket-op-text+) (process-input avatar payload))
+                     ((= opcode +websocket-op-close+) (disconnect-session avatar))
                      (t
                       (format-log :warning "got unsupported websocket opcode ~d" opcode)
-                      (close-session avatar)))))
+                      (end-session avatar)))))
       (websocket-error (err)
         (format-log :warning "read invalid message, terminating session: ~s"
                     (apply #'format nil
                            (simple-condition-format-control err)
                            (simple-condition-format-arguments err)))
-        (close-session avatar)))))
+        (end-session avatar)))))
 
 (defun handle-connection (socket)
   "Associates an input buffer with a newly-connected socket."
@@ -261,15 +287,10 @@ request."
   (maphash-values #'enter-world *locations*))
 
 (defun stop-world ()
-  ;; Save all avatars and remove them from the world.
-  (format-log :info "closing ~d sessions" (hash-table-count *sessions*))
-  (maphash-values #'(lambda (session)
-                      (with-slots (account-id (ava avatar)) session
-                        (let ((location (entity-container ava)))
-                          (exit-location ava location nil)
-                          (exit-world ava)
-                          (save-avatar ava (entity-label location)))))
-                  *sessions*)
+  ;; Save all avatars and remove them from the world. Because end-session
+  ;; modifies *avatars*, iterate over a copy of the table's values.
+  (format-log :info "saving ~d avatars" (hash-table-count *avatars*))
+  (mapcar #'end-session (hash-table-values *avatars*))
   ;; Remove each location from the world.
   (format-log :info "stopping ~d locations" (hash-table-count *locations*))
   (maphash-values #'exit-world *locations*))
@@ -304,7 +325,7 @@ request."
        (as:exit-event-loop)))))
 
 (defun run-server ()
-  (clrhash *sessions*)
+  (clrhash *avatars*)
   (run-event-loop))
 
 (defun stop-server ()
