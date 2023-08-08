@@ -60,7 +60,8 @@ world.")
   (format-log :info "(~a) starting session for account-id ~d"
               (avatar-remote-ip avatar) (avatar-account-id avatar))
   (enter-world avatar)
-  (enter-location avatar (find-location location-id) nil))
+  (enter-location avatar (find-location location-id) nil)
+  (update-ui avatar))
 
 (defun disconnect-session (avatar)
   "Disconnects the avatar from its socket but does not remove the avatar from
@@ -78,8 +79,7 @@ the world, as when the player navigates away from the game page."
   (format-log :info "(~a) reconnected account-id ~d"
               (avatar-remote-ip avatar) (avatar-account-id avatar))
   (send-queued-messages avatar)
-  ;; TODO: other UI updates.
-  (show-location avatar))
+  (update-ui avatar :for-location t))
 
 (defun end-session (avatar)
   "Removes the avatar from the world, saves it, and closes the associated

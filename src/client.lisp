@@ -99,14 +99,56 @@ name and whose subsequent elements are arguments to that command."
      (format nil "~a says" (describe-brief speaker :capitalize t :article :definite))
      (format-text control-string args))))
 
-;;; Functions that update various UI elements.
+(defun announce (location control-string &rest args)
+  (when-let ((observers (? location :contents)))
+    (let ((message (format-text control-string args)))
+      (dolist (x observers)
+        (show-notice x message)))))
 
-(defun update-avatar (avatar &rest properties)
-  (send-client-command avatar "updateAvatar" (plist-hash-table properties)))
+;;; Update elements of the avatar status bar on top of the screen.
 
-(defun update-neighbor (avatar obj &rest properties)
-  ;; FIXME:
-  (declare (ignore avatar obj properties)))
+(defparameter *avatar-attributes*
+  #h(:name (lambda (a) (? a :name))
+     :race (lambda (a) (describe-brief (? a :race) :article nil))
+     :icon #'get-icon
+     :level (lambda (a) (? a :level))
+     :xp (lambda (a) (? a :xp))
+     :max-xp (lambda (a) (xp-required-for-level (1+ (? a :level))))))
+
+(defun update-avatar (avatar &rest keys)
+  (let ((attributes (loop for key in (or keys (hash-table-keys *avatar-attributes*))
+                          nconc (list key (funcall (gethash key *avatar-attributes*) avatar)))))
+    (send-client-command avatar "updateAvatar" (plist-hash-table attributes))))
+
+;;; Manage the neighbors panel.
+
+(defmethod neighbor-properties (entity)
+  (let ((properties #h(:key (entity-id entity)
+                       :brief (describe-brief entity :article nil)
+                       :icon (get-icon entity))))
+    (when-let ((max-health (? entity :max-health))
+               (health (? entity :health)))
+      (sethash* properties :health health :max-health max-health))
+    properties))
+
+(defun show-neighbors (avatar)
+  (send-client-command
+   avatar "setNeighbors"
+   (loop for entity in (? (entity-container avatar) :contents)
+         unless (eq entity avatar)
+           collect (neighbor-properties entity))))
+
+(defun update-neighbor (avatar neighbor &rest properties)
+  (send-client-command
+   avatar "updateNeighbor"
+   (if properties
+       (plist-hash-table (list* :key (entity-id neighbor) properties))
+       (neighbor-properties neighbor))))
+
+(defun remove-neighbor (avatar neighbor &optional message)
+  (send-client-command avatar "removeNeighbor" (entity-id neighbor) message))
+
+;;; Describe the current location.
 
 (defun show-location (avatar &optional location)
   (let ((location (or location (entity-container avatar))))
@@ -122,59 +164,17 @@ name and whose subsequent elements are arguments to that command."
              collect (list (entity-id obj) (describe-brief obj) (describe-pose obj))))))
 
 
-#|
-(defun show-announce (location control-string &rest args)
-  (let ((message (format-text control-string args)))
-    (dolist (x (contents location))
-      (show-notice x message))))
-
-;;; Functions that manage the pane which displays entities in the same location
-;;; as the player, aka neighbors.
-
-(defgeneric neighbor-properties (obj)
-  (:documentation "Returns a hash table of properties describing a neighbor, to
-    be sent to the client."))
-
-(defmethod neighbor-properties ((obj entity))
-  (plist-hash-table (list :key (entity-id obj)
-                          :brief (describe-brief obj :article nil)
-                          :icon (describe-icon obj))))
-
-(defun show-neighbors (avatar)
-  (when-let ((session (get-session avatar)))
-    (send-client-command
-     session "setNeighbors"
-     (mapcar #'neighbor-properties
-             (remove-if #'(lambda (x)
-                            (or (eq x avatar) (not (visiblep x avatar))))
-                        (contents (location avatar)))))))
-
-(defun update-neighbor (avatar obj &rest properties)
-  (when-let ((session (get-session avatar)))
-    (send-client-command session "updateNeighbor"
-                         (if properties
-                             (plist-hash-table (list* :key (id obj) properties))
-                             (neighbor-properties obj))
-                         nil)))
-
-(defun remove-neighbor (avatar obj &optional message)
-  (when-let ((session (get-session avatar)))
-    (send-client-command session "removeNeighbor"
-                         (id obj) message)))
-
 ;;; Functions that manage the equipment pane.
 
-(defun update-equipment (avatar slots)
-  (when-let ((session (get-session avatar)))
-    (with-slots (equipment) avatar
-      (send-client-command
-       session "updateEquipment"
-       (alist-hash-table
-        (loop for slot in slots
-              collect (cons slot (when-let ((item (gethash slot equipment)))
-                                   (list (describe-icon item)
-                                         (describe-brief item :article nil))))))))))
-|#
+(defun update-equipment (avatar &optional (slots *equipment-slots*))
+  (when-attributes (equipment) avatar
+    (send-client-command
+     avatar "updateEquipment"
+     (alist-hash-table
+      (loop for slot in slots
+            collect (cons slot (when-let ((item (gethash slot equipment)))
+                                 (list (get-icon item)
+                                       (describe-brief item :article nil)))))))))
 
 ;;; Cast bar for a non-modal activity.
 
@@ -207,3 +207,13 @@ name and whose subsequent elements are arguments to that command."
                                  (or (? location :surround) "")
                                  (or (? location :domain) "")
                                  (location-state location avatar))))))
+
+(defun update-ui (avatar &key for-location)
+  "Updates all client UI elements. Elements normally updated when entering a
+location are updated only if `for-location' is true."
+  (update-avatar avatar)
+  (update-equipment avatar)
+  (when for-location
+    (show-location avatar)
+    (show-map avatar)
+    (show-neighbors avatar)))

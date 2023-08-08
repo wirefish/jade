@@ -45,6 +45,22 @@
 (defmethod decode-value ((entity entity) (name (eql :materials)) value)
   (mapcar #'symbol-value value))
 
+;;; If the item is equippable, the `equippable-slot' attribute describes where
+;;; it can be equipped.
+
+(defparameter *equippable-slots*
+  '(:main-hand :off-hand :either-hand :both-hands :tool
+    :head :torso :back :hands :waist :legs :feet :ears :neck :either-wrist :either-finger
+    :backpack :belt-pouch)
+  "Descriptions of how an item may be equipped.")
+
+(defparameter *equipment-slots*
+  '(:main-hand :off-hand :both-hands :tool
+    :head :torso :back :hands :waist :legs :feet
+    :ears :neck :left-wrist :right-wrist :left-finger :right-finger
+    :backpack :belt-pouch)
+  "Descriptions of slots in which an item can actually be equipped.")
+
 ;;; The optional `required-skill' attribute specifies a skill and minimum rank
 ;;; in that skill that are required in order to use the item. If present it must
 ;;; be a two-element list containing a skill and an integer rank.

@@ -63,15 +63,7 @@ entering its initial location."))
 
 (defmethod enter-world ((actor avatar))
   ;; FIXME: start regen behavior
-  (with-attributes (name race icon level xp) actor
-    (update-avatar
-     actor
-     :name name
-     :race (describe-brief race :article nil)
-     :icon icon
-     :level level
-     :xp xp
-     :max-xp (xp-required-for-level (1+ level)))))
+  (call-next-method))
 
 ;;;
 
@@ -94,7 +86,8 @@ entering its initial location."))
 (defmethod enter-location ((actor avatar) location entry)
   (call-next-method)
   (show-location actor)
-  (show-map actor))
+  (show-map actor)
+  (show-neighbors actor))
 
 #| FIXME:
   (when-let ((msg (? location :tutorial)))

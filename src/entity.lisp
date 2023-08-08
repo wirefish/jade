@@ -206,3 +206,6 @@ all attributes."
   (or (? entity :full)
       (format nil "~a is unexceptional in every way."
               (describe-brief entity :article :definite :capitalize t))))
+
+(defun get-icon (entity)
+  (or (? entity :icon) (? entity :race :icon)))
