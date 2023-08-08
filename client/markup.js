@@ -69,7 +69,7 @@ function formatBlock(s) {
                   });
 
     // Another deviation: only inline links are used, and the title attribute isn't supported.
-    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/, '<a href="$2">$1</a>');
+    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
 
     return s;
 }
