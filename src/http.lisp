@@ -36,6 +36,10 @@ header for `request`."
   (let ((cookies (http-request-get-header request "Cookie")))
     (split-names-values (cl-ppcre:split ";\\s+" cookies) "=")))
 
+(defun http-request-get-cookie-value (name request)
+  (let ((cookies (http-request-get-cookies request)))
+    (cdr (assoc name cookies :test #'string-equal))))
+
 (defstruct http-response
   (version "HTTP/1.1")
   (status 200)

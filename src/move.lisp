@@ -92,9 +92,10 @@ entering its initial location."))
   (setf (entity-container actor) location))
 
 (defmethod enter-location ((actor avatar) location entry)
-  (call-next-method)
-  (show-location location actor)
-  (show-map actor))
+  (call-next-method))
+;; FIXME:
+;;  (show-location location actor)
+;;  (show-map actor))
 
 #| FIXME:
   (when-let ((msg (? location :tutorial)))

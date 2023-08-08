@@ -36,72 +36,54 @@ All updates for an avatar are collected and then sent as a single message.
 
 |#
 
-(defun send-message (session message)
-  "Sends a message to the socket associated with the session. If the session is
+(defun send-message (avatar message)
+  "Sends a message to the socket associated with the avatar. If the avatar is
 not connected (i.e. its socket is nil) then the message is queued so it can be
 sent later when `connect-session' is called."
   (let ((data (websocket-encode-message message))
-        (socket (session-socket session)))
+        (socket (avatar-socket avatar)))
     (if socket
         (as:write-socket-data socket data)
-        (queue-push data (session-output-queue session)))))
+        (queue-push data (avatar-output-queue avatar)))))
 
-(defun send-client-command (session command &rest args)
+(defun send-client-command (avatar command &rest args)
   "Sends a message that contains a JSON array whose first element is a command
 name and whose subsequent elements are arguments to that command."
   (let ((message (with-output-to-string (s) (encode-json #h(:fn command :args args) s))))
-    (if session
-        (send-message session message)
-        (print message))
-    nil))
+    (send-message avatar message)))
 
 ;;;; Functions used to send information to the client.
 
 (defun format-text (control-string args)
   (if args (apply #'format nil control-string args) control-string))
 
+(defun show-text (target client-fn control-string &optional args)
+  (when (typep target 'avatar)
+    (send-client-command target client-fn (format-text control-string args))))
+
 (defun show (target control-string &rest args)
-  (when-let ((session (get-session target)))
-    (send-client-command session "showText" (format-text control-string args))))
+  (show-text target "showText" control-string args))
 
 (defun show-notice (target control-string &rest args)
-  (when-let ((session (get-session target)))
-    (send-client-command session "showNotice" (format-text control-string args))))
+  (show-text target "showNotice" control-string args))
 
 (defun show-error (target control-string &rest args)
-  (when-let ((session (get-session target)))
-    (send-client-command session "showError" (format-text control-string args))))
+  (show-text target "showError" control-string args))
 
 (defun show-raw (target control-string &rest args)
-  (when-let ((session (get-session target)))
-    (send-client-command session "showRaw" (format-text control-string args))))
-
-(defun show-action (observer message &rest args)
-  (when-let ((session (get-session observer)))
-    (send-client-command session "showText" (apply message observer args))))
-
-(defun show-observers (observers message event &rest args)
-  (dolist (observer observers)
-    (when observer
-      (when message
-        (apply #'show-action observer message args))
-      (apply #'observe-event observer event args))))
+  (show-text target "showRaw" control-string args))
 
 (defun show-tutorial-message (target message)
-  (when-let ((session (get-session target)))
-    (send-client-command session "showTutorial" message)))
+  (show-text target "showTutorial" message))
 
 (defun show-help (target message)
-  (when-let ((session (get-session target)))
-    (send-client-command session "showHelp" message)))
+  (show-text target "showHelp" message))
 
-(defun show-links (target heading prefix links)
-  (when-let ((session (get-session target)))
-    (send-client-command session "showLinks" heading prefix links)))
+(defun show-links (avatar heading prefix links)
+  (send-client-command avatar "showLinks" heading prefix links)))
 
 (defun update-avatar (avatar &rest properties)
-  (when-let ((session (get-session avatar)))
-    (send-client-command session "updateAvatar" (plist-hash-table properties))))
+  (send-client-command avatar "updateAvatar" (plist-hash-table properties)))
 
 (defun update-neighbor (avatar obj &rest properties)
   ;; FIXME:

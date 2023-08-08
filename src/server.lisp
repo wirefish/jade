@@ -1,5 +1,40 @@
 (in-package :jade)
 
+;;; Sessions.
+
+(defvar *avatars* (make-hash-table)
+  "A mapping from account-id to avatar object for all avatars present in the
+world.")
+
+(defparameter *session-key-cookie* "jade-session-key"
+  "The name of the cookie used to store the session key.")
+
+(defun get-session-key (request)
+  (http-request-get-cookie-value *session-key-cookie* request))
+
+(defun start-session (avatar socket request)
+  (setf (avatar-socket avatar) socket)
+  (setf (avatar-remote-ip avatar) (http-request-get-header request "X-Real-IP"))
+  (setf (avatar-input-buffer avatar) (as:socket-data socket))
+  (setf (as:socket-data socket) avatar)
+  ;; NOTE: This write serves only to change the read callback.
+  (as:write-socket-data socket "" :read-cb #'read-websocket-message)
+  avatar)
+
+(defun close-session (avatar)
+  (save-avatar avatar (entity-label (entity-container avatar)))
+  ;; TODO: save the avatar
+  (format-log :info "(~a) closing session for account-id ~d"
+              (avatar-remote-ip avatar)
+              (avatar-account-id avatar))
+  (exit-location avatar (entity-container avatar) nil :force t)
+  (exit-world avatar)
+  (as:close-socket (avatar-socket avatar))
+  (setf (avatar-socket avatar) nil)
+  (remhash (avatar-account-id avatar) *avatars*))
+
+;;;
+
 (defun send-response (socket request status reason &key body headers cookies)
   "Sends an HTTP response and closes the socket once the send completes."
   (let ((response (make-http-response :status status :reason reason
@@ -9,17 +44,15 @@
       (destructuring-bind (name . value) cookie
         (http-response-set-cookie response name value)))
     (as:write-socket-data socket (encode-http-response response)
-                          :write-cb #'as:close-socket)))
-
-;; Name of the cookie used to store the session key.
-(defparameter *session-key-cookie* "jade-session-key")
-
-(defun get-session-for-request (request)
-  (let* ((cookies (http-request-get-cookies request))
-         (session-key (cdr (assoc *session-key-cookie* cookies :test #'string-equal))))
-    (gethash session-key *sessions*)))
+                          :write-cb #'as:close-socket)
+    (format-log :info "(~a) ~d ~a"
+                (http-request-get-header request "X-Real-IP")
+                status
+                (http-request-path request))))
 
 (defun get-authorization-for-request (request)
+  "If `request' contains a basic HTTP authorization header, returns the
+associated username and password."
   (let ((auth (http-request-get-header request "Authorization")))
     (when (and auth (equal (subseq auth 0 5) "Basic"))
       (cl-ppcre:split ":" (babel:octets-to-string
@@ -28,49 +61,42 @@
 
 ;;; HTTP request handlers
 
-;; Mapping from URI path to handler function for all HTTP requests.
-(defvar *request-handlers* (make-hash-table :test 'equal))
+(defvar *request-handlers* (make-hash-table :test 'equal)
+  "Mapping from URI path to handler function for all HTTP requests.")
 
 (defun handle-auth-request (socket request)
   "Checks the session key in the request. If it is present and valid, returns a
-  200 response with the associated username in the body. Otherwise return a 401
-  response."
-  (let ((session (get-session-for-request request)))
-    (if session
-        ;; The client's session key is still valid; return success with the
-        ;; username in the body.
-        (send-response socket request 200 "OK"
-                       :body (format nil "{\"username\": ~s}~%" (session-username session)))
-        ;; The client needs to login.
-        (send-response socket request 401 "Unauthorized"))))
+200 response with the associated username in the body. Otherwise return a 401
+response."
+  (if-let ((username (car (validate-session-key (get-session-key request)))))
+    (send-response socket request 200 "OK"
+                   :body (format nil "{\"username\": ~s}~%" username))
+    (send-response socket request 401 "Unauthorized")))
 
 (setf (gethash "/auth" *request-handlers*) #'handle-auth-request)
 
-(defun create-session (socket request account-id username)
-  (let* ((session (make-session :account-id account-id :username username)))
-    (setf (gethash (session-key session) *sessions*) session)
-    (format-log :info "created session ~a for user ~a" (session-key session) username)
+(defun send-login-response (username account-id socket request)
+  (let ((session-key (make-session-key username account-id)))
     (send-response socket request 200 "OK"
-                   :cookies (list (cons *session-key-cookie* (session-key session)))
-                   :body (format nil "{\"username\": ~s}~%" username))))
+                   :cookies (list (cons *session-key-cookie* session-key))
+                   :body (format nil "{\"username\": ~s}~%" username))
+    session-key))
 
 (defun handle-login-request (socket request)
   "If the request contains an Authorization header, extracts the username and
-password and attempts to create a new session for the user. On success, sends a
-200 response with the username in the body; otherwise, sends a 401 response. If
-no Authorization header is present, sends a 400 response."
-  (let ((auth (get-authorization-for-request request)))
-    (if auth
-        ;; Check the username and password.
-        (destructuring-bind (username password) auth
-          (if-let ((account-id (authenticate username password)))
-            ;; Create a new session.
-            (create-session socket request account-id username)
-            ;; Authentication failed.
-            (send-response socket request 401 "Unauthorized"
-                           :body (format nil "Invalid username or password.~%"))))
-        ;; The request is invalid.
-        (send-response socket request 400 "Bad Request"))))
+password and attempts to authenticate the user. On success, sends a 200 response
+with the username in the body and a new session key in a cookie; otherwise,
+sends a 401 response. If no Authorization header is present, sends a 400
+response."
+  (if-let ((auth (get-authorization-for-request request)))
+    ;; Check the username and password.
+    (destructuring-bind (username password) auth
+      (if-let ((account-id (authenticate username password)))
+        (send-login-response username account-id socket request)
+        (send-response socket request 401 "Unauthorized"
+                       :body (format nil "Invalid username or password.~%"))))
+    ;; The request is invalid.
+    (send-response socket request 400 "Bad Request")))
 
 (setf (gethash "/login" *request-handlers*) #'handle-login-request)
 
@@ -79,87 +105,61 @@ no Authorization header is present, sends a 400 response."
 
 (defun handle-create-request (socket request)
   "If the request contains an Authorization header, attempts to create a new
-account. On success, sends a 200 response with the username in the body. If the
-username or password is invalid or the username is already in use, sends a 401
-response with a description of the problem in the body. If the Authorization
-header is missing, sends a 400 response."
+account. On success, sends a 200 response with the username in the body and a
+new session key in a cookie. If the username or password is invalid or the
+username is already in use, sends a 401 response with a description of the
+problem in the body. If the Authorization header is missing, sends a 400
+response."
   (if-let ((auth (get-authorization-for-request request)))
     ;; The request contains a proposed username and password.
     (destructuring-bind (username password) auth
       (if-let ((problem (or (validate-username username) (validate-password password))))
-        ;; The username and/or password is not structurally valid.
         (send-response socket request 401 "Unauthorized" :body (format nil "~s~%" problem))
         (if-let ((account-id (create-account username password (create-avatar)
                                              (gethash :new-avatar-location *config*))))
-          ;; The account was created. Create a new session.
-          (create-session socket request account-id username)
-          ;; The account could not be created, generally because the
-          ;; account name is already in use.
+          (send-login-response username account-id socket request)
           (send-response socket request 401 "Unauthorized"
                          :body (format nil "Username already exists.~%")))))
-    ;; The request is invalid.
     (send-response socket request 400 "Bad Request")))
 
 (setf (gethash "/create" *request-handlers*) #'handle-create-request)
 
 (defun handle-logout-request (socket request)
-  (if-let ((session (get-session-for-request request)))
+  (if-let ((session-key (get-session-key request)))
     (progn
-      (close-session session)
-      (send-response socket request 200 "OK"))
+      (when-let ((avatar (gethash session-key *sessions*)))
+        ;; FIXME: remove the avatar from the world and close the session.
+        t)
+      (send-response socket request 200 "OK"
+                     :cookies (list (cons *session-key-cookie* "invalid"))))
     (send-response socket request 400 "Bad Request")))
 
 (setf (gethash "/logout" *request-handlers*) #'handle-logout-request)
 
-(defun start-session (socket session)
-  "Called when the user creates a websocket connection associated with a specific
-session. This can occur multiple times for a single session."
-  ;; TODO: load avatar if not already present in session. Send intro text, map
-  ;; update, room description and contents, etc.
-  (format-log :info "starting session ~a for user ~a"
-              (session-key session) (session-username session))
-  ;; NOTE: This write serves only to change the read callback.
-  (as:write-socket-data socket "" :read-cb #'read-websocket-message)
-  (send-client-command session "setAvatar" 12345)  ; FIXME:
-  (connect-session session socket))
-
 (defun handle-session-request (socket request)
   "Validates the request headers to ensure this is a websocket handshake. If not,
-return 400. Validate the session key cookie; if it is not valid return 401. On
-success, send the server handshake and change the read-cb to start reading
-websocket messages. Also write initial updates to the client."
-  (let ((client-key (websocket-validate-headers request)))
-    (if (null client-key)
-        ;; The websocket handshake is not valid.
-        (send-response socket request 400 "Bad Request")
-        ;; Look for the session key.
-        (let* ((cookies (http-request-get-cookies request))
-               (session-key (cdr (assoc *session-key-cookie* cookies :test #'string-equal)))
-               (session (gethash session-key *sessions*)))
-          (if session
-              ;; Accept the request, associate this socket with the session, and
-              ;; load the avatar into the world if this is a new session.
-              (progn
-                (setf (session-input-buffer session) (as:socket-data socket))
-                (setf (as:socket-data socket) session)
-                ;; FIXME: why can this first write not successfully change the read-cb?
-                (as:write-socket-data socket (encode-http-response
-                                              (websocket-make-accept-response client-key)))
-                (when (null (session-avatar session))
-                  ;; This is the first connection to this section. Load the
-                  ;; avatar object and place it into the world.
-                  (multiple-value-bind (avatar location-id)
-                      (load-avatar (session-account-id session))
-                    (format-log :info "loaded avatar ~s at location ~a"
-                                avatar location-id)
-                    (setf (session-avatar session) avatar)
-                    (setf (avatar-session avatar) session)
-                    (enter-world avatar)
-                    (enter-location avatar (find-location location-id) nil)))
-                (start-session socket session))
-              ;; The session key is missing or invalid; the player needs to
-              ;; authenticate.
-              (send-response socket request 401 "Unauthorized"))))))
+sends a 400 response. Validates the session key cookie; if it is not valid,
+returns a 401 response. On success, sends the server handshake and changes the
+read-cb to start reading websocket messages. Finally, sends initial updates to
+the client."
+  (if-let ((client-key (websocket-validate-headers request)))
+    (if-let ((session-key-values (validate-session-key (get-session-key request))))
+      (bind (((username account-id nil) session-key-values))
+        ;; FIXME: don't reload avatar if it's in the world already.
+        (bind ((avatar location-id (load-avatar account-id)))
+          (format-log :info "loaded avatar for user ~a (account-id ~d) at location ~s"
+                      username account-id location-id)
+
+          ;; FIXME: why can this first write not successfully change the read-cb?
+          (as:write-socket-data socket (encode-http-response
+                                        (websocket-make-accept-response client-key)))
+
+          (start-session avatar socket request)
+          (enter-world avatar)
+          (enter-location avatar (find-location location-id) nil)))
+
+      (send-response socket request 401 "Unauthorized"))
+    (send-response socket request 400 "Bad Request")))
 
 (setf (gethash "/session" *request-handlers*) #'handle-session-request)
 
@@ -186,52 +186,39 @@ websocket messages. Also write initial updates to the client."
 (defparameter *crlfcrlf* #(13 10 13 10))
 
 (defun read-request-headers (socket data)
-  "Appends `data` to the buffer for `socket` and interprets all buffered data as
+  "Appends `data' to the buffer for `socket' and interprets all buffered data as
 HTTP request headers. If a complete set of headers is present, consumes them
 from the buffer and dispatches the request based on the path specified in the
 request."
   (let ((buffer (as:socket-data socket)))
     (buffer-push buffer data)
-    (let ((end-of-headers (buffer-find buffer *crlfcrlf*)))
-      (when end-of-headers
-        (let ((request (parse-http-request (buffer-get buffer end-of-headers))))
-          (format-log :info "(~a) received request ~a"
-                  (http-request-get-header request "X-Real-IP")
-                  (http-request-path request))
-          (buffer-consume buffer (+ end-of-headers (length *crlfcrlf*)))
-          (if-let ((handler (gethash (http-request-path request) *request-handlers*)))
-            (funcall handler socket request)
-            (send-response socket request 404 "Not Found")))))))
-
-(defun close-session (session)
-  ;; TODO: save the avatar
-  (format-log :info "closing session ~s" (session-key session))
-  (let ((avatar (session-avatar session)))
-    (exit-location avatar (entity-container avatar) nil :force t)
-    (exit-world avatar))
-  (as:close-socket (session-socket session))
-  (remhash (session-key session) *sessions*))
+    (when-let ((end-of-headers (buffer-find buffer *crlfcrlf*)))
+      (let ((request (parse-http-request (buffer-get buffer end-of-headers))))
+        (buffer-consume buffer (+ end-of-headers (length *crlfcrlf*)))
+        (if-let ((handler (gethash (http-request-path request) *request-handlers*)))
+          (funcall handler socket request)
+          (send-response socket request 404 "Not Found"))))))
 
 (defun read-websocket-message (socket data)
-  (let ((session (as:socket-data socket)))
-    (buffer-push (session-input-buffer session) data)
+  (let ((avatar (as:socket-data socket)))
+    (buffer-push (avatar-input-buffer avatar) data)
     (handler-case
-        (loop for message = (websocket-decode-message (session-input-buffer session))
+        (loop for message = (websocket-decode-message (avatar-input-buffer avatar))
               while message
               do
                  (destructuring-bind (opcode . payload) message
                    (cond
                      ((= opcode +websocket-op-text+)
-                      (process-input (session-avatar session) payload))
+                      (process-input avatar payload))
                      (t
                       (format-log :warning "got unsupported websocket opcode ~d" opcode)
-                      (close-session session)))))
+                      (close-session avatar)))))
       (websocket-error (err)
         (format-log :warning "read invalid message, terminating session: ~s"
                     (apply #'format nil
                            (simple-condition-format-control err)
                            (simple-condition-format-arguments err)))
-        (close-session session)))))
+        (close-session avatar)))))
 
 (defun handle-connection (socket)
   "Associates an input buffer with a newly-connected socket."

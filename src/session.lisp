@@ -1,26 +1,40 @@
 (in-package :jade)
 
-;; A mapping from session keys to session objects.
-(defvar *sessions* (make-hash-table :test #'equal))
+;;; Session keys.
 
-(defun make-session-key ()
-  (ironclad:byte-array-to-hex-string (ironclad:make-random-salt)))
+(defparameter *signing-key* (ironclad:random-data 32)
+  "A secret key used when signing and validating session keys.")
 
-;;; NOTE: The socket, session, and avatar have a number of references between
-;;; themselves, as follows:
-;;;
-;;; socket -> session
-;;; session -> socket and avatar
-;;; avatar -> session
+(defparameter *signature-length* 32
+  "The length of the array returned by the `signature' function.")
+
+(defparameter *session-key-valid-seconds* 30
+  "The maximum allowed time between the generation of a session key and its
+first use to create a new session.")
+
+(defun signature (data)
+  (let ((mac (ironclad:make-mac :hmac *signing-key* :sha256)))
+    (ironclad:update-mac mac data)
+    (ironclad:produce-mac mac)))
+
+(defun make-session-key (username account-id)
+  (let* ((msg (write-to-string (list username account-id (get-universal-time))))
+         (data (babel:string-to-octets msg :encoding :utf-8))
+         (sig (signature data)))
+    (cl-base64:usb8-array-to-base64-string (concatenate '(vector (unsigned-byte 8)) data sig))))
+
+(defun validate-session-key (key)
+  (ignore-errors
+   (let* ((key (cl-base64:base64-string-to-usb8-array key))
+          (sep (- (length key) *signature-length*))
+          (msg (subseq key 0 sep)))
+     (when (equalp (subseq key sep) (signature msg))
+       (let ((msg (babel:octets-to-string msg :encoding :utf-8)))
+         (read-from-string msg))))))
 
 (defstruct session
-  (key (make-session-key))
-  account-id
-  username
-  remote-ip
-  avatar
-  location
   socket
+  remote-ip
   input-buffer
   (output-queue (make-queue)))
 
@@ -30,18 +44,3 @@
     nil)
   (:method ((entity avatar))
     (slot-value entity 'session)))
-
-(defun connect-session (session socket)
-  "Associates a socket with a session and sends any queued output messages."
-  (setf (session-socket session) socket)
-  ;; FIXME:? (setf (as:socket-data socket) session)
-  (loop while (not (queue-empty (session-output-queue session))) do
-       (let ((data (queue-pop (session-output-queue session))))
-         (as:write-socket-data socket data))))
-
-(defun disconnect-session (session)
-  "Removes the references between `session' and the associated socket, if any."
-  (let ((socket (session-socket session)))
-    (when socket
-      (setf (as:socket-data socket) nil)))
-  (setf (session-socket session) nil))

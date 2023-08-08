@@ -23,7 +23,13 @@
 (defclass avatar (entity)
   ;; TODO: document slots
   ((avatar-id :initarg :avatar-id :initform nil :accessor avatar-id)
-   (session :initform nil :accessor avatar-session)
+   (account-id :initform nil :accessor avatar-account-id)
+   ;; Slots related to the client connection.
+   (socket :initform nil :accessor avatar-socket)
+   (remote-ip :initform nil :accessor avatar-remote-ip)
+   (input-buffer :initform nil :accessor avatar-input-buffer)
+   (output-queue :initform (make-queue) :accessor avatar-output-queue)
+   ;; Slots related to game mechanics.
    (tutorials-on :initform t :accessor tutorials-on)
    (tutorials-seen :initform (make-hash-table) :accessor tutorials-seen)
    (dirty-tutorials :initform nil :accessor dirty-tutorials)

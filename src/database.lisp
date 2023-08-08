@@ -137,6 +137,7 @@ failure."
              account-id)
           (let ((avatar (decode-entity (from-string avatar-data))))
             (setf (avatar-id avatar) avatar-id
+                  (avatar-account-id avatar) account-id
                   (finished-quests avatar) (load-finished-quests avatar-id)
                   (tutorials-seen avatar) (load-tutorials-seen avatar-id))
             (values avatar (from-string location)))))
