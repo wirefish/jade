@@ -190,12 +190,10 @@ name and whose subsequent elements are arguments to that command."
 ;;; Cast bar for a non-modal activity.
 
 (defun start-casting (avatar duration)
-  (when-let ((session (get-session avatar)))
-    (send-client-command session "startPlayerCast" duration)))
+  (send-client-command avatar "startPlayerCast" duration))
 
 (defun stop-casting (avatar)
-  (when-let ((session (get-session avatar)))
-    (send-client-command session "stopPlayerCast")))
+  (send-client-command avatar "stopPlayerCast"))
 
 ;;; Map.
 
