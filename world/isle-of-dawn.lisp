@@ -34,6 +34,10 @@
 
 ;;; pavilion
 
+(defentity hat (item)
+  (:brief "a floppy felt hat"
+   :equippable-slot :head))
+
 (defentity spirit-warden ()
   (:brief "the spirit warden"
    :pose "stands nearby, smiling amiably."
@@ -66,5 +70,5 @@
      They may provide useful information or offer rewards if you perform actions
      on their behalf. For example, type `talk warden` to talk to the spirit
      warden. He may have something interesting to say."
-   :contents (spirit-warden)
+   :contents (spirit-warden hat)
    :exits ((gravel-path :north hilltop :south wildflower-field))))

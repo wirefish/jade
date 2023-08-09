@@ -60,6 +60,7 @@ present, display a more detailed description of matching items."
   (remhash slot (? actor :equipment))
   (push item (? actor :inventory))
   (update-equipment actor (list slot))
+  (update-inventory actor (list item))
   (show actor "You place ~a into your backpack." (describe-brief item)))
 
 (defcommand unequip (actor ("unequip" "un") item "from" slot)
@@ -78,8 +79,7 @@ item is removed from a specific equipment slot."
             (t
              (show actor "Do you want to unequip ~a?"
                    (format-list (lambda (m) (describe-brief (cdr m))) matches)))))
-        (show actor "Which item do you want to unequip?"))
-    (show actor "You do not have any items equipped.")))
+        (show actor "Which item do you want to unequip?"))))
 
 ;;; Equip an item: move an item from inventory to an equipment slot. If an item
 ;;; is already in that slot, it is unequipped first. If no item is specified,
@@ -123,9 +123,10 @@ item is removed from a specific equipment slot."
       t)))
 
 (defmethod equip ((actor avatar) item slot)
-  (remove item (? actor :inventory))
+  (deletef (? actor :inventory) item)
   (sethash slot (? actor :equipment) item)
   (update-equipment actor (list slot))
+  (update-inventory actor nil (list item))
   (show actor "You equip ~a." (describe-brief item)))
 
 (defcommand equip (actor ("equip" "eq") item "on" slot)
@@ -138,7 +139,7 @@ be returned to your inventory.
 If an item can be equipped in multiple slots, such as a ring which can be worn
 on either hand, you can use \"on *slot*\" to specify the slot to use. For
 example, `equip gold ring on left finger`."
-  ;; FIXME: slot
+  ;; FIXME: slot. also deal with things like :either-finger, :both-hands, etc.
   (if item
       (bind ((matches quality (find-matches-if (lambda (x) (? x :equippable-slot)) item
                                                (? actor :inventory))))
@@ -147,7 +148,7 @@ example, `equip gold ring on left finger`."
            (show actor "You are not carrying anything equippable that matches \"~a\"."
                  (join-tokens item)))
           ((or (eq quality :exact) (= (length matches) 1))
-           (equip actor (first matches) slot))
+           (equip actor (first matches) (? (first matches) :equippable-slot)))
           (t
            (show actor "Do you want to equip ~a?"
                  (format-list #'describe-brief matches)))))

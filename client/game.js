@@ -235,12 +235,12 @@ MessageHandler.prototype.updateInventory = function(items) {
 }
 
 MessageHandler.prototype.updateEquipment = function(equipment) {
-    for (var slot in equipment) {
+    for (const slot in equipment) {
         var div = document.getElementById('equip_' + slot);
-        var item = equipment[slot];
-        if (item) {
-            setIcon(div, item.icon);
-            div.innerHTML = item.brief;
+        if (equipment[slot]) {
+            const [icon, brief] = equipment[slot];
+            setIcon(div, icon);
+            div.innerHTML = brief;
         } else {
             div.style.backgroundImage = 'none';
             div.innerHTML = null;
