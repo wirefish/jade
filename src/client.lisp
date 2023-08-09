@@ -96,7 +96,8 @@ name and whose subsequent elements are arguments to that command."
     (send-client-command
      target
      "showSay"
-     (format nil "~a says" (describe-brief speaker :capitalize t :article :definite))
+     (describe-brief speaker :capitalize t :article :definite)
+     "says"
      (format-text control-string args))))
 
 (defun announce (location control-string &rest args)
