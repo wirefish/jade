@@ -58,7 +58,9 @@ prototype and attributes initialized from `keys-values'."
 
 (defmacro defentity (name (&optional proto-name) attributes &body behavior)
   (with-gensyms (proto entity)
-    `(let* ((,proto ,(when proto-name `(find-entity ',proto-name)))
+    `(let* ((,proto ,(when proto-name
+                         `(or (find-entity ',proto-name)
+                              (error "unknown prototype ~s" ',proto-name))))
             (,entity (define-entity ',name ,proto
                        ,@(loop for (key value) on attributes by #'cddr
                                nconc (list key
@@ -190,20 +192,27 @@ all attributes."
 
 ;;;
 
-(defvar *default-brief* (parse-noun "an entity"))
+(defgeneric describe-brief (entity &key quantity article capitalize)
+  (:documentation "Returns a string that briefly describes an entity."))
 
-(defun describe-brief (entity &key (quantity 1) (article :indefinite) capitalize)
+(defmethod describe-brief ((entity null) &key quantity article capitalize)
+  (declare (ignore quantity article capitalize))
+  "<null>")
+
+(defparameter *default-brief* (parse-noun "an entity"))
+
+(defmethod describe-brief ((entity entity) &key (quantity 1) (article :indefinite) capitalize)
   (or (? entity :name)
-      (format-noun (or (? entity :brief) (? entity :race :brief) *default-brief*)
+      (format-noun (or (? entity :brief) *default-brief*)
                    :quantity quantity :article article :capitalize capitalize)))
 
-(defvar *default-pose* (parse-verb "is here."))
+(defparameter *default-pose* (parse-verb "is here."))
 
 (defun describe-pose (entity &key (quantity 1))
   (format-verb (or (? entity :pose) *default-pose*) :quantity quantity))
 
 (defun describe-full (entity)
-  (or (? entity :full)
+  (or (? entity :description)
       (format nil "~a is unexceptional in every way."
               (describe-brief entity :article :definite :capitalize t))))
 

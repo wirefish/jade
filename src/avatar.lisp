@@ -1,22 +1,5 @@
 (in-package :jade)
 
-;;; An avatar has an associated race that defines some baseline properties for
-;;; the avatar. An avatar's race can change over time.
-
-(defvar *races* (make-hash-table))
-
-(defstruct race
-  name brief icon traits)
-
-(defmacro defrace (name &body body)
-  `(progn
-     (setf (gethash ',name *races*)
-           (make-race :name ',name ,@body))  ;; FIXME: transforms
-     (export ',name)))
-
-(defun find-race (name)
-  (gethash name *races*))
-
 ;;; An avatar is an entity that represents a player in the world. It defines
 ;;; additional slots used internally by the server.
 
@@ -38,19 +21,14 @@
    (dirty-quests :initform nil :accessor dirty-quests)
    (pending-offer :initform nil :accessor pending-offer)))
 
-(sethash 'avatar *named-entities* (make-instance 'avatar))
+(sethash 'avatar *named-entities* (make-instance 'avatar :label 'avatar))
 
 (defmethod print-object ((obj avatar) stream)
   (print-unreadable-object (obj stream :type t :identity t)
     (write (avatar-id obj) :stream stream)))
 
 (defmethod transform-initval ((name (eql :race)) value)
-  `(find-race ',value))
-
-(defmacro for-avatars-in ((var location) &body body)
-  `(dolist (,var (? ,location :contents))
-     (when (entity-isa ,var 'avatar)
-       ,@body)))
+  `(find-entity ',value))
 
 ;;; Encoding and decoding for avatar slots and attributes.
 
@@ -88,6 +66,20 @@
 (defmethod decode-value ((entity avatar) (name (eql :skills)) data)
   ;; TODO:
   nil)
+
+;;;
+
+(defmethod describe-brief ((avatar avatar) &key quantity (article :indefinite) capitalize)
+  (declare (ignore quantity))
+  (or (? avatar :name)
+      (describe-brief (? avatar :race) :article article :capitalize capitalize)))
+
+;;;
+
+(defmacro for-avatars-in ((var location) &body body)
+  `(dolist (,var (? ,location :contents))
+     (when (typep ,var 'avatar)
+       ,@body)))
 
 ;;;
 

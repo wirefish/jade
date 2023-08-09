@@ -31,7 +31,7 @@
 (defun find-command (verb)
   (gethash verb *commands*))
 
-(defmacro defcommand ((actor verbs &rest clauses) &body body)
+(defmacro defcommand (name (actor verbs &rest clauses) &body body)
   (bind ((verbs (if (listp verbs) verbs (list verbs)))
          (clauses (loop for (preps param) on (if (stringp (car clauses)) clauses
                                                  (cons nil clauses))
@@ -47,12 +47,33 @@
       (lambda ,params
         ,(or doc "No documentation provided.")
         (declare (ignorable ,@params))
-        ,@body))))
+        (block ,name
+          ,@body)))))
 
 (defun get-all-command-verbs ()
   (sort (remove-duplicates (loop for command being the hash-values in *commands*
                                  collect (first (command-verbs command))))
         #'string<))
+
+;;;
+
+(defun match-one (actor tokens candidates none-message many-message)
+  (let ((matches (find-matches tokens candidates)))
+    (case (length matches)
+      (0
+       (show actor none-message (join-tokens tokens))
+       nil)
+      (1 (first matches))
+      (t
+       (show actor many-message (format-list #'describe-brief matches "or"))
+       nil))))
+
+(defun match-some (actor tokens candidates none-message)
+  (let ((matches (find-matches tokens candidates)))
+    (or matches
+        (progn
+          (show actor none-message (join-tokens tokens))
+          nil))))
 
 ;;;
 

@@ -19,17 +19,18 @@ true, do not allow observers to disallow the action."))
 
 (defmethod exit-location (actor location exit &key force)
   (declare (ignore force))
+  ;; FIXME: (stop-activity actor)
   (remove actor (? location :contents))
+  (setf (entity-container actor) nil)
   (for-avatars-in (avatar location)
     (remove-neighbor avatar actor)))
 
-#|
-(defmethod exit-location (actor location exit &key)
-  (stop-activity actor)
-  (remove-from-container location actor)
-  (dolist (observer (contents location))
-    (remove-neighbor observer actor)))
-|#
+(defmethod exit-location ((actor avatar) location exit &key force)
+  (declare (ignore force))
+  ;; FIXME: check for exit message.
+  (when exit
+    (show actor "You head ~a." (direction-name (exit-dir exit))))
+  (call-next-method))
 
 ;;;
 
@@ -78,10 +79,11 @@ entering its initial location."))
     (notify-observers observers :after-enter-location actor location entry)))
 
 (defmethod enter-location (actor location entry)
-  (dolist (observer (? location :contents))
-    (update-neighbor observer actor))
   (push actor (? location :contents))
-  (setf (entity-container actor) location))
+  (setf (entity-container actor) location)
+  (for-avatars-in (avatar location)
+    (unless (eq avatar actor)
+      (update-neighbor avatar actor))))
 
 (defmethod enter-location ((actor avatar) location entry)
   (call-next-method)
@@ -114,18 +116,18 @@ entering its initial location."))
 
 ;;;
 
-#|
-(defcommand (actor "go" direction)
+(defcommand move (actor "go" direction)
   "Move in a specified direction; for example, `go north`. See `help:movement`
-  for more information."
-  (let ((matches (find-matches direction
-                               (contents (location actor))
-                               (exits (location actor)))))
+for more information."
+  (let* ((location (entity-container actor))
+         (matches (find-matches direction
+                                (? location :contents)
+                                (? location :exits))))
     (case (length matches)
       (0 (show actor "You can't go that way."))
-      (1 (traverse-portal actor (location actor) (first matches)))
+      (1 (traverse-portal actor location (first matches)))
       (otherwise (show actor "Do you want to go ~a?"
-                       (format-list #'describe-brief matches))))))
+                       (format-list #'describe-brief matches "or"))))))
 
 (maphash-keys #'(lambda (dir)
                   (let ((command (format nil "go ~a" (direction-name dir))))
@@ -133,4 +135,3 @@ entering its initial location."))
                     (when-let ((abbrev (direction-abbrev dir)))
                       (make-alias abbrev command))))
               *directions*)
-|#

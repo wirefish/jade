@@ -1,6 +1,6 @@
 (in-package :jade.isle-of-dawn)
 
-(defentity isle-location ()
+(defentity isle-location (location)
   (:domain :outdoor
    :surface :grass))
 

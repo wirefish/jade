@@ -58,6 +58,13 @@
 (defmethod observe-event ((observer exit) event &rest args)
   (apply #'observe-event (exit-portal observer) event args))
 
+;;; A location is a subclass of entity only so it can be used to specialize
+;;; generic functions.
+
+(defclass location (entity) ())
+
+(sethash 'location *named-entities* (make-instance 'location :label 'location))
+
 ;;; Use `deflocation' to create an actual location in the world.
 
 (defvar *locations* (make-hash-table)
@@ -67,9 +74,10 @@ starting and stopping simulation.")
 (defun find-location (name)
   (gethash name *locations*))
 
-(defmacro deflocation (name (&optional proto) attributes &body behaviors)
+(defmacro deflocation (name (&optional (proto 'location)) attributes &body behaviors)
   (with-gensyms (loc)
     `(let ((,loc (defentity ,name (,proto) ,attributes ,@behaviors)))
+       (assert (typep ,loc 'location))
        (sethash ',name *locations* ,loc)
        ,loc)))
 
@@ -88,3 +96,10 @@ starting and stopping simulation.")
                      collect `(register-exit ,dir ',dest ',portal-name ,@portal-args)))))
     `(list ,@(loop for group in value
                    nconc (transform-exit-group group)))))
+
+;;;
+
+(defun location (entity)
+  "Returns the entity's container if it is a location, or nil otherwise."
+  (let ((c (entity-container entity)))
+    (when (typep c 'location) c)))

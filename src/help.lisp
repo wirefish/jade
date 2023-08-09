@@ -13,7 +13,7 @@
       (when stream
         (read-stream-content-into-string stream)))))
 
-(defcommand (actor "help" topic)
+(defcommand help (actor "help" topic)
   "The help command can be used to get information on a variety of general topics
 or details about a specific command. For information on a specific topic or
 command, type `help` followed by the subject of interest; for example, `help

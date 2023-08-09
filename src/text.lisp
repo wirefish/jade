@@ -142,3 +142,19 @@ examples showing the resulting article, singular, and plural:
   (parse-verb (read stream t nil t)))
 
 (set-dispatch-macro-character #\# #\v #'|#v-reader|)
+
+;;; Other text utilities.
+
+(defun format-list (fn items &optional (conjunction "and"))
+  "Returns a string that formats the result of applying `fn' to each value in
+`items' as a comma-separated list, using `conjunction' before the last item with
+an Oxford comma as appropriate."
+  (if-let ((items (if fn (mapcar fn items) items)))
+    (if (null conjunction)
+        (format nil "~{~a~^, ~}" items)
+        (case (length items)
+          (1 (car items))
+          (2 (format nil "~a ~a ~a" (car items) conjunction (cadr items)))
+          (t (format nil "~{~a~^, ~}, ~a ~a"
+                     (butlast items) conjunction (car (last items))))))
+    ""))

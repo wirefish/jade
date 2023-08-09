@@ -27,6 +27,7 @@
            #:item
            #:defmaterial
 
+           #:location
            #:deflocation
 
            #:avatar

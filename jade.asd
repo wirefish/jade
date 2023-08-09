@@ -25,13 +25,14 @@
              (:file "location")
              (:file "avatar")
              (:file "match")
-             (:file "command")
              (:file "config")
              (:file "database")
              (:file "map")
              (:file "client")
+             (:file "command")
 
              (:file "help")
+             (:file "inspect")
              (:file "move")
 
              (:file "server")
