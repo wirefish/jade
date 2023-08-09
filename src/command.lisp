@@ -33,13 +33,14 @@
 
 (defmacro defcommand (name (actor verbs &rest clauses) &body body)
   (bind ((verbs (if (listp verbs) verbs (list verbs)))
-         (clauses (loop for (preps param) on (if (stringp (car clauses)) clauses
-                                                 (cons nil clauses))
-                        by #'cddr
-                        collect (cons param (etypecase preps
-                                              (keyword preps)
-                                              (list preps)
-                                              (string (list preps))))))
+         (clauses (when clauses
+                    (loop for (preps param) on (if (stringp (car clauses)) clauses
+                                                   (cons nil clauses))
+                          by #'cddr
+                          collect (cons param (etypecase preps
+                                                (keyword preps)
+                                                (list preps)
+                                                (string (list preps)))))))
          (params (cons actor (mapcar #'car clauses)))
          (body nil doc (parse-body body :documentation t)))
     `(register-command
