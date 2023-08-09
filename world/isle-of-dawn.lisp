@@ -11,6 +11,13 @@
 
 ;;; hilltop
 
+(defentity standing-stone ()
+  (:brief "a standing stone"
+   :description "You count nine stones, each about 12 feet tall and four feet
+     wide. The faint remains of ornate tracery are barely visible upon their
+     weathered surfaces."
+   :implicit t))
+
 (deflocation hilltop (isle-location)
   (:name "Hilltop"
    :description "You are standing atop a low hill in the center of a small
@@ -29,7 +36,7 @@
 
      Head `south` to begin your adventure!"
 
-   :contents nil
+   :contents (standing-stone)
    :exits ((gravel-path :south pavilion))))
 
 ;;; pavilion
