@@ -35,6 +35,7 @@
              (:file "inspect")
              (:file "inventory")
              (:file "move")
+             (:file "talk")
 
              (:file "server")
              ))
