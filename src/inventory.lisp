@@ -311,14 +311,14 @@ location."
 
 (defmethod receive ((actor avatar) item source)
   ;; FIXME: add a message if resulting encumbrance is over 100%.
-  (insert-item actor :inventory item)
   (if source
       (show actor "~a gives you ~a."
             (describe-brief source :article :definite :capitalize t)
             (describe-brief item))
       (show actor "You receive ~a." (describe-brief item)))
+  (let ((stack (insert-item actor :inventory item)))
+    (update-inventory actor (list stack)))
   (check-encumbrance actor))
-
 
 ;;; Discard an item.
 
