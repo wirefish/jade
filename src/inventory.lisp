@@ -170,6 +170,9 @@ from `container'."))
      (show actor "~a is too large for you to carry."
            (describe-brief item :capitalize t))
      nil)
+    ((not (can-insert-item actor :inventory item))
+     (show actor "You cannot carry any more ~a."
+           (describe-brief item :quantity t)))
     (t
      (let ((observers (list actor item container)))
        (when (observers-allow-p observers :allow-take actor item container)

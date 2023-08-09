@@ -38,6 +38,10 @@
   (:brief "a floppy felt hat"
    :equippable-slot :head))
 
+(defentity rock (item)
+  (:brief "a rock"
+   :stackable t))
+
 (defentity spirit-warden ()
   (:brief "the spirit warden"
    :pose "stands nearby, smiling amiably."
@@ -70,5 +74,5 @@
      They may provide useful information or offer rewards if you perform actions
      on their behalf. For example, type `talk warden` to talk to the spirit
      warden. He may have something interesting to say."
-   :contents (spirit-warden hat)
+   :contents (spirit-warden hat (rock :quantity 5))
    :exits ((gravel-path :north hilltop :south wildflower-field))))
