@@ -9,7 +9,7 @@
    (ancestry :initarg :ancestry :initform nil :reader entity-ancestry)
    (container :initarg :container :initform nil :accessor entity-container)
    (attributes :initarg :attributes :initform (make-hash-table) :accessor entity-attributes)
-   (behavior :initform nil :accessor entity-behavior)))
+   (behavior :initarg :behavior :initform nil :accessor entity-behavior)))
 
 (defmethod initialize-instance :after ((entity entity) &key)
   (with-slots (label proto ancestry) entity
@@ -31,11 +31,13 @@
 (defun find-entity (label &optional default)
   (gethash label *named-entities* default))
 
-(defun define-entity (label proto &rest keys-values)
+(defun define-entity (label proto &rest attributes)
   "Creates a named entity with a given prototype."
   (let ((entity (make-instance (if proto (type-of proto) 'entity)
                                :label label :proto proto)))
-    (apply #'sethash* (slot-value entity 'attributes) keys-values)
+    (when-let ((b (and proto (slot-value proto 'behavior))))
+      (setf (entity-behavior entity) (copy-hash-table b)))
+    (apply #'sethash* (slot-value entity 'attributes) attributes)
     (sethash label *named-entities* entity)
     entity))
 
@@ -48,7 +50,7 @@
     (error "unknown prototype ~s" proto-name)))
 
 (defmethod clone-entity ((proto entity) &rest attributes)
-  (let ((clone (make-instance (type-of proto) :proto proto)))
+  (let ((clone (make-instance (type-of proto) :proto proto :behavior (entity-behavior proto))))
     (apply #'sethash* (slot-value clone 'attributes) attributes)
     clone))
 
