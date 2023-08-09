@@ -69,21 +69,26 @@ specific event."
                     '((disallow-action () (return-from handler-body :disallow-action)))))
          ,@body))))
 
-(defun constraint-test (param constraint)
+(defun make-constraint-test (observer param constraint)
   "Returns an expression that evaluates to true if the value of `param'
 satisfies `constraint'."
-  (if (symbolp constraint)
-      `(entity-isa ,param ',constraint)
-      (destructuring-bind (fn . args) constraint
-        `(,fn ,param ,@args))))
+  (cond
+    ((eq constraint 'self)
+     `(eq ,param ,observer))
+    ((symbolp constraint)
+     `(entity-isa ,param ',constraint))
+    (t
+     (destructuring-bind (fn . args) constraint
+       `(,fn ,param ,@args)))))
 
 (defun make-event-handler-test (params constraints)
   "Returns a lambda expression that implements the test function for an event
 handler."
-  (let ((tests (loop for param in params for constraint in constraints when constraint
-                     collect (constraint-test param constraint))))
-    `(lambda ,params
-       (declare (ignorable ,@params))
+  (let* ((observer (gensym))
+         (tests (loop for param in params for constraint in constraints when constraint
+                     collect (make-constraint-test observer param constraint))))
+    `(lambda (,observer ,@params)
+       (declare (ignorable ,observer ,@params))
        ,(if tests `(and ,@tests) t))))
 
 (defmacro defbehavior (entity &body clauses)
@@ -105,7 +110,7 @@ handler."
   (:method ((observer entity) event &rest args)
     (let ((handlers (? observer 'behavior event)))
       (loop for handler in handlers do
-        (when (apply (event-handler-test handler) args)
+        (when (apply (event-handler-test handler) observer args)
           (let ((x (apply (event-handler-fn handler) observer args)))
             (unless (eq x :call-next-handler)
               (return-from observe-event x))))))))
@@ -119,3 +124,6 @@ handler."
     (when (eq (apply #'observe-event observer event args) :disallow-action)
       (return-from observers-allow-p nil)))
   t)
+
+(defun reacts-to-event-p (observer event)
+  (not (null (? observer 'behavior event))))
