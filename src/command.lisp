@@ -130,5 +130,6 @@ its own token, even if not delimited by whitespace."
           (setf verb (first tokens)))
         (let ((command (find-command verb)))
           (if command
-              (run-command avatar command (rest tokens))
+              (log-run-time :debug verb
+                (run-command avatar command (rest tokens)))
               (show-error avatar "Unknown command ~s. Type \"help\" for help.~%" verb)))))))

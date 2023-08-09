@@ -27,6 +27,12 @@
   (print-unreadable-object (obj stream :type t :identity t)
     (write (avatar-id obj) :stream stream)))
 
+(defmethod clone-entity ((proto avatar) &rest attributes)
+  (declare (ignore attributes))
+  (let ((clone (call-next-method)))
+    (setf (? clone :equipment) (make-hash-table :test #'eq))
+    clone))
+
 (defmethod transform-initval ((name (eql :race)) value)
   `(find-entity ',value))
 
@@ -74,6 +80,10 @@
   (or (? avatar :name)
       (describe-brief (? avatar :race) :article article :capitalize capitalize)))
 
+(defmethod match-subject (tokens (subject avatar))
+  (best-match-quality (call-next-method)
+                      (match-subject tokens (? subject :race))))
+
 ;;;
 
 (defmacro for-avatars-in ((var location) &body body)
@@ -89,7 +99,23 @@
 (defun xp-required-for-level (level)
   (+ (* 1000 level) (* 200 level (1- level))))
 
-;;;
+;;; The `:inventory' slot is a list of items carried by the avatar.
+
+;;; The `:equipment' attribute is a hash table mapping from equipment slots to
+;;; equipped items.
+
+(defparameter *equipment-slots*
+  '(:main-hand :off-hand :both-hands :tool
+    :head :torso :back :hands :waist :legs :feet
+    :ears :neck :left-wrist :right-wrist :left-finger :right-finger
+    :backpack :belt-pouch)
+  "Descriptions of slots in which an avatar can equip an item.")
+
+(defun equipped-items (avatar &rest slots)
+  (when-attributes (equipment) avatar
+    (if slots
+        (loop for slot in slots collect (gethash slot equipment))
+        (hash-table-values equipment))))
 
 #|
 (defun change-race (avatar race-id)

@@ -34,8 +34,7 @@ something in a specific place, add *container*. For example, `look at dagger on
 desk`. Finally, add *tool* to use a specific item in your inventory to aid your
 inspection. For example, `look at jewel with magnifying glass`.
 
-To look at items in your inventory or equipment, use the `inventory look`
-command."
+To look at items in your inventory or equipment, use the `inventory` command."
   (let ((tool (when tool
                 (or (match-one actor tool (? actor :inventory)
                                "You aren't carrying anything that matches \"~a\"."

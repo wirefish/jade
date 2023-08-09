@@ -39,12 +39,17 @@
     (sethash label *named-entities* entity)
     entity))
 
-(defun clone-entity (entity &rest keys-values)
-  "Creates an anonymous entity (i.e. one without a label) with `entity' as its
-prototype and attributes initialized from `keys-values'."
-  (let* ((proto (if (symbolp entity) (find-entity entity) entity))
-         (clone (make-instance (type-of proto) :proto proto)))
-    (apply #'sethash* (slot-value clone 'attributes) keys-values)
+(defgeneric clone-entity (proto &rest attributes)
+  (:documentation "Creates an new anonymous entity with `proto' as its prototype."))
+
+(defmethod clone-entity ((proto-name symbol) &rest attributes)
+  (if-let ((proto (find-entity proto-name)))
+    (apply #'clone-entity proto attributes)
+    (error "unknown prototype ~s" proto-name)))
+
+(defmethod clone-entity ((proto entity) &rest attributes)
+  (let ((clone (make-instance (type-of proto) :proto proto)))
+    (apply #'sethash* (slot-value clone 'attributes) attributes)
     clone))
 
 ;;; A mechanism for transforming initializer forms in `defproto' and similar
@@ -201,10 +206,11 @@ all attributes."
 
 (defparameter *default-brief* (parse-noun "an entity"))
 
-(defmethod describe-brief ((entity entity) &key (quantity 1) (article :indefinite) capitalize)
+(defmethod describe-brief ((entity entity) &key quantity (article :indefinite) capitalize)
   (or (? entity :name)
       (format-noun (or (? entity :brief) *default-brief*)
-                   :quantity quantity :article article :capitalize capitalize)))
+                   :quantity (or quantity (? entity :quantity) 1)
+                   :article article :capitalize capitalize)))
 
 (defparameter *default-pose* (parse-verb "is here."))
 

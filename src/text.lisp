@@ -158,3 +158,21 @@ an Oxford comma as appropriate."
           (t (format nil "~{~a~^, ~}, ~a ~a"
                      (butlast items) conjunction (car (last items))))))
     ""))
+
+(defun parse-quantity (token)
+  "Interprets `token' as a possible quantity. Returns either an integer, `t' if
+the token indicates 'all', or `nil' if the token does not describe a quantity."
+  (multiple-value-bind (num length) (parse-integer token :junk-allowed t)
+    (cond
+      ((= length (length token)) num)
+      ((article-p token) 1)
+      ((or (string-equal token "all") (string-equal token "every")) t))))
+
+(defun split-quantity (tokens)
+  "Returns two values. If the first token indicates a quantity, the primary
+value is the rest of the tokens, and the secondary is the indicated quantity.
+Otherwise, the primary value is `tokens' and the secondary value is `nil'."
+  (unless (null tokens)
+    (if-let ((quantity (parse-quantity (car tokens))))
+      (values (cdr tokens) quantity)
+      tokens)))
