@@ -163,6 +163,17 @@ name and whose subsequent elements are arguments to that command."
            when (and (not (eq obj avatar)) (not (? obj :implicit)))  ; FIXME: (visiblep obj viewer))
              collect (list (entity-id obj) (describe-brief obj) (describe-pose obj))))))
 
+;;;
+
+(defun update-inventory (avatar added-items &optional removed-items)
+  (let ((arg (make-hash-table :test #'equal)))
+    (loop for item in added-items
+          do (sethash (to-string (entity-id item)) arg
+                      (list (get-icon item)
+                            (describe-brief item :article nil))))
+    (loop for item in removed-items
+          do (sethash (to-string (entity-id item)) arg nil))
+    (send-client-command avatar "updateInventory" arg)))
 
 ;;; Functions that manage the equipment pane.
 

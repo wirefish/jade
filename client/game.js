@@ -208,27 +208,28 @@ MessageHandler.prototype.hideAura = function(key) {
     }
 }
 
-MessageHandler.prototype.updateInventory = function(inventory) {
+MessageHandler.prototype.updateInventory = function(items) {
     var contents_div = document.getElementById('inventory_contents');
 
-    for (var id in inventory) {
+    for (const id in items) {
         var div = document.getElementById('inv_' + id);
-        var item = inventory[id];
-        if (item) {
-            // Add or update item.
-            if (div) {
-                div.innerHTML = item.brief;
-            } else {
-                div = document.createElement('div');
-                div.id = 'inv_' + id;
-                setIcon(div, item.icon);
-                div.innerHTML = item.brief;
-                contents_div.insertBefore(div, null);
-            }
-        } else {
+        const item = items[id];
+        if (item == null) {
             // Remove item.
             if (div)
                 div.parentNode.removeChild(div);
+        } else {
+            // Add or update item.
+            const [icon, brief] = item;
+            if (div) {
+                div.innerHTML = brief;
+            } else {
+                div = document.createElement('div');
+                div.id = 'inv_' + id;
+                setIcon(div, icon);
+                div.innerHTML = brief;
+                contents_div.insertBefore(div, null);
+            }
         }
     }
 }
@@ -383,7 +384,7 @@ MessageHandler.prototype.createNeighbor = function(properties) {
     return item;
 }
 
-MessageHandler.prototype.setNeighbors = function(...new_neighbors) {
+MessageHandler.prototype.setNeighbors = function(new_neighbors) {
     var neighbors = document.getElementById("neighbors");
 
     // Remove all but the first child, which is the invisible prototype used to
