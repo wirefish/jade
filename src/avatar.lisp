@@ -114,7 +114,7 @@
 ;;; equipped items.
 
 (defparameter *equipment-slots*
-  '(:main-hand :off-hand :both-hands :tool
+  '(:main-hand :off-hand :tool
     :head :torso :back :hands :waist :legs :feet
     :ears :neck :left-wrist :right-wrist :left-finger :right-finger
     :backpack :belt-pouch)

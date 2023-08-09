@@ -224,6 +224,7 @@ name and whose subsequent elements are arguments to that command."
 location are updated only if `for-location' is true."
   (update-avatar avatar)
   (update-equipment avatar)
+  (update-inventory avatar (? avatar :inventory))
   (when for-location
     (show-location avatar)
     (show-map avatar)
