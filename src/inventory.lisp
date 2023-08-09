@@ -190,20 +190,25 @@ want to take. Otherwise, you take items from your location."
                                              place (? (location actor) :contents))
                             (list (location actor)))))
         (case (length containers)
-          (0 (show actor "There is no container here that matches \"~a\"." (join-tokens place)))
+          (0 (show actor "You don't see a container that matches \"~a\"." (join-tokens place)))
           (1 (bind ((container (first containers))
                     (tokens quantity (split-quantity thing))
                     (targets quality (find-matches tokens (? container :contents))))
                (cond
                  ((null targets)
                   (if (eq container (location actor))
-                      (show actor "You don't see anything like that here.")
-                      (show actor "You don't see anything like that ~a the ~a."
+                      (show actor "You don't see anything that matches \"~a\"."
+                            (join-tokens thing))
+                      (show actor "You don't see anything that matches \"~a\" ~a the ~a."
+                            (join-tokens thing)
                             "in" ; FIXME: (contents-location container)
                             (describe-brief container :article nil))))
                  ((or (eq quality :exact) (= (length targets) 1))
                   (dolist (target targets)
-                    (take actor (or quantity t) target container :contents)))
+                    (if (entity-isa target 'item)
+                        (take actor (or quantity t) target container :contents)
+                        (show actor "You cannot take ~a."
+                              (describe-brief target :article :definite)))))
                  (t
                   (show actor "Do you want to take ~a?"
                         (format-list #'describe-brief targets "or"))))))
