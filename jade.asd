@@ -33,6 +33,7 @@
 
              (:file "help")
              (:file "inspect")
+             (:file "inventory")
              (:file "move")
 
              (:file "server")

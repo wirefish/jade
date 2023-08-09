@@ -33,6 +33,7 @@
            #:avatar
 
            #:show
+           #:show-notice
            #:tell
            ))
 

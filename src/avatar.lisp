@@ -42,10 +42,10 @@
   '(tutorials-on active-quests))
 
 (defmethod encode-value ((entity avatar) (name (eql :race)) value)
-  (when value (race-name value)))
+  (when value (entity-label value)))
 
 (defmethod decode-value ((entity avatar) (name (eql :race)) data)
-  (when (symbolp data) (gethash data *races*)))
+  (when (symbolp data) (find-entity data)))
 
 (defmethod encode-value ((entity avatar) (name (eql :inventory)) value)
   (mapcar #'encode-entity value))
@@ -126,16 +126,14 @@
         (loop for slot in slots collect (gethash slot equipment))
         (hash-table-values equipment))))
 
-#|
-(defun change-race (avatar race-id)
-  (when-let ((race (find-race race-id)))
-    (setf (race avatar) race)
-    (update-avatar avatar :race (describe-brief race :article nil))
-    (show-notice avatar "You are now ~a!" (describe-brief race))))
+;;; The `:race' attribute is an entity that defines some base attributes of the
+;;; avatar.
 
-(defun change-gender (avatar gender)
-  (setf (gender avatar) gender)
-  (show-notice avatar "You are now a ~(~a~)!" gender))
+#|
+(defun change-race (avatar race)
+  (setf (? avatar :race) race)
+    (update-avatar avatar :race (describe-brief race :article nil))
+    (show-notice avatar "You are now ~a!" (describe-brief race)))
 
 (defun validate-name (name)
   "If `name' is a valid avatar name after stripping trailing punctuation, then
