@@ -214,8 +214,9 @@ all attributes."
 
 (defparameter *default-pose* (parse-verb "is here."))
 
-(defun describe-pose (entity &key (quantity 1))
-  (format-verb (or (? entity :pose) *default-pose*) :quantity quantity))
+(defun describe-pose (entity &key quantity)
+  (format-verb (or (? entity :pose) *default-pose*)
+               :quantity (or quantity (? entity :quantity) 1)))
 
 (defun describe-full (entity)
   (or (? entity :description)

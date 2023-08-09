@@ -101,6 +101,15 @@
 
 ;;; The `:inventory' slot is a list of items carried by the avatar.
 
+(defun encumbrance (avatar)
+  (float (/ (apply #'+ (loop for item in (? avatar :inventory)
+                             collect (* (? item :size) (? item :quantity))))
+            (+ 100 (* 0.1 (or (? avatar :strength) 0))))))
+
+(defun check-encumbrance (avatar)
+  (when (>= (encumbrance avatar) 1.0)
+    (show-notice avatar "You are encumbered.")))
+
 ;;; The `:equipment' attribute is a hash table mapping from equipment slots to
 ;;; equipped items.
 

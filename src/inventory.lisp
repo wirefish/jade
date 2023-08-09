@@ -161,11 +161,20 @@ example, `equip gold ring on left finger`."
 from `container'."))
 
 (defmethod take :around (actor quantity item container slot)
-  (let ((observers (list actor item container)))
-    (when (observers-allow-p observers :allow-take actor item container)
-      (notify-observers observers :before-take actor item container)
-      (notify-observers observers :after-take actor (call-next-method) container)
-      t)))
+  (cond
+    ((not (entity-isa item 'item))
+     (show actor "You cannot take ~a." (describe-brief item :article :definite))
+     nil)
+    ((> (or (? item :size) +medium+) (or (? actor :size) +medium+))
+     (show actor "~a is too large for you to carry."
+           (describe-brief item :capitalize t))
+     nil)
+    (t
+     (let ((observers (list actor item container)))
+       (when (observers-allow-p observers :allow-take actor item container)
+         (notify-observers observers :before-take actor item container)
+         (notify-observers observers :after-take actor (call-next-method) container)
+         t)))))
 
 (defmethod take (actor quantity item container slot)
   (remove-item container slot item quantity))
@@ -178,7 +187,11 @@ from `container'."))
               (describe-brief removed)
               (describe-brief container :article :definite)))
     (insert-item actor :inventory removed)
+    (check-encumbrance actor)
     removed))
+
+(defun find-containers (tokens candidates)
+  (find-matches-if (lambda (x) (has-attributes x :contents)) tokens candidates))
 
 (defcommand take (actor ("take" "get") thing ("from" "in" "on" "off") place)
   "Take an item from your environment and place it into your inventory. If *place*
@@ -186,8 +199,7 @@ is provided, it describes an object in your location that contains the items you
 want to take. Otherwise, you take items from your location."
   (if thing
       (let ((containers (if place
-                            (find-matches-if (lambda (x) (has-attributes x :contents))
-                                             place (? (location actor) :contents))
+                            (find-containers place (? (location actor) :contents))
                             (list (location actor)))))
         (case (length containers)
           (0 (show actor "You don't see a container that matches \"~a\"." (join-tokens place)))
@@ -205,10 +217,7 @@ want to take. Otherwise, you take items from your location."
                             (describe-brief container :article nil))))
                  ((or (eq quality :exact) (= (length targets) 1))
                   (dolist (target targets)
-                    (if (entity-isa target 'item)
-                        (take actor (or quantity t) target container :contents)
-                        (show actor "You cannot take ~a."
-                              (describe-brief target :article :definite)))))
+                    (take actor (or quantity t) target container :contents)))
                  (t
                   (show actor "Do you want to take ~a?"
                         (format-list #'describe-brief targets "or"))))))
@@ -216,73 +225,97 @@ want to take. Otherwise, you take items from your location."
                    (format-list #'describe-brief containers "or")))))
       (show actor "What do you want to take?")))
 
-;;; Put items from inventory into a container in the environment.
+;;; Place items from inventory into a container in the environment.
 
-(defmethod put :around (actor quantity item container)
+(defgeneric put (actor quantity item container slot)
+  (:documentation "called when `actor' attempts to place `quantity' of `item'
+into `container'."))
+
+(defmethod put :around (actor quantity item container slot)
   (cond
-    ((bound item)
+    ((? item :bound)
      (show actor "You cannot drop ~a because it is bound to you."
-           (describe-brief item :article :definite)))
+           (describe-brief item :article :definite))
+     nil)
+    ((? item :quest)
+     (show actor "You cannot drop ~a because it is associated with a quest."
+           (describe-brief item :article :definite))
+     nil)
     (t
      (let ((observers (list actor item container)))
-       (when (observers-allow observers :allow-put actor item container)
+       (when (observers-allow-p observers :allow-put actor item container)
          (notify-observers observers :before-put actor item container)
-         (notify-observers observers :after-put actor (call-next-method) container))))))
+         (notify-observers observers :after-put actor (call-next-method) container)
+         t)))))
 
-(defmethod put ((actor avatar) quantity item container)
-  (let ((removed (remove-from-container (inventory actor) item :quantity quantity)))
+(defmethod put ((actor avatar) quantity item container slot)
+  (let ((removed (remove-item actor :inventory item quantity)))
     (if (eq container (location actor))
         (show actor "You drop ~a." (describe-brief removed))
         (show actor "You put ~a ~a ~a."
               (describe-brief removed)
-              (contents-location container)
+              "in" ; FIXME: (contents-location container)
               (describe-brief container :article :definite)))
-    (add-to-container container removed)
+    (insert-item container slot removed)
     removed))
 
-(defcommand (actor ("put" "drop") thing ("in" "on" "into") place)
+(defcommand put (actor ("put" "drop" "place") thing ("in" "on" "into" "onto") place)
   "Remove an item from your inventory and place it into your environment. If
-  *place* is provided, it describes a container in your location into which you
-  wish to place the item. Otherwise, you drop the item on the floor at your
-  location."
+*place* is provided, it describes a container in your location into which you
+wish to place the item. Otherwise, you drop the item on the floor at your
+location."
   (if thing
-      (let+ (((&values tokens quantity) (split-quantity thing))
-             ((&values items quality) (find-matches tokens (contents (inventory actor)))))
+      (bind ((tokens quantity (split-quantity thing))
+             (items quality (find-matches tokens (? actor :inventory))))
         (cond
           ((null items)
-           (show actor "You aren't carrying anything like that."))
+           (show actor "You aren't carrying anything that matches \"~a\"." (join-tokens thing)))
           ((and (eq quality :partial) (> (length items) 1))
-           (show actor "Do you mean ~a?" (format-list #'describe-brief items "or")))
+           (show actor "Do you want to drop ~a?" (format-list #'describe-brief items "or")))
           (t
            (let ((containers (if place
-                                 (find-containers actor place (location actor))
+                                 (find-containers place (? (location actor) :contents))
                                  (list (location actor)))))
              (case (length containers)
                (0
-                (show actor "There is nothing like that here that can contain items."))
+                (show actor "You see nothing matching \"~a\" that can contain items."
+                      (join-tokens place)))
                (1
                 (dolist (item items)
-                  (put actor
-                       (if (eq quantity :all) (quantity item) quantity)
-                       item (first containers))))
+                  (put actor (or quantity t) item (first containers) :contents)))
                (t
-                (show actor "Do you want to move items to ~a?"
+                (show actor "Do you want to place items into ~a?"
                       (format-list #'describe-brief containers "or"))))))))
       (show actor "What do you want to drop?")))
 
+;;; Give an item to an NPC or some other sink.
+
+;; TODO:
+
 ;;; Receive a newly-created item from an NPC or some other source.
+
+(defgeneric receive (actor item source)
+  (:documentation "Called when `actor' receives `item' from `source'."))
 
 (defmethod receive :around (actor item source)
   (let ((observers (list actor item source)))
-    (notify-observers observers :before-receive actor item source)
-    (call-next-method)
-    (notify-observers observers :after-receive actor item source)))
+    (when (observers-allow-p observers :allow-receive actor item source)
+      (notify-observers observers :before-receive actor item source)
+      (call-next-method)
+      (notify-observers observers :after-receive actor item source)
+      t)))
 
 (defmethod receive ((actor avatar) item source)
   ;; FIXME: add a message if resulting encumbrance is over 100%.
-  (add-to-container (inventory actor) item)
+  (insert-item actor :inventory item)
   (if source
       (show actor "~a gives you ~a."
             (describe-brief source :article :definite :capitalize t)
             (describe-brief item))
-      (show actor "You receive ~a." (describe-brief item))))
+      (show actor "You receive ~a." (describe-brief item)))
+  (check-encumbrance actor))
+
+
+;;; Discard an item.
+
+;; TODO:
