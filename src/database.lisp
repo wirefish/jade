@@ -160,7 +160,7 @@ failure."
 (defun reset-tutorials (avatar-id)
   (sqlite:execute-non-query
    *db*
-   "delete from tutorials where avatar_id = ?" avatar-id))
+   "delete from tutorials_seen where avatar_id = ?" avatar-id))
 
 (defun update-tutorials-seen (avatar-id tutorial-ids)
   (dolist (tutorial-id tutorial-ids)

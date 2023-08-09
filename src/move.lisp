@@ -89,14 +89,9 @@ entering its initial location."))
   (call-next-method)
   (show-location actor)
   (show-map actor)
-  (show-neighbors actor))
-
-#| FIXME:
+  (show-neighbors actor)
   (when-let ((msg (? location :tutorial)))
-    (show-tutorial actor (entity-label location) msg))
-  (show-map actor 3)
-(show-neighbors actor))
-|#
+    (maybe-show-tutorial actor (entity-label location) msg)))
 
 ;;; Combine exit-location and enter-location.
 

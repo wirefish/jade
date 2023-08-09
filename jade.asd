@@ -32,6 +32,7 @@
              (:file "command")
 
              (:file "help")
+             (:file "tutorial")
              (:file "inspect")
              (:file "inventory")
              (:file "move")

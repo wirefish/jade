@@ -81,7 +81,7 @@ name and whose subsequent elements are arguments to that command."
 (defun show-raw (target control-string &rest args)
   (show-text target "showRaw" control-string args))
 
-(defun show-tutorial-message (target message)
+(defun show-tutorial (target message)
   (show-text target "showTutorial" message))
 
 (defun show-help (target message)
