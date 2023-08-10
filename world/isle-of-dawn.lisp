@@ -164,3 +164,57 @@
    :contents (officious-kobold low-table umbrella)
    :exits ((gravel-path :north pavilion :south clothing-stall
                         :west human-shrine))))
+
+;;; human-shrine
+
+(defentity human-caretaker ()
+  (:brief "the human caretaker"
+   :pose "stands nearby with a welcoming expression."
+   :description "The caretaker is a tall, athletic woman wearing a practical
+     leather outfit and a broad-brimmed hat. Various gardening tools hang from
+     her wide leather belt.")
+
+  (:when-talk ((actor &race human) self topic)
+    (tell self actor "Well hello, fellow human!"))
+
+  (:when-talk (actor self topic)
+    (tell self actor "Hello, traveler. I imagine you are curious about humans.
+      Here is what I can tell you.
+
+      First and foremost, humans are known for their optimism and their
+      adaptability. We feel like we can do anything, and do it well. Perhaps
+      you've heard the expression, \"Jack of all trades, master of none?\" Some
+      might consider it a negative, but we humans take pride in our ability to
+      do a little bit of everything.
+
+      Second, humans are especially noted for their skill as gatherers and
+      farmers. We are adept at using our ingenuity to extract the bounty of the
+      earth.
+
+      If you want to join humankind, `meditate` here. I will then use the power of
+      the shrine to complete your transformation.")))
+
+(deflocation human-shrine (isle-location)
+  (:name "Shrine of Humanity"
+   :description "This part of the isle is a large garden. Plants bearing
+     flowers, fruits, and vegetables are arranged in orderly rows. The soil is
+     dark and fertile."
+   :contents (human-caretaker)
+   :exits ((gravel-path :east wildflower-field :north elven-shrine
+                        :west ogre-shrine)))
+
+  (:after-meditate (actor)
+    (if (eq (quest-phase actor 'choose-a-race) 'meditate)
+        (progn
+          (show actor "A calming warmth suffuses your being. The caretaker
+            smiles broadly as she reaches out to you with her open hand, holding
+            it inches from your ghostly form. She smiles broadly as the warmth
+            spreads to her hand.
+
+            After a moment she closes her palm. You see a faint glow between her
+            fingers which quickly grows brighter. When she opens her hand she
+            holds a tiny seedling, its delicate leaves unfolding before your
+            eyes.")
+          (change-race actor 'human)
+          (advance-quest actor 'choose-a-race))
+        (show actor "The caretaker nods in approval."))))
