@@ -60,6 +60,9 @@
 
 ;;;
 
+(defun join-tokens (tokens)
+  (format nil "~{~a~^ ~}" tokens))
+
 (defun match-one (actor tokens candidates none-message many-message)
   (let ((matches (find-matches tokens candidates)))
     (case (length matches)

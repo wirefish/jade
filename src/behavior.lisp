@@ -76,8 +76,10 @@ satisfies `constraint'."
     ((eq (first constraint) 'self)
      `(eq ,param ,observer))
     ((eq (first constraint) '&quest)
-     (destructuring-bind (quest phase) (rest constraint)
-       `(eq (quest-phase ,param ',quest) ',phase)))
+     (destructuring-bind (quest &optional phase) (rest constraint)
+       (if phase
+           `(eq (quest-phase ,param ',quest :as-label t) ',phase)
+           `(eq (quest-label ,param) ',quest))))
     ((symbolp (first constraint))
      `(entity-isa ,param ',(first constraint)))
     (t

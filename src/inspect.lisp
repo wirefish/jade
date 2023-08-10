@@ -20,9 +20,6 @@
   ;; TODO: use tool
   (show actor (describe-full subject)))
 
-(defun join-tokens (tokens)
-  (format nil "~{~a~^ ~}" tokens))
-
 (defcommand look (actor "look" "at" subject ("in" "on") container ("with" "using") tool)
   "Look at something in your environment. By just typing `look`, you will see a
 description of your current location and a summary of the entities present
@@ -71,3 +68,17 @@ To look at items in your inventory or equipment, use the `inventory` command."
          (show actor "The ~a contains ~a."
                (describe-brief  container :article nil)
                (format-list #'describe-brief matches)))))))
+
+;;;
+
+(defcommand dump (actor "dump" subject)
+  "Prints the raw representation of matching entities."
+  (cond
+    ((or (null subject) (equalp subject '("self")))
+     (show-raw actor (write-to-string (encode-entity actor))))
+    (t
+     (if-let ((matches (find-matches subject (? (location actor) :contents))))
+       (loop for match in matches do
+         (show-raw actor (write-to-string (encode-entity match))))
+       (show actor "There is nothing here that matches \"~a\"."
+             (join-tokens subject))))))

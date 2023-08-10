@@ -18,6 +18,7 @@
            #:clone-entity
            #:defentity
            #:with-attributes
+           #:describe-brief
 
            #:defbehaviors
            #:disallow-action

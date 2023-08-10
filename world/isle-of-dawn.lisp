@@ -86,7 +86,7 @@
   (meditate
       :summary "Meditate at one of the racial shrines on the Isle of Dawn.")
 
-  (return-to-the-kobold
+  (done
       :summary "Talk to the officious kobold in the wildflower field."))
 
 (defentity officious-kobold ()
@@ -106,7 +106,38 @@
      actor 'offer-quest
      "The kobold is offering you a quest! Quests are tasks set for you by the
      denizens of the world. Completing them can provide you with many kinds of
-     rewards. Type `help quests` for more information.")))
+     rewards. Type `help quests` for more information."))
+
+  (:after-accept-quest (actor (quest &quest choose-a-race) npc)
+    (tell self actor "Excellent! To the west you will find several shrines, each
+      dedicated to a different race. Talk to the caretaker at each shrine to
+      learn more about his or her people.
+
+      Then, when you find the race that's right for you, return to the selected
+      shrine and `meditate`. The caretaker will, ahem, take care of the rest.
+
+      Return to me once you have completed this task.")
+    (maybe-show-tutorial actor 'accept-quest "You can use the `quest` command to
+      see the quests you've accepted and track your progress toward their
+      completion."))
+
+  (:when-talk ((actor &quest choose-a-race meditate) self topic)
+    (tell self actor "Have you selected a race yet? The caretakers to the west
+      will be more than happy to describe their races and help you make the
+      right decision."))
+
+  (:when-talk ((actor &quest choose-a-race done) self topic)
+    (tell self actor "A fine choice! I had no doubt you would choose to become
+      ~a. I am something of an expert in these matters, after all."
+          (describe-brief (? actor :race)))
+
+    (advance-quest actor 'choose-a-race)
+
+    (tell self actor
+          "I can't help but notice that your new body, while quite lovely, is also quite
+          naked. Aren't you cold? To the south you will find my friend Dhalia,
+          the seamstress; talk to her and she will make sure you go forth in
+          style.")))
 
 (defentity low-table ()
   (:brief "a low table"

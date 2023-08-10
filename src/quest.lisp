@@ -121,14 +121,17 @@ The state associated with a quest phase can take one of three forms:
          (every #`(gethash % (finished-quests avatar)) required-quests)
          (or (null can-accept) (funcall can-accept avatar)))))
 
-(defun quest-phase (avatar quest-label)
+(defun quest-phase (avatar quest-label &key as-label)
   (if (gethash quest-label (finished-quests avatar))
       :finished
-      (if-let ((state (active-quest-state avatar quest-label)))
-        (first state)
-        (if (can-accept-quest avatar (find-quest quest-label))
-            :available
-            :unavailable))))
+      (let ((quest (find-quest quest-label)))
+        (if-let ((state (active-quest-state avatar quest-label)))
+          (if (and as-label (numberp (first state)))
+              (quest-phase-label (elt (quest-phases quest) (first state)))
+              (first state))
+          (if (can-accept-quest avatar quest)
+              :available
+              :unavailable)))))
 
 (defun set-active-quest-state (avatar quest-label phase &optional state)
   (let ((entry (assoc quest-label (active-quests avatar))))
