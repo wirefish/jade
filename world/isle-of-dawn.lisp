@@ -41,7 +41,7 @@
 
 ;;; pavilion
 
-(defentity spirit-warden ()
+(defentity spirit-warden (humanoid)
   (:brief "the spirit warden"
    :pose "stands nearby, smiling amiably."
    :description "The spirit warden is an elderly human man, standing well over
@@ -89,7 +89,7 @@
   (done
       :summary "Talk to the officious kobold in the wildflower field."))
 
-(defentity officious-kobold ()
+(defentity officious-kobold (humanoid)
   (:brief "an officious kobold"
    :pose "sites at a low table in the shade of a large umbrella."
    :description "The kobold is a tiny humanoid with reptilian features, sparse
@@ -167,7 +167,7 @@
 
 ;;; human-shrine
 
-(defentity human-caretaker ()
+(defentity human-caretaker (humanoid)
   (:brief "the human caretaker"
    :pose "stands nearby with a welcoming expression."
    :description "The caretaker is a tall, athletic woman wearing a practical

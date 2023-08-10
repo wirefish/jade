@@ -48,6 +48,7 @@
    (:module "world" :components
             ((:module "lib" :components
                       ((:file "avatar")
+                       (:file "creatures")
                        (:file "materials")
                        ))
              (:file "isle-of-dawn")
