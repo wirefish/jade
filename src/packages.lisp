@@ -40,6 +40,7 @@
 
            #:defquest
            #:offer-quest
+           #:advance-quest
            #:&quest
            ))
 
