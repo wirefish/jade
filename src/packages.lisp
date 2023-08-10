@@ -24,6 +24,8 @@
            #:disallow-action
            #:call-next-handler
            #:self
+           #:&quest
+           #:&race
 
            #:item
            #:defmaterial
@@ -32,6 +34,8 @@
            #:deflocation
 
            #:avatar
+           #:change-race
+           #:change-name
 
            #:show
            #:show-notice
@@ -42,7 +46,7 @@
            #:defquest
            #:offer-quest
            #:advance-quest
-           #:&quest
+           #:quest-phase
            ))
 
 (defpackage :jade.lib

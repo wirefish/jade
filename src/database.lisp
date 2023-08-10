@@ -162,38 +162,35 @@ failure."
    *db*
    "delete from tutorials_seen where avatar_id = ?" avatar-id))
 
-(defun update-tutorials-seen (avatar-id tutorial-ids)
-  (dolist (tutorial-id tutorial-ids)
-    (sqlite:execute-non-query
-     *db*
-     "insert or replace into tutorials_seen (avatar_id, tutorial_id) values (?, ?)"
-     avatar-id (to-string tutorial-id))))
+(defun update-dirty-tutorials (avatar)
+  (with-slots (avatar-id dirty-tutorials) avatar
+    (dolist (tutorial-id dirty-tutorials)
+      (sqlite:execute-non-query
+       *db*
+       "insert or replace into tutorials_seen (avatar_id, tutorial_id) values (?, ?)"
+       avatar-id (to-string tutorial-id)))))
 
-(defun update-finished-quests (avatar-id quest-states)
-  (loop for (quest-id . completion-time) in quest-states do
-    (sqlite:execute-non-query
-     *db*
-     "insert or replace into finished_quests (avatar_id, quest_id, completion_time)
-     values (?, ?, ?)"
-     avatar-id
-     (to-string quest-id)
-     completion-time)))
+(defun update-dirty-quests (avatar)
+  (with-slots (avatar-id dirty-quests finished-quests) avatar
+    (loop for label in dirty-quests do
+      (let ((completion-time (gethash label finished-quests)))
+        (sqlite:execute-non-query
+         *db*
+         "insert or replace into finished_quests (avatar_id, quest_id, completion_time) values (?, ?, ?)"
+         avatar-id (to-string label) completion-time)))))
 
 (defun save-avatar (avatar location)
-  (let ((finished-quests (dirty-quests avatar))
-        (tutorials-seen (dirty-tutorials avatar))
-        (avatar-id (avatar-id avatar)))
-    (handler-case
-        (sqlite:with-transaction *db*
-          (sqlite:execute-non-query
-           *db*
-           "update avatars set location = ?, avatar = ? where avatar_id = ?"
-           (to-string location) (to-string (encode-entity avatar)) avatar-id)
-          (update-tutorials-seen avatar-id tutorials-seen)
-          (update-finished-quests avatar-id finished-quests)
-          (setf (dirty-quests avatar) nil
-                (dirty-tutorials avatar) nil)
-          t)
-      (sqlite:sqlite-error (err)
-        (format-log :warning "cannot save avatar: ~s" err)
-        nil))))
+  (handler-case
+      (sqlite:with-transaction *db*
+        (sqlite:execute-non-query
+         *db*
+         "update avatars set location = ?, avatar = ? where avatar_id = ?"
+         (to-string location) (to-string (encode-entity avatar)) (avatar-id avatar))
+        (update-dirty-tutorials avatar)
+        (update-dirty-quests avatar)
+        (setf (dirty-quests avatar) nil
+              (dirty-tutorials avatar) nil)
+        t)
+    (sqlite:sqlite-error (err)
+      (format-log :warning "cannot save avatar: ~s" err)
+      nil)))

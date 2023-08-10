@@ -129,11 +129,11 @@
 ;;; The `:race' attribute is an entity that defines some base attributes of the
 ;;; avatar.
 
-#|
 (defun change-race (avatar race)
-  (setf (? avatar :race) race)
-    (update-avatar avatar :race (describe-brief race :article nil))
-    (show-notice avatar "You are now ~a!" (describe-brief race)))
+  (when-let ((race (find-entity race)))
+    (setf (? avatar :race) race)
+    (update-avatar avatar :race)
+    (show-notice avatar "You are now ~a!" (describe-brief race))))
 
 (defun validate-name (name)
   "If `name' is a valid avatar name after stripping trailing punctuation, then
@@ -149,11 +149,12 @@
 (defun change-name (avatar name)
   ;; FIXME: check for naughty words?
   (when-let ((name (validate-name name)))
-    (setf (name avatar) name)
-    (update-avatar avatar :name name)
+    (setf (? avatar :name) name)
+    (update-avatar avatar :name)
     (show-notice avatar "Your name is now ~a!" name)
     name))
 
+#|
 ;;;
 
 (defun merge-traits (to from)

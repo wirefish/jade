@@ -69,8 +69,8 @@ The state associated with a quest phase can take one of three forms:
 
 (defvar *quests* (make-hash-table :size 1000))
 
-(defun find-quest (label)
-  (gethash label *quests*))
+(defun find-quest (label-or-quest)
+  (if (symbolp label-or-quest) (gethash label-or-quest *quests*) label-or-quest))
 
 (defmacro defquest (label attributes &body phases)
   (with-gensyms (quest)
@@ -121,14 +121,15 @@ The state associated with a quest phase can take one of three forms:
          (every #`(gethash % (finished-quests avatar)) required-quests)
          (or (null can-accept) (funcall can-accept avatar)))))
 
-(defun quest-phase (avatar quest-label &key as-label)
+(defun quest-phase (avatar quest-label)
   (if (gethash quest-label (finished-quests avatar))
       :finished
       (let ((quest (find-quest quest-label)))
         (if-let ((state (active-quest-state avatar quest-label)))
-          (if (and as-label (numberp (first state)))
-              (quest-phase-label (elt (quest-phases quest) (first state)))
-              (first state))
+          (let ((phase (first state)))
+            (if (numberp phase)
+                (quest-phase-label (elt (quest-phases quest) phase))
+                phase))
           (if (can-accept-quest avatar quest)
               :available
               :unavailable)))))
@@ -154,22 +155,25 @@ is complete."
   "Updates an avatar's state for an active quest and, if the current phase becomes
 complete, advances to the next phase. Returns the index of the new phase, or
 :finished if all phases have been completed."
-  (with-slots (label phases) quest
-    (bind (((phase &optional state) (active-quest-state avatar label))
-           (new-state phase-complete (advance-quest-state state arg1 arg2)))
-      (if phase-complete
-        (let ((next-phase (if (eq phase :offered) 0 (1+ phase))))
-          (if (< next-phase (length phases))
-              (let ((state (quest-phase-initial-state (elt phases next-phase))))
-                (set-active-quest-state avatar label next-phase
-                                        (if (listp state) (copy-list state) state))
-                next-phase)
-              (progn
-                (deactivate-quest avatar label)
-                (sethash label (finished-quests avatar) (get-universal-time))
-                (push label (dirty-quests avatar))
-                :finished)))
-        (set-active-quest-state avatar label phase new-state)))))
+  (let ((quest (find-quest quest)))
+    (with-slots (label phases) quest
+      (bind (((phase &optional state) (active-quest-state avatar label))
+             (new-state phase-complete (advance-quest-state state arg1 arg2)))
+        (if phase-complete
+            (let ((next-phase (if (eq phase :offered) 0 (1+ phase))))
+              (if (< next-phase (length phases))
+                  (let ((state (quest-phase-initial-state (elt phases next-phase))))
+                    (set-active-quest-state avatar label next-phase
+                                            (if (listp state) (copy-list state) state))
+                    next-phase)
+                  (progn
+                    (deactivate-quest avatar label)
+                    (sethash label (finished-quests avatar) (get-universal-time))
+                    (push label (dirty-quests avatar))
+                    (show-notice avatar "You have completed the quest ~s!"
+                                 (quest-name quest))
+                    :finished)))
+            (set-active-quest-state avatar label phase new-state))))))
 
 (defun remove-quest-items (avatar quest &key npc (message "~a is destroyed."))
   "Removes all items associated with `quest' from the inventory of `avatar'. If
