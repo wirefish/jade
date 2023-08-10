@@ -39,6 +39,7 @@ particular topic of interest."
 
 ;;; Say something to everyone at the same location.
 
+#|
 (defun punct-char-p (c)
   (not (or (alpha-char-p c) (digit-char-p c))))
 
@@ -63,8 +64,10 @@ particular topic of interest."
           (show observer "You say, ~s" message)
           (show observer "~a says, ~s" (describe-brief actor :capitalize t))))))
 
-(defcommand (actor ("say" "\"") :rest words)
+(defcommand say (actor ("say" "\"") :rest words)
   (say actor (format-message words) (location actor)))
+
+|#
 
 ;;; TODO: Yell something that can be heard at your location and nearby locations.
 

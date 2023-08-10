@@ -41,14 +41,6 @@
 
 ;;; pavilion
 
-(defentity hat (item)
-  (:brief "a floppy felt hat"
-   :equippable-slot :head))
-
-(defentity rock (item)
-  (:brief "a rock"
-   :stackable t))
-
 (defentity spirit-warden ()
   (:brief "the spirit warden"
    :pose "stands nearby, smiling amiably."
@@ -81,5 +73,63 @@
      They may provide useful information or offer rewards if you perform actions
      on their behalf. For example, type `talk warden` to talk to the spirit
      warden. He may have something interesting to say."
-   :contents (spirit-warden hat (rock :quantity 5))
+   :contents (spirit-warden)
    :exits ((gravel-path :north hilltop :south wildflower-field))))
+
+;;; wildflower-field
+
+(defquest choose-a-race
+  (:name "Let's Get Physical"
+   :summary "Choose your physical form by meditating at one of the racial
+     shrines on the Isle of Dawn, then return to the officious kobold.")
+
+  (meditate
+      :summary "Meditate at one of the racial shrines on the Isle of Dawn.")
+
+  (return-to-the-kobold
+      :summary "Talk to the officious kobold in the wildflower field."))
+
+(defentity officious-kobold ()
+  (:brief "an officious kobold"
+   :pose "sites at a low table in the shade of a large umbrella."
+   :description "The kobold is a tiny humanoid with reptilian features, sparse
+     wiry hair, and knobbly gray skin. It is, however, impeccably groomed."
+   :offers-quests (choose-a-race))
+
+  (:when-talk ((actor &quest choose-a-race :available) self topic)
+    (tell self actor "Hello, friend! As you may have noticed, your current body
+      is just a ghostly manifestation of your spirit. To fix that you'll need to
+      select a race and take on a physical form. It just so happens I can help
+      you do exactly that!")
+    (offer-quest self 'choose-a-race actor)
+    (maybe-show-tutorial
+     actor 'offer-quest
+     "The kobold is offering you a quest! Quests are tasks set for you by the
+     denizens of the world. Completing them can provide you with many kinds of
+     rewards. Type `help quests` for more information.")))
+
+(defentity low-table ()
+  (:brief "a low table"
+   :full "The table looks sturdy but is otherwise unremarkable."
+   :implicit t))
+
+(defentity umbrella ()
+  (:brief "an umbrella"
+   :full "The umbrella is decorated with green and yellow stripes."
+   :implicit t))
+
+(deflocation wildflower-field (isle-location)
+  (:name "Field of Wildflowers"
+   :description "Flowers of every color and description bloom in the expansive
+     fields along the sides of the path. The air is heavy with their fragrance."
+   :tutorial "The ! symbol on the map means that a creature wants to talk to you
+     about an available quest. You can `talk` to the creature to learn more.
+     When you see the &mldr; symbol, you can `talk` to the creature about a
+     quest you have accepted but not yet completed. If you see the &#x2713;
+     symbol, then you have completed a quest and can `talk` to the creature to
+     receive your rewards!
+
+     The kobold has a quest for you. Try typing `talk kobold`."
+   :contents (officious-kobold low-table umbrella)
+   :exits ((gravel-path :north pavilion :south clothing-stall
+                        :west human-shrine))))

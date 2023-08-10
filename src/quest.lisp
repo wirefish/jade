@@ -94,6 +94,18 @@ quest while it is active, that entry is removed.
          (every (lambda (q) (gethash q (finished-quests avatar))) required-quests)
          (or (null can-accept) (funcall can-accept avatar)))))
 
+(defun quest-phase (avatar quest-label)
+  (if (gethash quest-label (finished-quests avatar))
+      :finished
+      (if-let ((state (gethash quest-label (active-quests avatar))))
+        (first state)
+        (if (can-accept-quest avatar (find-quest quest-label))
+            :available
+            :unavailable))))
+
+(defun active-quest-state (avatar quest-label)
+  (gethash quest-label (active-quests avatar)))
+
 ;;; Quest-related events.
 
 (defgeneric accept-quest (avatar quest npc)
@@ -106,17 +118,20 @@ quest while it is active, that entry is removed.
     (notify-observers observers :after-accept-quest avatar quest npc)))
 
 (defmethod accept-quest (avatar quest npc)
-  (begin-quest avatar (quest-id quest))
-  (show-notice avatar "You have accepted the quest ~s." (quest-name quest))
+  (begin-quest avatar quest)
+  (show-notice avatar "You have accepted the quest ~s from ~a."
+               (quest-name quest)
+               (describe-brief npc :article :definite))
   (show-map avatar))
 
 (defgeneric offer-quest (npc quest avatar)
   (:documentation "Called when `npc' offers `quest' to `avatar'."))
 
-(defmethod offer-quest :around (npc quest avatar)
-  (let ((observers (list avatar npc)))
+(defmethod offer-quest :around (npc quest-label avatar)
+  (let ((observers (list avatar npc))
+        (quest (find-quest quest-label)))
     (notify-observers observers :before-offer-quest avatar quest npc)
-    (call-next-method)
+    (call-next-method npc quest avatar)
     (notify-observers observers :after-offer-quest avatar quest npc)))
 
 (defun accept-or-reject-quest (avatar quest npc accepted)

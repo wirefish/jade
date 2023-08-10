@@ -3,7 +3,7 @@
 (defun maybe-show-tutorial (actor key message)
   (with-slots (tutorials-on tutorials-seen dirty-tutorials) actor
     (when (and tutorials-on (not (gethash key tutorials-seen)))
-      (show-tutorial-message actor message)
+      (show-tutorial actor message)
       (setf (gethash key tutorials-seen) t)
       (push key dirty-tutorials))))
 

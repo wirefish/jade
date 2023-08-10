@@ -73,13 +73,15 @@ specific event."
   "Returns an expression that evaluates to true if the value of `param'
 satisfies `constraint'."
   (cond
-    ((eq constraint 'self)
+    ((eq (first constraint) 'self)
      `(eq ,param ,observer))
-    ((symbolp constraint)
-     `(entity-isa ,param ',constraint))
+    ((eq (first constraint) '&quest)
+     (destructuring-bind (quest phase) (rest constraint)
+       `(eq (quest-phase ,param ',quest) ',phase)))
+    ((symbolp (first constraint))
+     `(entity-isa ,param ',(first constraint)))
     (t
-     (destructuring-bind (fn . args) constraint
-       `(,fn ,param ,@args)))))
+     (error "invalid constraint ~a" constraint))))
 
 (defun make-event-handler-test (params constraints)
   "Returns a lambda expression that implements the test function for an event
@@ -91,13 +93,20 @@ handler."
        (declare (ignorable ,observer ,@params))
        ,(if tests `(and ,@tests) t))))
 
+(defun anonymize-parameters (param-specs)
+  (loop for spec in param-specs
+        collect (if (eq spec 'self)
+                    (list (gensym) 'self)
+                    spec)))
+
 (defmacro defbehavior (entity &body clauses)
-  (labels ((second-or-nil (x) (when (listp x) (second x)))
+  (labels ((rest-or-nil (x) (when (listp x) (rest x)))
            (first-or-self (x) (if (listp x) (first x) x)))
     `(progn
        ,@(loop for (event spec . body) in (reverse clauses)
-               collect (let ((constraints (mapcar #'second-or-nil spec))
-                             (params (mapcar #'first-or-self spec)))
+               collect (let* ((spec (anonymize-parameters spec))
+                              (constraints (mapcar #'rest-or-nil spec))
+                              (params (mapcar #'first-or-self spec)))
                          `(push-event-handler
                            ,entity ',event
                            ,(make-event-handler-test params constraints)
