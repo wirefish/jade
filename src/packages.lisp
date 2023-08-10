@@ -9,6 +9,7 @@
            #:?
            #:->
            #:bind
+           #:with-delay
 
            #:entity
            #:entity-id
