@@ -48,7 +48,7 @@
      six feet tall. His long white hair and wispy beard frame a wrinkled,
      grinning face. He wears dark blue robes with gold embroidered trim.")
 
-  (:after-enter-location ((actor avatar) location entry)
+  (:after-enter-location ((actor &quest choose-a-race :available) location entry)
     (show actor "The spirit warden beckons to you."))
 
   (:when-talk (actor (target self) topic)
