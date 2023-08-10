@@ -36,6 +36,7 @@
            #:show-notice
            #:tell
 
+           #:defquest
            #:offer-quest
            ))
 
