@@ -35,6 +35,8 @@
            #:show
            #:show-notice
            #:tell
+
+           #:offer-quest
            ))
 
 (defpackage :jade.lib

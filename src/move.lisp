@@ -28,6 +28,7 @@ true, do not allow observers to disallow the action."))
 (defmethod exit-location ((actor avatar) location exit &key force)
   (declare (ignore force))
   ;; FIXME: check for exit message.
+  (reject-offer actor)
   (when exit
     (show actor "You head ~a." (direction-name (exit-dir exit))))
   (call-next-method))

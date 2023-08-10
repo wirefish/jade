@@ -33,10 +33,12 @@
 
              (:file "help")
              (:file "tutorial")
+             (:file "offer")
              (:file "inspect")
              (:file "inventory")
              (:file "move")
              (:file "talk")
+             (:file "quest")
 
              (:file "server")
              ))
