@@ -34,8 +34,10 @@
 (defmacro defcommand (name (actor verbs &rest clauses) &body body)
   (bind ((verbs (if (listp verbs) verbs (list verbs)))
          (clauses (when clauses
-                    (loop for (preps param) on (if (stringp (car clauses)) clauses
-                                                   (cons nil clauses))
+                    (loop for (preps param) on (if (and (symbolp (car clauses))
+                                                        (not (keywordp (car clauses))))
+                                                   (cons nil clauses)
+                                                   clauses)
                           by #'cddr
                           collect (cons param (etypecase preps
                                                 (keyword preps)
