@@ -17,9 +17,11 @@ requirements, in the following order:
 
 - :finished when the avatar has completed the quest.
 
-In the :offered phase, the avatar stores (:offered nil) in its active-quests
-table. In active phases, the list (phase-index state) is stored in the table.
-The entry is updated as the avatar progresses through the quest. It is removed
+An avatar's active-quests slot contains a list of (quest-label phase state)
+lists, with the most-recently-accepted quest first. In the :offered phase, the
+avatar stores (quest-label :offered nil) in the list. In active phases, the
+avatar stores (quest-label phase-index state) in the list. The phase and state
+are updated as the avatar progresses through the quest. The entry is removed
 when the avatar rejects an offered quest, cancels an active quest, or finishes a
 quest.
 
@@ -101,18 +103,20 @@ The state associated with a quest phase can take one of three forms:
 
 ;;;
 
-(defun begin-quest (avatar quest)
-  "Enter the first phase defined by the quest."
-  nil)
+(defun deactivate-quest (avatar quest-label)
+  "Removes state for a quest from the avatar's active quests."
+  (with-slots (active-quests) avatar
+    (setf active-quests
+          (delete-if #`(eq (car %) quest-label) active-quests))))
 
-(defun cancel-quest (avatar quest)
-  "Cancel the quest, removing any progress and any quest-related items."
-  ;; FIXME: items
-  (remhash (quest-label quest) (active-quests avatar)))
+(defun active-quest-state (avatar quest-label)
+  "Returns (phase state) if the quest is active, or nil otherwise."
+  (cdr (assoc quest-label (active-quests avatar))))
 
 (defun can-accept-quest (avatar quest)
   (with-slots (label level required-quests can-accept) quest
-    (and (not (gethash label (finished-quests avatar)))
+    (and (null (active-quest-state avatar label))
+         (not (gethash label (finished-quests avatar)))
          (>= (? avatar :level) level)
          (every #`(gethash % (finished-quests avatar)) required-quests)
          (or (null can-accept) (funcall can-accept avatar)))))
@@ -120,17 +124,15 @@ The state associated with a quest phase can take one of three forms:
 (defun quest-phase (avatar quest-label)
   (if (gethash quest-label (finished-quests avatar))
       :finished
-      (if-let ((state (gethash quest-label (active-quests avatar))))
+      (if-let ((state (active-quest-state avatar quest-label)))
         (first state)
         (if (can-accept-quest avatar (find-quest quest-label))
             :available
             :unavailable))))
 
-(defun active-quest-state (avatar quest-label)
-  (gethash quest-label (active-quests avatar)))
-
 (defun set-active-quest-state (avatar quest-label phase &optional state)
-  (sethash quest-label (active-quests avatar) (list phase state)))
+  (let ((entry (assoc quest-label (active-quests avatar))))
+    (setf (cdr entry) (list phase state))))
 
 (defun advance-quest-state (state &optional arg1 arg2)
   "Returns two values: the new state, and t if the new state indicates the phase
@@ -160,11 +162,24 @@ complete, advances to the next phase. Returns the index of the new phase, or
                                         (if (listp state) (copy-list state) state))
                 next-phase)
               (progn
-                (remhash label (active-quests avatar))
+                (deactivate-quest avatar label)
                 (sethash label (finished-quests avatar) (get-universal-time))
                 (push label (dirty-quests avatar))
                 :finished)))
         (set-active-quest-state avatar label phase new-state)))))
+
+(defun remove-quest-items (avatar quest &key npc (message "~a is destroyed."))
+  "Removes all items associated with `quest' from the inventory of `avatar'. If
+`npc' is not nil, makes it appear that items are given to `npc'; otherwise,
+`message' is used to construct feedback to the player."
+  (with-slots (label) quest
+    (when-let ((items (remove-items-if avatar :inventory #`(eq (? % :quest) label))))
+      (let ((brief (format-list #'describe-brief items)))
+        (if npc
+            (show avatar "You give ~a to ~a."
+                  brief
+                  (describe-brief npc :article :definite))
+            (show avatar message brief))))))
 
 ;;;
 
@@ -204,14 +219,79 @@ complete, advances to the next phase. Returns the index of the new phase, or
       (accept-quest avatar quest npc)
       (progn
         (show-notice avatar "You have rejected the quest ~s." (quest-name quest))
-        (remhash (quest-label quest) (active-quests avatar))
+        (deactivate-quest avatar (quest-label quest))
         (show-map avatar))))
 
 (defmethod offer-quest (npc quest avatar)
-  (sethash (quest-label quest) (active-quests avatar) (list :offered nil))
+  (push (list (quest-label quest) :offered nil) (active-quests avatar))
   (make-offer avatar #'accept-or-reject-quest avatar quest npc)
   (show-notice avatar
                "~a has offered you the level ~d quest ~s. Type `accept` to accept it."
                (describe-brief npc :capitalize t :article :definite)
                (quest-level quest)
                (quest-name quest)))
+
+;;;
+
+(defmethod match-subject (tokens (subject quest))
+  "Matches `tokens' against the name of `quest'."
+  (match-subject tokens (quest-name subject)))
+
+(defun match-active-quests (tokens active-quests)
+  (find-matches tokens
+                (mapcar #`(find-quest (first %)) active-quests)))
+
+(defun summarize-active-quest (label phase state)
+  ;; FIXME: include progress: what does it look like for list state?
+  (declare (ignore state))
+  (let ((quest (find-quest label)))
+    (with-slots (name level phases) quest
+      (format nil "~a (level ~d): ~a"
+              name
+              level
+              (quest-phase-summary (elt phases phase))))))
+
+(defcommand quest (actor ("quest" "qu") :word subcommand :rest quest-name)
+  "Display information about your active quests. This command has several
+subcommands:
+
+- `quest` or `quest list` displays a summary of your active quests and your
+  progress toward their completion.
+
+- `quest info *quest-name*` displays details for the named quest.
+
+- `quest drop *quest-name*` drops the named quest. You will lose all progress
+  toward completion of the quest and any associated items."
+  (let ((active-quests (remove-if #`(eq (second %) :offered) (active-quests actor))))
+    (cond
+      ((or (null subcommand) (string-equal subcommand "list"))
+       (if (null active-quests)
+           (show actor "You are not on any quests.")
+           (show actor "You are currently on the following quests:~%~%~{- ~a~%~%~}"
+                 (loop for (label phase state) in active-quests
+                       unless (eq phase :offered)
+                         collect (summarize-active-quest label phase state)))))
+      ((string-equal subcommand "info")
+       (if quest-name
+           (if-let ((quests (match-active-quests quest-name active-quests)))
+             (dolist (quest quests)
+               (show actor "~a (level ~d): ~a"
+                     (quest-name quest) (quest-level quest) (quest-summary quest)))
+             (show actor "You are not on any such quest."))
+           (show actor "For which quest do you want to see more information?")))
+      ((string-equal subcommand "drop")
+       (if quest-name
+           (let ((quests (match-active-quests quest-name active-quests)))
+             (case (length quests)
+               (0 (show actor "You are not on any such quest."))
+               (1 (let ((quest (first quests)))
+                    (deactivate-quest actor (quest-label quest))
+                    (remove-quest-items actor quest)
+                    (show-notice actor "You are no longer on the quest ~s."
+                                 (quest-name quest))
+                    (show-map actor)))
+               (t (show actor "Which quest do you want to drop: ~a?"
+                        (format-list #'quest-name quests "or")))))
+           (show actor "Which quest do you want to drop?")))
+      (t
+       (show actor "Unknown subcommand. Type `help quest` for help.")))))

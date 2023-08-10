@@ -16,7 +16,7 @@
    (tutorials-on :initform t :accessor tutorials-on)
    (tutorials-seen :initform (make-hash-table) :accessor tutorials-seen)
    (dirty-tutorials :initform nil :accessor dirty-tutorials)
-   (active-quests :initform (make-hash-table) :accessor active-quests)
+   (active-quests :initform nil :accessor active-quests)
    (finished-quests :initform (make-hash-table) :accessor finished-quests)
    (dirty-quests :initform nil :accessor dirty-quests)
    (pending-offer :initform nil :accessor pending-offer)))
@@ -40,12 +40,6 @@
 
 (defmethod encoded-slots ((entity avatar))
   '(tutorials-on active-quests))
-
-(defmethod encode-value ((entity avatar) (name (eql 'active-quests)) value)
-  (hash-table-alist value))
-
-(defmethod decode-value ((entity avatar) (name (eql 'active-quests)) value)
-  (alist-hash-table value))
 
 (defmethod encode-value ((entity avatar) (name (eql :race)) value)
   (when value (entity-label value)))
