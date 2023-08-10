@@ -130,9 +130,18 @@ handler."
   (dolist (observer observers)
     (apply #'observe-event observer event args)))
 
+(defun action-message (actor verb)
+  (let* ((verb (parse-verb verb))
+         (self-message (format nil "You ~a" (verb-plural verb)))
+         (other-message (format nil "~a ~a"
+                               (describe-brief actor :capitalize t)
+                               (verb-singular verb))))
+    (lambda (observer)
+      (if (eq observer actor) self-message other-message))))
+
 (defun show-observers (observers message event &rest args)
   (dolist (observer observers)
-    (show observer message)
+    (show observer (if (functionp message) (funcall message observer) message))
     (apply #'observe-event observer event args)))
 
 (defun observers-allow-p (observers event &rest args)
