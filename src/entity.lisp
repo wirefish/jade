@@ -9,7 +9,8 @@
    (ancestry :initarg :ancestry :initform nil :reader entity-ancestry)
    (container :initarg :container :initform nil :accessor entity-container)
    (attributes :initarg :attributes :initform (make-hash-table) :accessor entity-attributes)
-   (behavior :initarg :behavior :initform nil :accessor entity-behavior)))
+   (behavior :initarg :behavior :initform nil :accessor entity-behavior)
+   (activity :initarg :activity :initform nil :accessor entity-activity)))
 
 (defmethod initialize-instance :after ((entity entity) &key)
   (with-slots (label proto ancestry) entity

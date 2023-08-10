@@ -128,6 +128,11 @@ handler."
   (dolist (observer observers)
     (apply #'observe-event observer event args)))
 
+(defun show-observers (observers message event &rest args)
+  (dolist (observer observers)
+    (show observer message)
+    (apply #'observe-event observer event args)))
+
 (defun observers-allow-p (observers event &rest args)
   (dolist (observer observers)
     (when (eq (apply #'observe-event observer event args) :disallow-action)

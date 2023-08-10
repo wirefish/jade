@@ -29,6 +29,7 @@ true, do not allow observers to disallow the action."))
   (declare (ignore force))
   ;; FIXME: check for exit message.
   (reject-offer actor)
+  (cancel-current-activity actor)
   (when exit
     (show actor "You head ~a." (direction-name (exit-dir exit))))
   (call-next-method))

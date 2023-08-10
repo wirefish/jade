@@ -30,6 +30,7 @@
              (:file "map")
              (:file "client")
              (:file "command")
+             (:file "activity")
 
              (:file "help")
              (:file "tutorial")
@@ -39,6 +40,7 @@
              (:file "move")
              (:file "talk")
              (:file "quest")
+             (:file "meditate")
 
              (:file "server")
              ))
