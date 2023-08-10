@@ -53,10 +53,15 @@
         (block ,name
           ,@body)))))
 
-(defun get-all-command-verbs ()
+(defun get-primary-command-verbs ()
   (sort (remove-duplicates (loop for command being the hash-values in *commands*
                                  collect (first (command-verbs command))))
         #'string<))
+
+(defvar *aliases* (make-hash-table :test #'equal))
+
+(defun make-alias (alias command)
+  (setf (gethash alias *aliases*) (tokenize-input command)))
 
 ;;;
 
@@ -88,11 +93,6 @@
 input string. Any sequence of one or more punctuation characters is considered
 its own token, even if not delimited by whitespace."
   (cl-ppcre:all-matches-as-strings "[\\w'\"-]+|[!?,.]+" input))
-
-(defvar *aliases* (make-hash-table :test #'equal))
-
-(defun make-alias (alias command)
-  (setf (gethash alias *aliases*) (tokenize-input command)))
 
 (defun find-next-preposition (clauses tokens)
   (position-if #'(lambda (token)
