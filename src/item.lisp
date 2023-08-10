@@ -81,6 +81,16 @@ represents `count' of the same item. Returns nil if entity cannot be split."
         item)
       (split-item item quantity)))
 
+(defun remove-items-if (container slot pred)
+  (bind ((kept removed (loop for item in (? container slot)
+                             if (funcall pred item)
+                               collect item into kept
+                             else
+                               collect item into removed
+                             finally (return (values kept removed)))))
+    (setf (? container slot) kept)
+    removed))
+
 (defun stackable-p (item stack)
   (when (eq (entity-proto item) (entity-proto stack))
     (when-attributes (stackable) stack
