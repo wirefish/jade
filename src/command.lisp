@@ -92,7 +92,7 @@
   "Returns a list containing the sequence of whitespace-delimited tokens in a user
 input string. Any sequence of one or more punctuation characters is considered
 its own token, even if not delimited by whitespace."
-  (cl-ppcre:all-matches-as-strings "[\\w'\"-]+|[!?,.]+" input))
+  (cl-ppcre:all-matches-as-strings "[#\\w'\"-]+|[!?,.]+" input))
 
 (defun find-next-preposition (clauses tokens)
   (position-if #'(lambda (token)
