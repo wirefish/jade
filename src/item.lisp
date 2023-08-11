@@ -157,4 +157,4 @@ represents `count' of the same item. Returns nil if entity cannot be split."
         item)))
 
 (defun contains-isa (container slot label)
-  (some #`(entity-isa % label) (? container slot)))
+  (some (lambda (e) (entity-isa e label)) (? container slot)))

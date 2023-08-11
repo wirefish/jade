@@ -131,7 +131,7 @@
       ~a. I am something of an expert in these matters, after all."
           (describe-brief (? actor :race)))
 
-    (advance-quest actor 'choose-a-race)
+    (advance-quest self actor 'choose-a-race)
 
     (tell self actor "I can't help but notice that your new body, while quite lovely,
       is also quite naked. Aren't you cold? To the south you will find my friend
@@ -211,7 +211,7 @@
       fingers which quickly grows brighter. When she opens her hand she holds a
       tiny seedling, its delicate leaves unfolding before your eyes.")
     (change-race actor 'human)
-    (advance-quest actor 'choose-a-race))
+    (advance-quest self actor 'choose-a-race))
 
   (:after-meditate (actor)
     (show actor "The caretaker nods in approval.")))
@@ -274,7 +274,7 @@
       sparkling flecks which quickly disperse in the dying breeze. The clearing
       is calm once again.")
     (change-race actor 'elf)
-    (advance-quest actor 'choose-a-race))
+    (advance-quest self actor 'choose-a-race))
 
   (:after-meditate (actor)
     (show actor "The caretaker bows respectfully.")))
@@ -341,7 +341,7 @@
       calls, but the meaning of your words is lost as soon as they are uttered.
       Apparently satisfied, the figures disappear; the shadows retreat.")
     (change-race actor 'sidhe)
-    (advance-quest actor 'choose-a-race))
+    (advance-quest self actor 'choose-a-race))
 
   (:after-meditate (actor)
     (show actor "The caretaker arches an eyebrow.")))
@@ -388,7 +388,7 @@
 
       Without warning the shaking stops and the light dissipates.")
     (change-race actor 'dwarf)
-    (advance-quest actor 'choose-a-race))
+    (advance-quest self actor 'choose-a-race))
 
   (:after-meditate (actor)
     (show actor "The caretaker joins you in silent reflection.")))
@@ -447,7 +447,7 @@
       Once the dizziness passes, you open your eyes to find that your stature
       and greenish skin now match those of the caretaker.")
     (change-race actor 'goblin)
-    (advance-quest actor 'choose-a-race)
+    (advance-quest self actor 'choose-a-race)
     (tell self actor "Huzzah! Welcome to the family!"))
 
   (:after-meditate (actor)
@@ -485,7 +485,7 @@
 
       Rocks fly around. Muscles grow. Brain shrink.")
     (change-race actor 'ogre)
-    (advance-quest actor 'choose-a-race))
+    (advance-quest self actor 'choose-a-race))
 
   (:after-meditate (actor)
     (show actor "The caretaker chuckles and crushes another boulder.")))
@@ -528,12 +528,13 @@
       east."))
 
   (:when-talk ((actor &quest get-some-clothes done) self topic)
-    (tell self actor "Why thank you, this tulip is lovely! Your timing is
-      perfect; I have just finished selecting an outfit for you.")
-    (advance-quest actor 'get-some-clothes))
+    (tell self actor "What is that you have in your hand?")
+    (advance-quest self actor 'get-some-clothes))
 
   (:after-finish-quest (actor (quest &quest get-some-clothes))
-    (tell self actor "Here, please take these. I hope everything fits!")
+    (tell self actor "Why thank you, this tulip is lovely! Your timing is
+      perfect; I have just finished selecting an outfit for you. I hope
+      everything fits!")
     (give self actor
           (list (clone-entity 'shirt :materials '(cotton))
                 (clone-entity 'pants :materials '(cotton))
@@ -577,7 +578,7 @@
   (:after-take (actor self container)
     (with-delay (15)
       nil)
-    (advance-quest actor 'get-some-clothes)))
+    (advance-quest self actor 'get-some-clothes)))
 
 (defentity tulip-field-portal ()
   (:brief "the tulip field"

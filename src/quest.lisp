@@ -10,8 +10,8 @@ requirements, in the following order:
 
 - :available when the avatar can accept the quest;
 
-- :offered when the quest has been offered to the avatar, to be accepted or
-  rejected;
+- :offered when the quest has been offered to the avatar, but not yet accepted
+  or rejected;
 
 - "active" phases defined by the quest while the avatar is performing the quest;
 
@@ -101,7 +101,8 @@ The state associated with a quest phase can take one of three forms:
   "Removes state for a quest from the avatar's active quests."
   (with-slots (active-quests) avatar
     (setf active-quests
-          (delete-if #`(eq (car %) quest-label) active-quests))))
+          (delete-if (lambda (q) (eq (first q) quest-label))
+                     active-quests))))
 
 (defun active-quest-state (avatar quest-label)
   "Returns (phase state) if the quest is active, or nil otherwise."
@@ -112,25 +113,55 @@ The state associated with a quest phase can take one of three forms:
     (and (null (active-quest-state avatar label))
          (not (gethash label (finished-quests avatar)))
          (>= (? avatar :level) level)
-         (every #`(gethash % (finished-quests avatar)) required-quests)
+         (every (lambda (q) (gethash q (finished-quests avatar)))
+                required-quests)
          (or (null can-accept) (funcall can-accept avatar)))))
 
+(defun quest-offered (avatar quest-label)
+  "Returns true if `avatar' has a pending offer to accept the specified quest."
+  (when-let ((offer (pending-offer avatar)))
+    (and (typep offer 'quest-offer)
+         (eq quest-label (quest-label (slot-value offer 'quest))))))
+
 (defun quest-phase (avatar quest-label)
-  (if (gethash quest-label (finished-quests avatar))
-      :finished
-      (let ((quest (symbol-value-as 'quest quest-label)))
-        (if-let ((state (active-quest-state avatar quest-label)))
-          (let ((phase (first state)))
-            (if (numberp phase)
-                (quest-phase-label (elt (quest-phases quest) phase))
-                phase))
-          (if (can-accept-quest avatar quest)
-              :available
-              :unavailable)))))
+  (cond
+    ((gethash quest-label (finished-quests avatar))
+     :finished)
+    ((quest-offered avatar quest-label)
+     :offered)
+    (t
+     (let ((quest (symbol-value-as 'quest quest-label)))
+       (if-let ((state (active-quest-state avatar quest-label)))
+         (let ((phase (first state)))
+           (if (numberp phase)
+               (quest-phase-label (elt (quest-phases quest) phase))
+               phase))
+         (if (can-accept-quest avatar quest)
+             :available
+             :unavailable))))))
 
 (defun set-active-quest-state (avatar quest-label phase &optional state)
   (let ((entry (assoc quest-label (active-quests avatar))))
     (setf (cdr entry) (list phase state))))
+
+(defun begin-quest (avatar quest)
+  (with-slots (label phases) quest
+    (let ((state (quest-phase-initial-state (first phases))))
+      (push (list label 0 (if (listp state) (copy-list state) state))
+            (active-quests avatar)))))
+
+(defun remove-quest-items (avatar label &key npc (message "~a is destroyed."))
+  "Removes all items associated with the quest named by `label' from the inventory
+of `avatar'. If `npc' is not nil, makes it appear that items are given to `npc';
+otherwise, `message' is used to construct feedback to the player."
+  (when-let ((items (remove-items-if avatar :inventory
+                                     (lambda (i) (eq (? i :quest) label)))))
+    (let ((brief (format-list #'describe-brief items)))
+      (if npc
+          (show avatar "You give ~a to ~a."
+                brief
+                (describe-brief npc :article :definite))
+          (show avatar message brief)))))
 
 (defun advance-quest-state (state &optional arg1 arg2)
   "Returns two values: the new state, and t if the new state indicates the phase
@@ -143,27 +174,27 @@ is complete."
     (list
      (let ((entry (assoc arg1 state)))
        (incf (cdr entry) arg2)
-       (values state (every #`(>= (cdr %) 1) state))))))
+       (values state (every (lambda (x) (>= x 1)) state))))))
 
-(defun advance-quest (avatar quest &optional arg1 arg2)
+(defun advance-quest (actor avatar label &optional arg1 arg2)
   "Updates an avatar's state for an active quest and, if the current phase becomes
 complete, advances to the next phase. Returns the index of the new phase, or
 :finished if all phases have been completed."
-  (let ((quest (questify quest)))
-    (with-slots (label phases) quest
+  (let ((quest (symbol-value label)))
+    (with-slots (phases) quest
       (bind (((phase &optional state) (active-quest-state avatar label))
              (new-state phase-complete (advance-quest-state state arg1 arg2)))
         (if phase-complete
-            (let ((next-phase (if (eq phase :offered) 0 (1+ phase))))
+            (let ((next-phase (1+ phase)))
               (if (< next-phase (length phases))
                   (let ((state (quest-phase-initial-state (elt phases next-phase))))
                     (set-active-quest-state avatar label next-phase
                                             (if (listp state) (copy-list state) state))
-                    (when (> next-phase 0)
-                      (show-notice avatar "You have progressed in the quest ~s!"
-                                   (quest-name quest)))
+                    (show-notice avatar "You have progressed in the quest ~s!"
+                                 (quest-name quest))
                     next-phase)
                   (progn
+                    (remove-quest-items avatar quest :npc actor)
                     (deactivate-quest avatar label)
                     (sethash label (finished-quests avatar) (get-universal-time))
                     (push label (dirty-quests avatar))
@@ -174,19 +205,6 @@ complete, advances to the next phase. Returns the index of the new phase, or
                                       :after-finish-quest avatar quest)
                     :finished)))
             (set-active-quest-state avatar label phase new-state))))))
-
-(defun remove-quest-items (avatar quest &key npc (message "~a is destroyed."))
-  "Removes all items associated with `quest' from the inventory of `avatar'. If
-`npc' is not nil, makes it appear that items are given to `npc'; otherwise,
-`message' is used to construct feedback to the player."
-  (with-slots (label) quest
-    (when-let ((items (remove-items-if avatar :inventory #`(eq (? % :quest) label))))
-      (let ((brief (format-list #'describe-brief items)))
-        (if npc
-            (show avatar "You give ~a to ~a."
-                  brief
-                  (describe-brief npc :article :definite))
-            (show avatar message brief))))))
 
 ;;;
 
@@ -200,13 +218,25 @@ complete, advances to the next phase. Returns the index of the new phase, or
     (notify-observers observers :after-accept-quest avatar quest npc)))
 
 (defmethod accept-quest (avatar quest npc)
-  (advance-quest avatar quest)
+  (begin-quest avatar quest)
   (show-notice avatar "You have accepted the quest ~s from ~a."
                (quest-name quest)
                (describe-brief npc :article :definite))
   nil)  ; FIXME: (show-map avatar))
 
 ;;;
+
+(defclass quest-offer ()
+  ((quest :initarg :quest)
+   (npc :initarg :npc)))
+
+(defmethod accept-offer (actor (offer quest-offer))
+  (with-slots (quest npc) offer
+    (accept-quest actor quest npc)))
+
+(defmethod reject-offer (actor (offer quest-offer))
+  (with-slots (quest) offer
+    (show-notice actor "You have rejected the quest ~s." (quest-name quest))))
 
 (defgeneric offer-quest (npc quest avatar)
   (:documentation "Called when `npc' offers `quest' to `avatar'."))
@@ -218,19 +248,8 @@ complete, advances to the next phase. Returns the index of the new phase, or
     (call-next-method npc quest avatar)
     (notify-observers observers :after-offer-quest avatar quest npc)))
 
-(defun accept-or-reject-quest (avatar quest npc accepted)
-  "Called when `avatar' accepts or rejects an offer from `npc' to begin
-`quest'."
-  (if accepted
-      (accept-quest avatar quest npc)
-      (progn
-        (show-notice avatar "You have rejected the quest ~s." (quest-name quest))
-        (deactivate-quest avatar (quest-label quest))
-        (show-map avatar))))
-
 (defmethod offer-quest (npc quest avatar)
-  (push (list (quest-label quest) :offered nil) (active-quests avatar))
-  (make-offer avatar #'accept-or-reject-quest avatar quest npc)
+  (extend-offer avatar (make-instance 'quest-offer :quest quest :npc npc))
   (show-notice avatar
                "~a has offered you the level ~d quest ~s. Type `accept` to accept it."
                (describe-brief npc :capitalize t :article :definite)
@@ -245,7 +264,7 @@ complete, advances to the next phase. Returns the index of the new phase, or
 
 (defun match-active-quests (tokens active-quests)
   (find-matches tokens
-                (mapcar #`(symbol-value-as 'quest (first %)) active-quests)))
+                (mapcar (lambda (q) (symbol-value (first q))) active-quests)))
 
 (defun summarize-active-quest (label phase state)
   ;; FIXME: include progress: what does it look like for list state?
@@ -274,7 +293,7 @@ subcommands:
 
 - `quest drop *quest-name*` drops the named quest. You will lose all progress
   toward completion of the quest and any associated items."
-  (let ((active-quests (remove-if #`(eq (second %) :offered) (active-quests actor))))
+  (with-slots (active-quests) actor
     (cond
       ((or (null subcommand) (string-equal subcommand "list"))
        (if (null active-quests)
@@ -303,7 +322,7 @@ subcommands:
                         (format-list #'quest-name quests "or")))))
            (show actor "Which quest do you want to drop?")))
       ((string-equal subcommand "reset")
-       (loop for quest in (mapcar #`(symbol-value-as 'quest (first %)) active-quests) do
+       (loop for quest in (mapcar (lambda (q) (symbol-value (first q))) active-quests) do
          (drop-quest actor quest))
        (clrhash (finished-quests actor))
        (show-map actor)
