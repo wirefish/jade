@@ -14,7 +14,7 @@
 
 (defmaterial worn-leather
   :name "worn leather"
-  :tags (leather foo))
+  :tags (leather))
 
 ;;; Metal
 
