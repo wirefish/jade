@@ -490,95 +490,106 @@
   (:after-meditate (actor)
     (show actor "The caretaker chuckles and crushes another boulder.")))
 
-#|
-
 ;;; clothing-stall
 
 (defquest get-some-clothes
   (:name "Cover Up"
-   :summary "Pick a white tulip for Dhalia, then exchange it for a set of
-     clothes."
-   :prerequisites choose-a-race
-   :awarded-items ((shirt :materials cotton)
-                   (pants :materials cotton)
-                   (shoes :materials leather)
-                   (small-backpack :materials canvas)))
+   :summary "Pick a white tulip for Dhalia to exchange for a set of clothes."
+   :required-quests (choose-a-race))
 
-  (:before-offer-quest (actor self npc)
-    (tell npc actor "Greetings! Did our mutual kobold friend send you my way? It
+  (active
+      :summary "Pick a white tulip.")
+
+  (done
+      :summary "Give the white tulip to Dhalia."))
+
+(defentity seamstress (humanoid)
+  (:name "Dhalia"
+   :pose "stands in the stall, organizing her wares."
+   :description "Dhalia is a human woman of indeterminate age. She wears
+     silver-rimmed spectacles and an impeccably-tailored dress decorated with a
+     floral pattern."
+   :offers-quests (get-some-clothes))
+
+  (:when-talk ((actor &quest get-some-clothes :available) self topic)
+    (tell self actor "Greetings! Did our mutual kobold friend send you my way? It
       certainly seems you have need of my wares. I will happily provide you with
       an outfit that should serve your needs, but I must ask a favor in
-      return."))
+      return.")
+    (offer-quest self 'get-some-clothes actor))
 
-  (:after-accept-quest (actor self npc)
-    (tell npc actor "Wonderful! You see, I am very fond of white tulips, but my
-       work here prevents me from taking the time to gather them. Would you head
-       to the east and get one for me?"))
+  (:after-accept-quest (actor (quest &quest get-some-clothes) self)
+    (tell self actor "Wonderful! You see, I am very fond of white tulips, but my
+      work here prevents me from taking the time to gather them. Would you head
+      to the east and get one for me?"))
 
-  (:after-advise-quest (actor self npc)
-    (tell npc actor "Have you found a white tulip for me? They're just to the
+  (:when-talk ((actor &quest get-some-clothes active) self topic)
+    (tell self actor "Have you found a white tulip for me? They're just to the
       east."))
 
-  (:before-finish-quest (actor self npc)
-    (tell npc actor "Why thank you, this tulip is lovely! Your timing is
-      perfect; I have just finished selecting an outfit for you."))
+  (:when-talk ((actor &quest get-some-clothes done) self topic)
+    (tell self actor "Why thank you, this tulip is lovely! Your timing is
+      perfect; I have just finished selecting an outfit for you.")
+    (advance-quest actor 'get-some-clothes))
 
-  (:after-finish-quest (actor self npc)
-    (show-tutorial actor 'items "The seamstress have given you several items;
-      type `inventory` or `inv` to list them.
+  (:after-finish-quest (actor (quest &quest get-some-clothes))
+    (tell self actor "Here, please take these. I hope everything fits!")
+    (give self actor
+          (clone* (shirt :materials (cotton))
+                  (pants :materials (cotton))
+                  (shoes :materials (worn-leather))
+                  (small-backpack :materials (canvas))))
+    (maybe-show-tutorial actor 'items "The seamstress have given you several
+      items; type `inventory` or `inv` to list them.
 
       To wear an item, use the `equip` command. For example, type `equip shirt`.
       Type just `equip` to list the items you currently have equipped.
 
       In addition to clothing, the seamstress also gave you a backpack.
-      Equipping it will increase the number of items you can carry.
+      Equipping it will increase the number of items you can carry before you
+      become encumbered.
 
       For more information type `help equip` or `help inventory`.")))
 
-(defentity seamstress (npc)
-  (:name "Dhalia"
-   :pose "stands in the stall, organizing her wares."
-   :full "Dhalia is a human woman of indeterminate age. She wears silver-rimmed
-     spectacles and an impeccably-tailored dress decorated with a floral
-     pattern."
-   :begins-quests (get-some-clothes)
-   :ends-quests (get-some-clothes)))
-
 (deflocation clothing-stall (isle-location)
   (:name "Clothing Stall"
-   :full "A wooden market stall has been erected beside the path. Its counter is
-     piled with basic clothing items in myriad styles and sizes."
+   :description "A wooden market stall has been erected beside the path. Its
+     counter is piled with basic clothing items in myriad styles and sizes."
+   :contents (seamstress)
    :exits ((gravel-path :north wildflower-field :south fountain-plaza
-                        :east tulip-field-sw))
-   :contents (seamstress)))
+                        :east tulip-field-sw))))
 
 ;;; tulip-field
 
-(defentity white-tulip (quest-item)
+(defentity white-tulip (item)
   (:brief "a white tulip"
    :pose "draws your attention."
-   :full "The tulip is quite lovely; you can see why Dhalia prizes them."
-   ;; FIXME: entry-pose = "catches your eye."
-   :item-quest 'get-some-clothes)
+   :description "The tulip is quite lovely; you can see why Dhalia prizes them."
+   :entry-message "catches your eye."
+   :quest get-some-clothes)
 
-  (:before-take (actor (item self) container)
+  (:allow-take ((actor &quest get-some-clothes active) self container))
+
+  (:allow-take (actor self container)
+    (show actor "It would be rude to pick the tulip right now.")
+    (disallow-action))
+
+  (:after-take (actor self container)
     (with-delay (15)
-      (spawn-if-missing container 'white-tulip)))
-
-  (:after-take (actor (item white-tulip) container)
+      nil)
     (advance-quest actor 'get-some-clothes)))
 
-(defentity tulip-field-portal (portal)
+(defentity tulip-field-portal ()
   (:brief "the tulip field"
    :pose "continues to the ~(~a~)."))
 
 (defentity tulip-field (isle-location)
   (:name "Field of Tulips"
-   :full "Tulips in myriad colors have been planted here."
+   :description "Tulips in myriad colors have been planted here."
    :surface :flowers)
 
   (:after-enter-world (self)
-    (spawn-if-missing self 'white-tulip)))
+    (spawn-if-missing self white-tulip)))
 
 (deflocation tulip-field-sw (tulip-field)
   (:tutorial "Some items can be picked up using the `take` command. For example,
@@ -597,6 +608,7 @@
 (deflocation tulip-field-ne (tulip-field)
   (:exits ((tulip-field-portal :west tulip-field-nw :south tulip-field-se))))
 
+#|
 ;;; fountain-plaza
 
 (defentity stone-fountain (fixture)
