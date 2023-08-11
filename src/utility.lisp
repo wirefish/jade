@@ -1,5 +1,16 @@
 (in-package :jade)
 
+;;; Generic utilities.
+
+(defun symbol-value-or-nil (symbol)
+  (and (boundp symbol) (symbol-value symbol)))
+
+(defun symbol-value-as (type symbol)
+  (let ((value (symbol-value-or-nil symbol)))
+    (if (typep value type)
+        value
+        (error "value of symbol ~a does not have required type ~a" symbol type))))
+
 ;;; String utilities.
 
 (defun strcat (&rest strings)

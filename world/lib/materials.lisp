@@ -4,23 +4,23 @@
 
 (defmaterial cotton
   :name "cotton"
-  :tags '(cloth))
+  :tags (cloth))
 
 (defmaterial canvas
   :name "canvas"
-  :tags '(cloth))
+  :tags (cloth))
 
 ;;; Leather
 
 (defmaterial worn-leather
   :name "worn leather"
-  :tags '(leather))
+  :tags (leather foo))
 
 ;;; Metal
 
 (defmaterial gold
   :name "gold"
   :adjective "golden"
-  :tags '(metal soft)
-  :traits '((fire-resist -1) (charisma 1))
+  :tags (metal soft)
+  :traits ((fire-resist -1) (charisma 1))
   :level 12)

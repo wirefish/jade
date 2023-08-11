@@ -43,8 +43,8 @@ sent later when `connect-session' is called."
   (let ((data (websocket-encode-message message))
         (socket (avatar-socket avatar)))
     (if socket
-        (as:write-socket-data socket data)
-        (queue-push data (avatar-output-queue avatar)))))
+        (progn (as:write-socket-data socket data) t)
+        (progn (queue-push data (avatar-output-queue avatar)) nil))))
 
 (defun send-queued-messages (avatar)
   "Sends any queued messages to `avatar'. This is generally called after the

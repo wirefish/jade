@@ -62,15 +62,12 @@ The state associated with a quest phase can take one of three forms:
   ((label :initarg :label :initform nil :reader quest-phase-label)
    (summary :initarg :summary :initform nil :reader quest-phase-summary)
    (initial-state :initarg :initial-state :initform nil :reader quest-phase-initial-state
-                  :documentation "The state stored upon entering this phase.")
-   (complete :initarg :complete :initform nil :reader quest-phase-complete
-             :documentation "A unary function that is passed the current state
-             and returns t if the phase has been completed.")))
+                  :documentation "The state stored upon entering this phase.")))
 
-(defvar *quests* (make-hash-table :size 1000))
-
-(defun find-quest (label-or-quest)
-  (if (symbolp label-or-quest) (gethash label-or-quest *quests*) label-or-quest))
+(defun questify (arg)
+  (ctypecase arg
+    (quest arg)
+    (symbol (symbol-value-as 'quest arg))))
 
 (defmacro defquest (label attributes &body phases)
   (with-gensyms (quest)
@@ -88,12 +85,9 @@ The state associated with a quest phase can take one of three forms:
                                        ,@(loop for (key value) on attributes by #'cddr
                                                nconc (list key
                                                            (transform-initval key value)))))))))
-       (sethash ',label *quests* ,quest)
+       (set ',label ,quest)
        (export ',label)
        ,quest)))
-
-(defmethod transform-initval ((name (eql :complete)) value)
-  value)
 
 (defmethod transform-initval ((name (eql :required-quests)) value)
   `(quote ,value))
@@ -124,7 +118,7 @@ The state associated with a quest phase can take one of three forms:
 (defun quest-phase (avatar quest-label)
   (if (gethash quest-label (finished-quests avatar))
       :finished
-      (let ((quest (find-quest quest-label)))
+      (let ((quest (symbol-value-as 'quest quest-label)))
         (if-let ((state (active-quest-state avatar quest-label)))
           (let ((phase (first state)))
             (if (numberp phase)
@@ -155,7 +149,7 @@ is complete."
   "Updates an avatar's state for an active quest and, if the current phase becomes
 complete, advances to the next phase. Returns the index of the new phase, or
 :finished if all phases have been completed."
-  (let ((quest (find-quest quest)))
+  (let ((quest (questify quest)))
     (with-slots (label phases) quest
       (bind (((phase &optional state) (active-quest-state avatar label))
              (new-state phase-complete (advance-quest-state state arg1 arg2)))
@@ -197,8 +191,7 @@ complete, advances to the next phase. Returns the index of the new phase, or
   (:documentation "Called when `avatar' accepts `quest' from `npc'."))
 
 (defmethod accept-quest :around (avatar quest npc)
-  (let ((observers (list avatar npc))
-        (quest (if (symbolp quest) (find-quest quest) quest)))
+  (let ((observers (list avatar npc)))
     (notify-observers observers :before-accept-quest avatar quest npc)
     (call-next-method)
     (notify-observers observers :after-accept-quest avatar quest npc)))
@@ -217,7 +210,7 @@ complete, advances to the next phase. Returns the index of the new phase, or
 
 (defmethod offer-quest :around (npc quest avatar)
   (let ((observers (list avatar npc))
-        (quest (if (symbolp quest) (find-quest quest) quest)))
+        (quest (questify quest)))
     (notify-observers observers :before-offer-quest avatar quest npc)
     (call-next-method npc quest avatar)
     (notify-observers observers :after-offer-quest avatar quest npc)))
@@ -249,12 +242,12 @@ complete, advances to the next phase. Returns the index of the new phase, or
 
 (defun match-active-quests (tokens active-quests)
   (find-matches tokens
-                (mapcar #`(find-quest (first %)) active-quests)))
+                (mapcar #`(symbol-value-as 'quest (first %)) active-quests)))
 
 (defun summarize-active-quest (label phase state)
   ;; FIXME: include progress: what does it look like for list state?
   (declare (ignore state))
-  (let ((quest (find-quest label)))
+  (let ((quest (symbol-value-as 'quest label)))
     (with-slots (name level phases) quest
       (format nil "~a (level ~d): ~a"
               name

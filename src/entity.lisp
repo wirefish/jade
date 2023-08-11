@@ -27,26 +27,23 @@
 (defun entity-isa (entity label)
   (numberp (position label (slot-value entity 'ancestry))))
 
-(defvar *named-entities* (make-hash-table :size 5000))
-
-(defun find-entity (label &optional default)
-  (gethash label *named-entities* default))
-
-(defun define-entity (label proto &rest attributes)
+(defun create-named-entity (label proto class &rest attributes)
   "Creates a named entity with a given prototype."
-  (let ((entity (make-instance (if proto (type-of proto) 'entity)
+  (let* ((proto (symbol-value proto))
+         (entity (make-instance (or class (if proto (type-of proto) 'entity))
                                :label label :proto proto)))
     (when-let ((b (and proto (slot-value proto 'behavior))))
       (setf (entity-behavior entity) (copy-hash-table b)))
     (apply #'sethash* (slot-value entity 'attributes) attributes)
-    (sethash label *named-entities* entity)
+    (set label entity)
+    (export label)
     entity))
 
 (defgeneric clone-entity (proto &rest attributes)
   (:documentation "Creates an new anonymous entity with `proto' as its prototype."))
 
 (defmethod clone-entity ((proto-name symbol) &rest attributes)
-  (if-let ((proto (find-entity proto-name)))
+  (if-let ((proto (symbol-value-or-nil proto-name)))
     (apply #'clone-entity proto attributes)
     (error "unknown prototype ~s" proto-name)))
 
@@ -64,18 +61,19 @@
       (list (if (eql (car expr) 'quote) expr `(list ,@expr)))
       (t expr))))
 
-(defmacro defentity (name (&optional proto-name) attributes &body behavior)
-  (with-gensyms (proto entity)
-    `(let* ((,proto ,(when proto-name
-                         `(or (find-entity ',proto-name)
-                              (error "unknown prototype ~s" ',proto-name))))
-            (,entity (define-entity ',name ,proto
+(defmacro defentity (name (&rest proto-spec) attributes &body behavior)
+  (let (proto class)
+    (if (eq (first proto-spec) '&class)
+        (setf class (second proto-spec))
+        (setf proto (first proto-spec)))
+    (with-gensyms (entity)
+      `(let ((,entity (create-named-entity
+                       ',name ',proto ',class
                        ,@(loop for (key value) on attributes by #'cddr
                                nconc (list key
                                            (transform-initval key value))))))
-       ,@(when behavior `((defbehavior ,entity ,@behavior)))
-       (export ',name)
-       ,entity)))
+         ,@(when behavior `((defbehavior ,entity ,@behavior)))
+         ,entity))))
 
 (defmacro clone (proto &rest attributes)
   "A wrapper for `clone-entity' that transforms attribute values in the same way
@@ -171,12 +169,15 @@ all attributes."
     data))
 
 (defun decode-entity (data)
-  (let* ((proto (find-entity (first data)))
-         (initargs (rest data))
-         (entity (make-instance (type-of proto) :proto proto)))
-    (loop for (name slot-data) on initargs by #'cddr do
-      (setf (slot-value entity name) (decode-value entity name slot-data)))
-    entity))
+  (if-let ((proto (symbol-value-or-nil (first data))))
+    (let ((entity (make-instance (type-of proto) :proto proto)))
+      (loop for (name slot-data) on (rest data) by #'cddr do
+        (setf (slot-value entity name) (decode-value entity name slot-data)))
+      entity)
+    (progn
+      (format-log :warning "cannot decode entity with unknown prototype ~a"
+                  (first data))
+      nil)))
 
 ;;; Standard entity attributes. Each may define a transform method used when
 ;;; parsing the attribute's value in `defentity' and similar macros, or a set of

@@ -41,12 +41,11 @@
 
 (defstruct exit dir dest portal)
 
-(defun register-exit (dir dest portal-label &rest portal-args)
+(defun register-exit (dir dest portal &rest portal-args)
   ;; FIXME: check for a matching exit; if found, pop it from the registry and
   ;; share its portal. Otherwise, create a new exit and register it to be found
   ;; later.
-  (let ((portal (find-entity portal-label)))
-    (make-exit :dir dir :dest dest :portal (apply #'clone-entity portal portal-args))))
+  (make-exit :dir dir :dest dest :portal (apply #'clone-entity portal portal-args))))
 
 (defun describe-exit (exit)
   (format nil "~a leads ~a."
@@ -63,7 +62,7 @@
 
 (defclass location (entity) ())
 
-(sethash 'location *named-entities* (make-instance 'location :label 'location))
+(defentity location (&class location) ())
 
 ;;; Use `deflocation' to create an actual location in the world.
 

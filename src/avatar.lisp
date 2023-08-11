@@ -21,7 +21,7 @@
    (dirty-quests :initform nil :accessor dirty-quests)
    (pending-offer :initform nil :accessor pending-offer)))
 
-(sethash 'avatar *named-entities* (make-instance 'avatar :label 'avatar))
+(defentity avatar (&class avatar) ())
 
 (defmethod print-object ((obj avatar) stream)
   (print-unreadable-object (obj stream :type t :identity t)
@@ -34,7 +34,7 @@
     clone))
 
 (defmethod transform-initval ((name (eql :race)) value)
-  `(find-entity ',value))
+  `(symbol-value ',value))
 
 ;;; Encoding and decoding for avatar slots and attributes.
 
@@ -42,10 +42,10 @@
   '(tutorials-on active-quests))
 
 (defmethod encode-value ((entity avatar) (name (eql :race)) value)
-  (when value (entity-label value)))
+  (and value (entity-label value)))
 
 (defmethod decode-value ((entity avatar) (name (eql :race)) data)
-  (when (symbolp data) (find-entity data)))
+  (symbol-value-or-nil data))
 
 (defmethod encode-value ((entity avatar) (name (eql :inventory)) value)
   (mapcar #'encode-entity value))
@@ -129,8 +129,8 @@
 ;;; The `:race' attribute is an entity that defines some base attributes of the
 ;;; avatar.
 
-(defun change-race (avatar race)
-  (when-let ((race (find-entity race)))
+(defun change-race (avatar race-label)
+  (when-let ((race (symbol-value-as 'entity race-label)))
     (setf (? avatar :race) race)
     (update-avatar avatar :race)
     (show-notice avatar "You are now ~a!" (describe-brief race))))

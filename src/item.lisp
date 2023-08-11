@@ -6,7 +6,9 @@
 ;;; A prototype for items that defines generally-required attributes. Optional
 ;;; attributes that influence item behavior are described below.
 
-(defentity item ()
+(defclass item (entity) ())
+
+(defentity item (&class item)
   (:brief "an item"
    :pose "is here."
    :full "The item is unremarkable."
@@ -18,7 +20,7 @@
    :stackable nil))
 
 ;;; The optional `:materials' attribute describes the composition of an item.
-;;; If present it must be a list of `material' structs.
+;;; If present it must be a list of symbols bound to `material' structs.
 
 (defstruct material
   label
@@ -28,33 +30,35 @@
   (traits nil)
   (level 0))
 
-(defparameter *materials* (make-hash-table))
-
-(defun find-material (label)
-  (gethash label *materials*))
-
 (defmacro defmaterial (label &body args)
   (with-gensyms (material)
     `(let ((,material (make-material :label ',label
                                     ,@(loop for (key value) on args by #'cddr
                                             nconc (list key (transform-initval key value))))))
-       (sethash ',label *materials* ,material)
+       (set ',label ,material)
+       (export ',label)
        ,material)))
+
+(defmethod transform-initval ((name (eql :tags)) value)
+  `(quote ,value))
+
+(defmethod transform-initval ((name (eql :traits)) value)
+  `(quote ,value))
 
 (defmethod transform-initval ((name (eql :materials)) value)
   `(quote ,value))
-
-(defmethod encode-value ((entity entity) (name (eql :materials)) value)
-  (mapcar #'material-label value))
-
-(defmethod decode-value ((entity entity) (name (eql :materials)) value)
-  (mapcar #'find-material value))
 
 ;;; If the item is associated with a quest, the `quest' attribute is the label
 ;;; of the quest.
 
 (defmethod transform-initval ((name (eql :quest)) value)
   `(quote ,value))
+
+(defmethod encode-value ((entity item) (name (eql :quest)) value)
+  (quest-label value))
+
+(defmethod decode-value ((entity item) (name (eql :quest)) value)
+  (symbol-value value))
 
 ;;; If the item is equippable, the `equippable-slot' attribute describes where
 ;;; it can be equipped.
@@ -68,6 +72,17 @@
 ;;; The optional `required-skill' attribute specifies a skill and minimum rank
 ;;; in that skill that are required in order to use the item. If present it must
 ;;; be a two-element list containing a skill and an integer rank.
+
+;;; The optional `craft-skill' attribute specifies a skill and minimum rank in
+;;; that skill that are required in order to craft the item. If present it must
+;;; be a two-element list containing a skill and an integer rank. In addition,
+;;; the `craft-materials' attribute is a list (count material-tag...) lists.
+
+(defmethod transform-initval ((name (eql :craft-skill)) value)
+  `(list ,@value))
+
+(defmethod transform-initval ((name (eql :craft-materials)) value)
+  `(quote ,value))
 
 ;;; Items can be stacked if they have the same prototype and their `stackable'
 ;;; attribute is not null. If `stackable' is t, there is no limit on how many
