@@ -133,11 +133,10 @@
 
     (advance-quest actor 'choose-a-race)
 
-    (tell self actor
-          "I can't help but notice that your new body, while quite lovely, is also quite
-          naked. Aren't you cold? To the south you will find my friend Dhalia,
-          the seamstress; talk to her and she will make sure you go forth in
-          style.")))
+    (tell self actor "I can't help but notice that your new body, while quite lovely,
+      is also quite naked. Aren't you cold? To the south you will find my friend
+      Dhalia, the seamstress; talk to her and she will make sure you go forth in
+      style.")))
 
 (defentity low-table ()
   (:brief "a low table"
@@ -203,18 +202,917 @@
    :exits ((gravel-path :east wildflower-field :north elven-shrine
                         :west ogre-shrine)))
 
-  (:after-meditate (actor)
-    (if (eq (quest-phase actor 'choose-a-race) 'meditate)
-        (progn
-          (show actor "A calming warmth suffuses your being. The caretaker
-            smiles broadly as she reaches out to you with her open hand, holding
-            it inches from your ghostly form. She smiles broadly as the warmth
-            spreads to her hand.
+  (:after-meditate ((actor &quest choose-a-race meditate))
+    (show actor "A calming warmth suffuses your being. The caretaker smiles broadly as she
+      reaches out to you with her open hand, holding it inches from your ghostly
+      form. She smiles broadly as the warmth spreads to her hand.
 
-            After a moment she closes her palm. You see a faint glow between her
-            fingers which quickly grows brighter. When she opens her hand she
-            holds a tiny seedling, its delicate leaves unfolding before your
-            eyes.")
-          (change-race actor 'human)
-          (advance-quest actor 'choose-a-race))
-        (show actor "The caretaker nods in approval."))))
+      After a moment she closes her palm. You see a faint glow between her
+      fingers which quickly grows brighter. When she opens her hand she holds a
+      tiny seedling, its delicate leaves unfolding before your eyes.")
+    (change-race actor 'human)
+    (advance-quest actor 'choose-a-race))
+
+  (:after-meditate (actor)
+    (show actor "The caretaker nods in approval.")))
+
+;;; elven-shrine
+
+(defentity wooden-sculpture ()
+  (:brief "a wooden sculpture"
+   :pose "stands in the middle of the ring of trees."
+   :description "The sculpture is carved from polished yellow wood. Its form is
+     fluid and abstract but somehow evokes images of towering forest oaks and
+     hidden woodland dells. Golden-brown moss grows in chaotic yet precise
+     patterns along its sides. Atop the sculpture rests a shallow bowl made of
+     green glass. The bowl contains clear, cold water."))
+
+(defentity elven-caretaker (humanoid)
+  (:brief "the elven caretaker"
+   :pose "kneels beside one of the trees, her eyes closed."
+   :description "The elven caretaker is a graceful young woman with striking
+     emerald eyes and long, silver hair arranged in complex braids. She wears a
+     pale green dress with embroidered trim.")
+
+  (:when-talk (actor self topic)
+    (tell self actor "Greetings, stranger. Be welcome in this place. No doubt
+      you have come here to learn something about my people. I will tell you
+      what I can.
+
+      Mine are a peaceful, thoughtful people who love and respect nature. This
+      was not always so; millenia ago we nearly destroyed ourselves with our
+      prideful, warlike ways. It took a terrible crisis for my ancestors to
+      change. I pray that we never slide back into those habits that nearly left
+      us extinct.
+
+      Elves are quick-footed and quick-witted, although we are not as strong as
+      many of the other races of Atalea. We excel as hunters, magicians, bards,
+      and---it pains me to say---as thieves. We consider ourselves custodians of
+      the forest and take that charge very seriously. We do not stand idly by if
+      our beloved home is threatened.
+
+      If you would join my folk, simply `meditate` here to make your purpose
+      known; the shrine's power will do the rest.")))
+
+(deflocation elven-shrine (isle-location)
+  (:name "Shrine of the Forest"
+   :description "A low wooden fence surrounds a perfect ring of thirteen
+     graceful birch trees. The area radiates an aura of tranquility."
+   :surface :forest
+   :contents (wooden-sculpture elven-caretaker)
+   :exits ((gravel-path :south human-shrine :north sidhe-shrine :west goblin-shrine)))
+
+  (:after-meditate ((actor &quest choose-a-race meditate))
+    (show actor "The caretaker approaches the nearby sculpture and raises her
+      hands to the sky. Motes of light rise from the bowl atop the sculpture;
+      they quickly become so bright you are forced to look away. A swirling wind
+      rises and the trees begin to sway, their leaves glimmering in the light.
+      Soon the motes move toward you, surrounding you with their light and
+      warmth.
+
+      After a few moments the wind dies down and the motes dissolve into tiny
+      sparkling flecks which quickly disperse in the dying breeze. The clearing
+      is calm once again.")
+    (change-race actor 'elf)
+    (advance-quest actor 'choose-a-race))
+
+  (:after-meditate (actor)
+    (show actor "The caretaker bows respectfully.")))
+
+;;; sidhe-shrine
+
+(defentity sidhe-caretaker (humanoid)
+  (:brief "the sidhe caretaker"
+   :pose "stands nearby, lost in thought."
+   :description "The sidhe caretaker is a tall, gaunt man with a stern look. His
+     long white hair is pulled back into a ponytail that nearly reaches the
+     ground. He wears dark robes of a rather elaborate and archaic style.")
+
+  (:when-talk (actor self topic)
+    (tell self actor "Well, well. Another hero, reborn. I suppose I should tell
+      you something of my race, although I find it unlikely you were fortunate
+      enough to be a member of the Fair Folk in your past life.
+
+      For uncounted millenia, my people lived in an alternate plane of existence
+      called the Shadowlands. A few short centuries ago, war with demons drove
+      us out of our homeland. We ended up here.
+
+      At our core, we sidhe are creatures of magic. It is our very essence. Few
+      sidhe have become famous warriors or minstrels, although of course it is
+      possible. But all of our people have some small skill in magic, and many
+      have become wizards of reknown.
+
+      I cannot say it seems likely, but if you believe you are truly one of us
+      then I encourage you to `meditate` before the shrine. If you are found
+      worthy, I will welcome you into the fold.")))
+
+(defentity tree ()
+  (:brief "a tree"
+   :description "The tree is clearly very old. You get a strange sense that it
+     does not belong in this world."
+   :implicit t))
+
+(defentity boulder ()
+  (:brief "a boulder"
+   :description "Upon closer inspection, you notice that the entire surface of
+     the boulder is covered with tiny rune-like markings."
+   :implicit t))
+
+(deflocation sidhe-shrine (isle-location)
+  (:name "Shrine of Shadows"
+   :description "A lone tree grows atop an enormous granite boulder. Its
+     gnarled, gray roots wrap around the stone before sinking into the fertile
+     earth below. The tree's twisted branches splay outward and its dense leaves
+     form a solid canopy that condemns this part of the isle to perpetual
+     shadow."
+   :surface :forest
+   :contents (sidhe-caretaker tree boulder)
+   :exits ((gravel-path :south elven-shrine :west dwarven-shrine)))
+
+  (:after-meditate ((actor &quest choose-a-race meditate))
+    (show actor "As you begin your meditation, the shadows in the area deepen.
+      The leaves above begin to rustle, as if the tree is growing restless.
+
+      You vision begins to blur. Shifting figures appear, ghosts of creatures
+      from another world. They call to you in an alien language you have never
+      heard.
+
+      After a moment, you begin to understand their words. You answer their
+      calls, but the meaning of your words is lost as soon as they are uttered.
+      Apparently satisfied, the figures disappear; the shadows retreat.")
+    (change-race actor 'sidhe)
+    (advance-quest actor 'choose-a-race))
+
+  (:after-meditate (actor)
+    (show actor "The caretaker arches an eyebrow.")))
+
+;;; dwarven-shrine
+
+(defentity dwarven-caretaker (humanoid)
+  (:brief "the dwarven caretaker"
+   :pose "stands proudly amid the statues."
+   :description "The dwarven caretaker stands about four feet tall, with
+     shoulders nearly as wide. He wears full chain mail, even in the heat of the
+     day. His armor appears to be of fine workmanship. A heavy maul hangs from
+     his belt. His long, red beard falls across a belly that has seen a few
+     pints of ale in its day.")
+
+  (:when-talk (actor self topic)
+    (tell self actor "Well met! If it's a dwarf ye wanna be, then ye be at tha
+      right place. I kinna imagine wantin' ta be anythin' else!
+
+      Me people may be wee, but we have tha strength of tha mountains within us!
+      Aye, it's true, we have a great love for gold and gems. But we have nae
+      great love for tha dark beasties that lurk below tha earth. We dwarves are
+      great crafters and even greater at fightin', when tha times require it.
+
+      If ye think that all sounds good, then get ta meditatin'!")))
+
+(deflocation dwarven-shrine (isle-location)
+  (:name "Shrine of the Mountain"
+   :description "Rows of stone statues stand in the tall grass, each depicting a
+     stout warrior with a grim expression and glowing amber eyes. The statues
+     are arrayed in formation like soldiers marching to battle."
+   :contents (dwarven-caretaker)
+   :exits ((gravel-path :east sidhe-shrine :south goblin-shrine)))
+
+  (:after-meditate ((actor &quest choose-a-race meditation))
+    (show actor "The caretaker grasps his maul with both hands and holds it out
+      before him. After a moment the hammer begins to vibrate and erupts with
+      amber light, echoing the statues' eyes. The vibrations grow stronger and
+      emanate outward from the caretaker's body. Soon the entire area is shaking
+      and the statues begin to rock back and forth.
+
+      A powerful voice intones, \"You have chosen. So be it. Strong as stone,
+      bright as steel. May you bring honor to clan and king.\"
+
+      Without warning the shaking stops and the light dissipates.")
+    (change-race actor 'dwarf)
+    (advance-quest actor 'choose-a-race))
+
+  (:after-meditate (actor)
+    (show actor "The caretaker joins you in silent reflection.")))
+
+;;; goblin-shrine
+
+(defentity chessboard ()
+  (:brief "a stone chessboard"
+   :pose "rests atop a low table."
+   :description "The chessboard is remarkable for its pieces: each is a finely
+     detailed and garishly-painted rendition of a creature who looks much like
+     the caretaker. The pieces are so realistic they seem almost alive."))
+
+(defentity goblin-caretaker (humanoid)
+  (:brief "the goblin caretaker"
+   :pose "stands beside the chessboard, apparently pondering his next move."
+   :description "The caretaker is a short, big-eared creature with greenish-blue
+     skin. In contrast with his somewhat comical proportions and garish attire,
+     his large dark eyes evince a keen intellect.")
+
+  (:when-talk (actor self topic)
+    (tell self actor "Hello, friend! I can't tell you how happy I am to see your
+      interest in goblinkind. We are a misunderstood folk! Let me set the record
+      straight.
+
+      Goblins are small in stature but we have big dreams. Mostly dreams of
+      wealth, it's true, but there's nothing wrong with a little spending cash,
+      eh?
+
+      Some larger folks will tell you we are thieves, beggars, and worse. That
+      is so mostly untrue! The majority of us would rather get rich through
+      shrewd business practices and hard bargaining than by using less savory
+      methods.
+
+      When those ignorant louts take offense at our methods, it certainly helps
+      that we're quick and stealthy by nature. You won't see many goblins waving
+      huge swords around, but as they say, \"Size isn't everything!\"
+
+      If you feel like you're one of us at heart, why not become one of us in
+      body, too? Just `meditate` here and the deed will be done.")))
+
+(deflocation goblin-shrine (isle-location)
+  (:name "Shrine of Fortune"
+   :description "The ground here has been cleared, leveled, and surfaced with
+     multi-colored bricks."
+   :surface :stone
+   :contents (chessboard goblin-caretaker)
+   :exits ((gravel-path :north dwarven-shrine :south ogre-shrine
+                        :east elven-shrine)))
+
+  (:after-meditate ((actor &quest choose-a-race meditate))
+    (show actor "As soon as you close your eyes, you have a vision of the world
+      around you getting larger...or are you getting smaller? For a moment you
+      are stricken with vertigo as the world shifts and spins.
+
+      Once the dizziness passes, you open your eyes to find that your stature
+      and greenish skin now match those of the caretaker.")
+    (change-race actor 'goblin)
+    (advance-quest actor 'choose-a-race)
+    (tell self actor "Huzzah! Welcome to the family!"))
+
+  (:after-meditate (actor)
+    (show actor "The caretaker leaves you to your meditation.")))
+
+;;; ogre-shrine
+
+(defentity ogre-caretaker (humanoid)
+  (:brief "the ogre caretaker"
+   :pose "is here, casually pulverizing rocks with his hammer."
+   :description "The caretaker is a hulking figure, standing over eight feel
+     tall. He wears an iron helm, iron gauntlets, and a breechclout. He carries
+     an enormous iron sledgehammer.")
+
+  (:when-talk (actor self topic)
+    (tell self actor "Ugh. I be ogre of few words, but I know what you want. I
+      tell you of my kin. We big. We strong. Done!
+
+      You came to `meditate`? Ha. If you wanna be ogre, do it. Done!")))
+
+(deflocation ogre-shrine (isle-location)
+  (:name "Shrine of Strength"
+   :description "This area is choked with a haphazard collection of rough stone
+     blocks, many overgrown with vines and twisting grasses. The blocks'
+     surfaces have been crudely painted with scenes of carnage featuring
+     enormous warriors laying waste to their tiny assailants."
+   :surface :stone
+   :contents (ogre-caretaker)
+   :exits ((gravel-path :north goblin-shrine :east human-shrine)))
+
+  (:after-meditate ((actor &quest choose-a-race meditate))
+    (show actor "The caretaker selects a boulder and tosses it on the ground
+      before you. He then steps over, raises his hammer, and crushes the rock as
+      he lets out an enormous belly laugh.
+
+      Rocks fly around. Muscles grow. Brain shrink.")
+    (change-race actor 'ogre)
+    (advance-quest actor 'choose-a-race))
+
+  (:after-meditate (actor)
+    (show actor "The caretaker chuckles and crushes another boulder.")))
+
+#|
+
+;;; clothing-stall
+
+(defquest get-some-clothes
+  (:name "Cover Up"
+   :summary "Pick a white tulip for Dhalia, then exchange it for a set of
+     clothes."
+   :prerequisites choose-a-race
+   :awarded-items ((shirt :materials cotton)
+                   (pants :materials cotton)
+                   (shoes :materials leather)
+                   (small-backpack :materials canvas)))
+
+  (:before-offer-quest (actor self npc)
+    (tell npc actor "Greetings! Did our mutual kobold friend send you my way? It
+      certainly seems you have need of my wares. I will happily provide you with
+      an outfit that should serve your needs, but I must ask a favor in
+      return."))
+
+  (:after-accept-quest (actor self npc)
+    (tell npc actor "Wonderful! You see, I am very fond of white tulips, but my
+       work here prevents me from taking the time to gather them. Would you head
+       to the east and get one for me?"))
+
+  (:after-advise-quest (actor self npc)
+    (tell npc actor "Have you found a white tulip for me? They're just to the
+      east."))
+
+  (:before-finish-quest (actor self npc)
+    (tell npc actor "Why thank you, this tulip is lovely! Your timing is
+      perfect; I have just finished selecting an outfit for you."))
+
+  (:after-finish-quest (actor self npc)
+    (show-tutorial actor 'items "The seamstress have given you several items;
+      type `inventory` or `inv` to list them.
+
+      To wear an item, use the `equip` command. For example, type `equip shirt`.
+      Type just `equip` to list the items you currently have equipped.
+
+      In addition to clothing, the seamstress also gave you a backpack.
+      Equipping it will increase the number of items you can carry.
+
+      For more information type `help equip` or `help inventory`.")))
+
+(defentity seamstress (npc)
+  (:name "Dhalia"
+   :pose "stands in the stall, organizing her wares."
+   :full "Dhalia is a human woman of indeterminate age. She wears silver-rimmed
+     spectacles and an impeccably-tailored dress decorated with a floral
+     pattern."
+   :begins-quests (get-some-clothes)
+   :ends-quests (get-some-clothes)))
+
+(deflocation clothing-stall (isle-location)
+  (:name "Clothing Stall"
+   :full "A wooden market stall has been erected beside the path. Its counter is
+     piled with basic clothing items in myriad styles and sizes."
+   :exits ((gravel-path :north wildflower-field :south fountain-plaza
+                        :east tulip-field-sw))
+   :contents (seamstress)))
+
+;;; tulip-field
+
+(defentity white-tulip (quest-item)
+  (:brief "a white tulip"
+   :pose "draws your attention."
+   :full "The tulip is quite lovely; you can see why Dhalia prizes them."
+   ;; FIXME: entry-pose = "catches your eye."
+   :item-quest 'get-some-clothes)
+
+  (:before-take (actor (item self) container)
+    (with-delay (15)
+      (spawn-if-missing container 'white-tulip)))
+
+  (:after-take (actor (item white-tulip) container)
+    (advance-quest actor 'get-some-clothes)))
+
+(defentity tulip-field-portal (portal)
+  (:brief "the tulip field"
+   :pose "continues to the ~(~a~)."))
+
+(defentity tulip-field (isle-location)
+  (:name "Field of Tulips"
+   :full "Tulips in myriad colors have been planted here."
+   :surface :flowers)
+
+  (:after-enter-world (self)
+    (spawn-if-missing self 'white-tulip)))
+
+(deflocation tulip-field-sw (tulip-field)
+  (:tutorial "Some items can be picked up using the `take` command. For example,
+    type `take tulip` to take a white tulip when you see one. Picking up an item
+    places it into your inventory. Use the `inventory` command (or just `inv`
+    for short) to list the items you are carrying."
+   :exits ((gravel-path :west clothing-stall)
+           (tulip-field-portal :east tulip-field-se :north tulip-field-nw))))
+
+(deflocation tulip-field-se (tulip-field)
+  (:exits ((tulip-field-portal :west tulip-field-sw :north tulip-field-ne))))
+
+(deflocation tulip-field-nw (tulip-field)
+  (:exits ((tulip-field-portal :south tulip-field-sw :east tulip-field-ne))))
+
+(deflocation tulip-field-ne (tulip-field)
+  (:exits ((tulip-field-portal :west tulip-field-nw :south tulip-field-se))))
+
+;;; fountain-plaza
+
+(defentity stone-fountain (fixture)
+  (:brief "a stone fountain"
+   :pose "stands in the middle of the plaza."
+   :full "This large fountain depicts a circle of men and women holding hands
+     and dancing around a central pillar. Water bursts forth from atop the
+     pillar, creating a delightful sound as it lands at the figures' feet."))
+
+(defquest choose-a-gender
+  (:name "He or She?"
+   :summary "Select your gender by meditating at one of the shrines near the
+     Fountain Plaza, then return to the cherub."
+   :prerequisites (get-some-clothes))
+
+  (:before-offer-quest (actor self npc)
+    (tell npc actor "Another new arrival! Good to see you. We're certain to
+      need more heroes of your caliber before long. Right now, though, it's high
+      time you chose a gender. I assume you remember the difference between
+      males and females from your previous life?"))
+
+  (:after-accept-quest (actor self npc)
+    (tell npc actor "To the east and west you will find statues that symbolize
+      the two sexes. Simply `meditate` near the statue that represents your
+      preferred gender. Come back to me when you're done."))
+
+  (:after-advise-quest (actor self npc)
+    (tell npc actor "Did you find the statues? They're hard to miss!"))
+
+  (:after-finish-quest (actor self npc)
+    (tell npc actor "You did it! I must admit I'm somewhat surprised by your
+      choice. No matter; I'm sure I'll get used to it. Eventually.")))
+
+(defentity cherub (npc)
+  (:brief "a cherub"
+   :pose "hovers nearby, its wings flapping madly."
+   :full "The cherub is a small, chubby creature with white feathered wings.
+     Although its stature and harmless aspect are those of a child, its dark and
+     penetrating eyes make it clear this is a creature both ancient and wise."
+   :begins-quests (choose-a-gender)
+   :ends-quests (choose-a-gender))
+
+  (:when-talk (actor self topic)
+    (tell self actor "Hello there! Do you like my wings? I recently had them
+      waxed.")))
+
+(deflocation fountain-plaza (isle-location)
+  (:name "Fountain Plaza"
+   :full "This hexagonal plaza is paved with multi-colored stone tiles."
+   :surface :stone
+   :exits ((gravel-path :north clothing-stall :south circle-of-names
+                        :west male-shrine :east female-shrine))
+   :contents (stone-fountain cherub)))
+
+;;; male-shrine
+
+(defentity male-statue (fixture)
+  (:brief "a large marble statue"
+   :pose "stands in the center of the plaza."
+   :full "The statue stands over twelve feet tall. Its form subtly shifts as you
+     view it, taking on properties of different races and embodying various
+     masculine virtues. It somehow reflects your own personal concept of the
+     perfect male."))
+
+(deflocation male-shrine (isle-location)
+  (:name "Shrine of Masculinity"
+   :full "Low shrubs, cut in complex geometric patterns, surround a plaza
+     covered with white gravel."
+   :exits ((gravel-path :east fountain-plaza))
+   :contents (male-statue))
+
+  (:after-meditate (actor)
+    (if (quest-incomplete actor 'choose-a-gender)
+        (progn
+          (show actor "The statue's mouth begins to move and a deep voice intones
+            several archaic words you don't understand.")
+          (change-gender actor :male)
+          (advance-quest actor 'choose-a-gender))
+        (show actor "You feel no more clarity than you did prior to meditation."))))
+
+;;; female-shrine
+
+(defentity female-statue (fixture)
+  (:brief "a large jade statue"
+   :pose "stands in the center of the area."
+   :full "The statue stands over twelve feet tall. Its eyes seem to follow you.
+     As you consider the statue, your thoughts wander; its features change in
+     your mind's eye to reflect your personal ideal of femininity."))
+
+(deflocation female-shrine (isle-location)
+  (:name "Shrine of Femininity"
+   :full "A multitude of flowering vines have been trained to ornate trellises
+     that surround a bowl-shaped area covered with a carpet of blossoming
+     clover."
+   :exits ((gravel-path :west fountain-plaza))
+   :contents (female-statue))
+
+  (:after-meditate (actor)
+    (if (quest-incomplete actor 'choose-a-gender)
+        (progn
+          (show actor "The statue slowly turns its head to face you and says several
+            arcane words in a powerful, mellifluous voice.")
+          (change-gender actor :female)
+          (advance-quest actor 'choose-a-gender))
+        (show actor "You feel no more clarity than you did prior to meditation."))))
+
+;;; circle-of-names
+
+(defentity tree-of-names (fixture)
+  (:brief "a beautiful tree"
+   :pose "grows in the center of the lawn."
+   :full "The tree has smooth, silvery bark and broad leaves of the deepest
+     green. Thousands of names have been written in luminous ink upon its trunk,
+     all using the same flowing script."))
+
+(defquest choose-a-name
+  (:name "Nameless No More"
+   :summary "Choose your name by saying it in the presence of the orb of naming,
+     then return to the mistress of names."
+   :prerequisites (choose-a-gender))
+
+  (:before-offer-quest (actor self npc)
+    (tell npc actor "Oh, hello. I didn't see you standing there. I hope you
+      haven't been waiting long. How can I help you?
+
+      Ah! You need a name, don't you. You've come to the right place; I'd be
+      happy to help you out."))
+
+  (:after_accept-quest (actor self npc)
+    (tell npc actor "Just to the east you'll see a magical orb. Find it and say
+      the word. Literally! Stand next to the orb and `say` the word you want to
+      have as your name. The orb's power is truly remarkable.
+
+      Once your anonymity has been cured, come back to me so I can record your
+      new name on the trunk of this tree with the names of all the other heroes
+      who have passed this way."))
+
+  (:after-advise-quest (actor self npc)
+    (tell npc actor "Still going incognito? You'll find the orb of naming just
+      to the east."))
+
+  (:after-finish-quest (actor self npc)
+    (tell npc actor "Yes, what is it? Of course, you've chosen your name! Let
+      me see, where is my pen? Ah, there it is. And now to write your name...how
+      did you spell it, again? Just a few strokes of the pen, and...done!
+
+      ~a is a fine name. Wear it proudly." (name actor))))
+
+(defentity mistress-of-names (npc)
+  (:brief "the mistress of names"
+   :pose "stands beneath the tree."
+   :full "The mistress of names is a short, slender woman of indeterminate age.
+     Her long auburn hair is bound in a loose ponytail. She wears a pair of
+     horn-rimmed spectacles and her clothing is rumpled and ink-stained."
+   :begins-quests (choose-a-name)
+   :ends-quests (choose-a-name))
+
+  (:when-talk (actor self topic)
+    (if (quest-complete actor 'choose-a-name)
+        (tell self actor "Ah, %s. I just love the sound of your name! It simply
+          rolls off the tongue." (name actor))
+        (show actor "The mistress of names frowns at you over her glasses."))))
+
+(deflocation circle-of-names (isle-location)
+  (:name "Circle of Names"
+   :full "You stand within a wide circle of well-tended lawn surrounded by a low
+     stone wall."
+   :exits ((gravel-path :north fountain-plaza :east clifftop :south guard-station))
+   :contents (tree-of-names mistress-of-names)))
+
+;;; clifftop
+
+(defentity orb-of-naming (fixture)
+  (:brief "the orb of naming"
+   :pose "hovers a few feet above the ground."
+   :full "The orb is a spherical stone about two feet in diameter. Its surface
+     is smooth and cloudy. If a creature speaks a word within its presence, the
+     orb has the power to make that word the creature's name.")
+
+  (:after-say (actor message)
+    (if (quest-incomplete actor 'choose-a-name)
+        (progn
+          (show actor "The orb begins to glow, dimly at first, but then more
+            brightly. Sparks skitter across its smooth surface and you feel an
+            uncomfortable tingle beneath your skin.")
+          (if (change-name actor message)
+              (advance-quest actor 'choose-a-name)
+              (show actor "The sparks subside and the orb's glow dims; nothing seems
+                to happen.")))
+        (show actor "The orb glows dimly for a moment, but nothing happens."))))
+
+(deflocation clifftop (isle-location)
+  (:name "Windy Clifftop"
+   :full "You stand atop a rocky cliff that falls perhaps a hundred feet to a
+     narrow beach. The wind is brisk and smells of the sea."
+   :tutorial "To speak, use the `say` command. For example, to say \"hello\",
+     you could type `say hello`. Everyone (and everything!) in your location
+     will hear what you say.
+
+     In this room, the `look:orb of naming` is always listening, so be careful
+     what you say! If you speak a single word that the orb deems suitable, that
+     word will become your name. Choose wisely."
+   :surface :stone
+   :exits ((gravel-path :west circle-of-names))
+   :contents (orb-of-naming)))
+
+;;; guard-station
+
+(defquest kill-some-plants
+  (:name "Weed Control"
+   :summary "Prove your worth to the guard by killing a vineling. Lashleaf?
+     Whatever."
+   :prerequisites (choose-a-name))
+
+  (:before-offer-quest (actor self npc)
+    (tell npc actor "Greetings, ~a. It seems you're nearly ready to leave this
+      place, but I have my doubts. Before I allow you to venture further, I'm
+      going to teach you how to fight! You'll need to be able to handle a weapon
+      if you want to survive in the real world."
+          (describe-brief actor)))
+
+  (:after-accept-quest (actor self npc)
+    (tell npc actor "West of here you'll find some...plants. Not normal
+      plants, but vicious killers! Vinelings, I think they're called. Or maybe
+      lashleaves? Whatever. The name's not important. Here, take this.")
+    (receive actor (make-entity 'hunting-knife :materials copper) npc)
+    (tell npc actor "Go ahead, `equip` that knife and kill one of those plants.
+      Strike fast and true! If you can overcome such a fearsome foe, I'll
+      happily let you pass."))
+
+  (:after-advise-quest (actor self npc)
+    (tell npc actor "Any progress so far? Kill one of those plant things and
+      we'll talk."))
+
+  (:after-finish-quest (actor self npc)
+    (tell npc actor "Great job! I'll confess, those things give me the heebie
+      jeebies. Plants shouldn't writhe around like that. Please, feel free to
+      keep the knife. You may head south whenever you like.")))
+
+(defentity guard (npc)
+  (:brief "a burly guard"
+   :pose "stands nearby."
+   :full "The guard wears a long chainmail shirt and carries a double-bladed
+     axe. His bristly red beard spills out across his ample belly."
+   :begins-quests (kill-some-plants)
+   :ends-quests (kill-some-plants))
+
+  (:when-talk (actor self topic)
+    (if (quest-complete actor 'kill-some-plants)
+        (tell self actor "Good to see you again, plant-slayer.")
+        (show actor "The guard grunts in your general direction.")))
+
+  (:allow-exit-location ((actor avatar) location exit)
+    (when (and exit
+               (eq (direction exit) :south)
+               (not (quest-finished actor 'kill-some-plants)))
+      (show actor "The guard refuses to let you go that way.")
+      (tell self actor "Stop right there, friend. You need to perform the tasks
+        set for you by me and my comrades to the north before I will let you
+        pass.")
+      :disallow)))
+
+(defentity iron-gate (portal)
+  (:brief "an iron gate"))
+
+(deflocation guard-station (isle-location)
+  (:name "Guard Station"
+   :full "A small guard post stands alongside the path."
+   :tutorial "In your adventures you will have the chance to learn many
+     different `help:skills`. Each skill allows you to perform a certain type of
+     action, such as fighting with weapons, casting magic spells, or crafting
+     items. The more you use a skill, the more your rank in that skill will
+     increase. A higher rank allows you to succeed at more difficult tasks.
+
+     The guard here has a quest that will teach you your first weapon skill.
+     Talk to him to get started. You can also type `help skills` to learn more
+     about skills in general."
+   :exits ((gravel-path :north circle-of-names :west overgrown-field-se)
+           (iron-gate :south cobbled-square))
+   :contents (guard)))
+
+;;; overgrown-field
+
+(defentity lashling-tendril (weapon)
+  (:brief "a thorny tendril"
+   :damage-type :slashing
+   :damage-range (2 6)
+   :attack-verb "whips"))
+
+(defentity lashling (combatant)
+  (:brief "a lashling"
+   :pose "flails its tendrils in a menacing display."
+   :full "The lashling is a small mass of writhing vines and weeds that has
+     somehow gained the ability to move, albeit very slowly. Sharp thorns
+     protrude from the ends of its leafy, tentacle-like appendages.")
+  ;; FIXME: :entry-message "~a emerges from beneath the weeds."
+  ;; FIXME: :default-attack lashling-tendril
+  ;; FIXME: :natural-armor 0.5
+
+  (:after-kill (actor self attack)
+    (advance-quest actor 'kill-some-plants)))
+
+(defentity overgrown-field-portal (portal)
+  (:brief "the field"
+   :pose "continues to the ~(~a~)."))
+
+(defentity overgrown-field (isle-location)
+  (:name "Overgrown Field"
+   :full "Tangled vines and weeds make it difficult to move through this area."
+   :surface :weeds)
+
+  (:after-enter-world (self)
+    (spawn-if-missing self 'lashling))
+
+  (:after-kill (actor (target lashling) attack)
+    (with-delay (15)
+      (spawn-if-missing self 'lashling))))
+
+(deflocation overgrown-field-sw (overgrown-field)
+  (:exits ((overgrown-field-portal :east overgrown-field-se :north overgrown-field-nw))))
+
+(deflocation overgrown-field-se (overgrown-field)
+  (:tutorial "To begin attacking a lashling, type `attack lashling`. You will
+     automatically perform basic attacks with the weapon in your main hand.
+     Combat ends when you or your opponent is dead!
+
+     Depending on the skills you choose to learn as you explore the world, you
+     will gain access to a variety of special attacks and defenses that you can
+     use during combat. Type `help combat` to learn more."
+   :exits ((overgrown-field-portal :west overgrown-field-sw :north overgrown-field-ne)
+           (gravel-path :east guard-station))))
+
+(deflocation overgrown-field-nw (overgrown-field)
+  (:exits ((overgrown-field-portal :south overgrown-field-sw :east overgrown-field-ne))))
+
+(deflocation overgrown-field-ne (overgrown-field)
+  (:exits ((overgrown-field-portal :west overgrown-field-nw :south overgrown-field-se))))
+
+;;; cobbled-square
+
+(defentity sandy-path (portal)
+  (:brief "a sandy path"))
+
+(defentity cobbled-lane (portal)
+  (:brief "a cobbled lane"))
+
+(deflocation cobbled-square (isle-location)
+  (:name "Cobbled Square"
+   :full "The fresh smell of the sea pleasantly fills this small seaside plaza."
+   :tutorial "Completing quests has given you enough experience to gain a level!
+     By doing so you have also gained `help:karma`, which you can use to join
+     `help:guilds` and learn `help:skills`. Skills grant you access to special
+     actions. As you travel the world, be on the lookout for trainers who can
+     induct you into their guilds and teach you a variety of skills."
+   :surface :stone
+   :exits ((iron-gate :north guard-station) (sandy-path :west beach-east)
+           (cobbled-lane :east pier) (lib:entry-doorway :south dockmaster-shack))))
+
+;;; beach
+
+(defentity shiny-seashell (stackable-item)
+  (:brief "a shiny seashell"
+   :full "The seashell's polished surface is covered with an intricate pattern
+     of white and orange whorls."
+   :alts ("a shiny shell")))
+
+(defentity beach-portal (portal)
+  (:brief "the beach"
+   :pose "continues to the ~(~a~)."))
+
+(defentity beach-location (isle-location)
+  (:name "Rocky Beach"
+   :full "The sand on this narrow beach is full of pebbles and shell fragments."
+   :surface :sand))
+
+(deflocation beach-east (beach-location)
+  (:exits ((beach-portal :west beach-center) (sandy-path :east cobbled-square))))
+
+(deflocation beach-center (beach-location)
+  (:exits ((beach-portal :west beach-west :east beach-east))))
+
+(deflocation beach-west (beach-location)
+  (:exits ((beach-portal :east beach-center)))
+
+  (:after-enter-world (self)
+    (spawn-if-missing self 'shiny-seashell))
+
+  (:after-take (actor (item shiny-seashell) self)
+    (with-delay (300)
+      (spawn-if-missing self 'shiny-seashell))))
+
+;;; dockmaster-shack
+
+(defentity bundle-of-documents (quest-item)
+  (:brief "a bundle[s] of documents"
+   :full "The documents are rather mundane shipping records. A scrawled note on
+     top reads, \"Pay the messenger 10 silver. Q.M.\""
+   :item-quest 'special-delivery))
+
+(defquest special-delivery
+  (:name "On to Arwyck"
+   :summary "Deliver the dockmaster's documents to the surly stevedore at the
+     Arwyck docks."
+   :prerequisites (kill-some-plants))
+
+  (:before-offer-quest (actor self npc)
+    (tell npc actor "You there. I've an errand that needs doing if you've a
+      mind to earn some coin."))
+
+  (:after-accept-quest (actor self npc)
+    (tell npc actor "Good, good. Take these.")
+    (receive actor (make-entity 'bundle-of-documents) npc)
+    (tell npc actor "I need you to deliver those documents to my man in Arwyck.
+      Surly fellow near the docks. Can't miss him. He'll pay you once he has the
+      documents."))
+
+  (:after-advise-quest (actor self npc)
+    (tell npc actor "What are you doing here? My man needs those documents.
+      The *Siren* departs for Arwyck from the dock just east of here."))
+
+  (:after-finish-quest (actor self npc)
+    (tell npc actor "Hey, thanks. I've been needin' those. Here's your coin!
+      You'll be glad of it if you'll be visitin' the shops here in Arwyck. It's
+      no bleedin' city, but you can find most of what you'll be needin' here in
+      town.")
+    ;; FIXME: (receive actor (make-entity 'silver-coin :quantity 10) npc)
+    nil))
+
+(defentity dockmaster (npc)
+  (:brief "the dockmaster"
+   :pose "sits behind the desk."
+   :full "The dockmaster is a grizzled man with a short salt-and-pepper beard.
+     His left eye is covered with a leather patch, but his right eye harbors a
+     dangerous gleam."
+   :begins-quests (special-delivery)))
+
+(defentity desktop-documents (fixture)
+  (:brief "a document"
+   :full "A discreet scan the papers on top of the pile show them to be
+      schedules, manifests, and other such shipping-related documents."
+   :implicit t))
+
+(defentity wine-bottles (fixture)
+  (:brief "an empty wine bottle"
+   :full "You may have been dead for hundreds of years, but wine hasn't changed
+     all that much; you still recognize the cheap stuff when you smell it."
+   :implicit t))
+
+(deflocation dockmaster-shack (isle-location)
+  (:name "Dockmaster's Shack"
+   :full "This one-room structure is dominated by a large desk that is piled with
+    documents and empty wine bottles."
+   :domain :indoor
+   :surface :wood
+   :exits ((lib:exit-doorway :north cobbled-square)
+           (lib:stairway :down dockmaster-basement))
+   :contents (dockmaster desktop-documents wine-bottles)))
+
+;;; dockmaster-basement
+
+(deflocation dockmaster-basement (isle-location)
+  (:name "Basement of the Dockmaster's Shack"
+   :full "This low, damp space is more of a crawlspace than a basement. Several
+     barrels and crates have been pushed into one corner of the dirt floor."
+   :domain :indoor
+   :surface :dirt
+   :exits ((lib:stairway :up dockmaster-shack))))
+
+;;; pier
+
+(defentity dock-sign (fixture)
+  (:brief "an informative sign"
+   :pose "is posted here."
+   :full "The sign indicates that a ship frequently arrives here to carry
+     passengers across the sea to the town of Arwyck."))
+
+(deflocation pier (isle-location)
+  (:name "Sturdy Pier"
+   :full "This stone pier juts out into the sea, giving ships that visit the
+     isle a safe place to dock."
+   :tutorial "To board a ship for Arwyck, wait until it arrives and then move
+     `east`. Once the ship reaches its destination, move `south` to disembark."
+   :surface :stone
+   :exits ((cobbled-lane :west cobbled-square))
+   :contents (dock-sign)))
+
+(defentity gangplank (portal)
+  (:brief "a gangplank"))
+
+(defentity sailor (npc)
+  (:brief "a grizzled sailor"
+   :full "The sailor has a short, salt-and-pepper beard and wears a faded
+     uniform.")
+
+  (:when-talk (actor self topic)
+    (tell self actor "Welcome aboard the *Siren*! Every few moments we make the
+      short run between Arwyck and the Isle of Dawn. Relax and enjoy the trip!")))
+
+(deflocation the-siren (location)
+  (:name "The *Siren*"
+   :full "This sturdy single-masted vessel makes frequent trips between the Isle
+     of Dawn and the town of Arwyck on the mainland."
+   :domain :outdoor
+   :surface :wood
+   :surrounding :water
+   :icon :boat
+   :contents (sailor))
+
+  (:after-enter-world (self)
+    (start-behavior
+     self
+     (lib:follow-route self (list (make-entity 'gangplank
+                                               :direction :west
+                                               :destination 'pier)
+                                  (make-entity 'gangplank
+                                               :direction :south
+                                               :destination 'arwyck::west-dock))))))
+
+|#
