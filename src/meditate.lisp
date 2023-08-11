@@ -6,7 +6,7 @@
 
 (defmethod begin-activity (actor (activity meditation))
   (let ((msg (action-message actor "begins to meditate.")))
-    (show-observers (list* (location actor) (? (location actor) :contents))
+    (show-observers (observer-list* actor (location actor) (? (location actor) :contents))
                     msg :before-meditate actor))
   (start-casting actor *meditation-duration*)
   (with-delay (*meditation-duration*)
@@ -15,7 +15,7 @@
 (defmethod finish-activity (actor (activity meditation))
   (stop-casting actor)
   (let ((msg (action-message actor "finishes meditating.")))
-    (show-observers (list* (location actor) (? (location actor) :contents))
+    (show-observers (observer-list* actor (location actor) (? (location actor) :contents))
                     msg :after-meditate actor)))
 
 (defmethod cancel-activity (actor (activity meditation))

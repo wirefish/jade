@@ -154,3 +154,8 @@ handler."
 
 (defun reacts-to-event-p (observer event)
   (not (null (? observer 'behavior event))))
+
+(defun observer-list* (actor &rest objects)
+  "Like list* except that `actor' appears only once in the resulting list, and
+always as the first element."
+  (cons actor (remove actor (apply #'list* objects))))
