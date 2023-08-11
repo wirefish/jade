@@ -166,6 +166,7 @@ the token indicates 'all', or `nil' if the token does not describe a quantity."
     (cond
       ((= length (length token)) num)
       ((article-p token) 1)
+      ((string-equal token "any") 1)
       ((or (string-equal token "all") (string-equal token "every")) t))))
 
 (defun split-quantity (tokens)
