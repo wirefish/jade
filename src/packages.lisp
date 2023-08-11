@@ -17,8 +17,7 @@
            #:entity-proto
            #:entity-isa
            #:defentity
-           #:clone
-           #:clone*
+           #:clone-entity
            #:with-attributes
            #:describe-brief
 
@@ -36,8 +35,8 @@
 
            #:location
            #:deflocation
-           #:spawn
-           #:spawn-if-missing
+           #:spawn-entity
+           #:spawn-unique-entity
 
            #:avatar
            #:change-race

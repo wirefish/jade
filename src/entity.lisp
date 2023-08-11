@@ -75,18 +75,6 @@
          ,@(when behavior `((defbehavior ,entity ,@behavior)))
          ,entity))))
 
-(defmacro clone (proto &rest attributes)
-  "A wrapper for `clone-entity' that transforms attribute values in the same way
-as `defentity'."
-  `(clone-entity ',proto
-                 ,@(loop for (key value) on attributes by #'cddr
-                         nconc (list key
-                                     (transform-initval key value)))))
-
-(defmacro clone* (&rest arg-lists)
-  "Applies `clone' to each list in `arg-lists'."
-  `(list ,@(loop for arg-list in arg-lists collect `(clone ,@arg-list))))
-
 ;;; Working with entity attributes.
 
 (defmethod slot-missing (class (instance entity) slot-name
@@ -234,7 +222,9 @@ all attributes."
   (format-verb (or (? entity :pose) *default-pose*)
                :quantity (or quantity (? entity :quantity) 1)))
 
-(defun describe-full (entity)
+(defgeneric describe-full (entity))
+
+(defmethod describe-full ((entity entity))
   (or (? entity :description)
       (format nil "~a is unexceptional in every way."
               (describe-brief entity :article :definite :capitalize t))))

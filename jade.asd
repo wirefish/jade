@@ -50,6 +50,7 @@
                       ((:file "avatar")
                        (:file "creatures")
                        (:file "materials")
+                       (:file "clothing")
                        ))
              (:file "isle-of-dawn")
              ))))

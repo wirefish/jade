@@ -254,6 +254,12 @@ complete, advances to the next phase. Returns the index of the new phase, or
               level
               (quest-phase-summary (elt phases phase))))))
 
+(defun drop-quest (actor quest)
+  (deactivate-quest actor (quest-label quest))
+  (remove-quest-items actor quest)
+  (show-notice actor "You are no longer on the quest ~s."
+               (quest-name quest)))
+
 (defcommand quest (actor ("quest" "qu") :word subcommand :rest quest-name)
   "Display information about your active quests. This command has several
 subcommands:
@@ -288,13 +294,16 @@ subcommands:
              (case (length quests)
                (0 (show actor "You are not on any such quest."))
                (1 (let ((quest (first quests)))
-                    (deactivate-quest actor (quest-label quest))
-                    (remove-quest-items actor quest)
-                    (show-notice actor "You are no longer on the quest ~s."
-                                 (quest-name quest))
+                    (drop-quest actor quest)
                     (show-map actor)))
                (t (show actor "Which quest do you want to drop: ~a?"
                         (format-list #'quest-name quests "or")))))
            (show actor "Which quest do you want to drop?")))
+      ((string-equal subcommand "reset")
+       (loop for quest in (mapcar #`(symbol-value-as 'quest (first %)) active-quests) do
+         (drop-quest actor quest))
+       (clrhash (finished-quests actor))
+       (show-map actor)
+       (show-notice actor "Finished quests have been reset."))
       (t
        (show actor "Unknown subcommand. Type `help quest` for help.")))))

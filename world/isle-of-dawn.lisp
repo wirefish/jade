@@ -535,10 +535,10 @@
   (:after-finish-quest (actor (quest &quest get-some-clothes))
     (tell self actor "Here, please take these. I hope everything fits!")
     (give self actor
-          (clone* (shirt :materials (cotton))
-                  (pants :materials (cotton))
-                  (shoes :materials (worn-leather))
-                  (small-backpack :materials (canvas))))
+          (list (clone-entity 'shirt :materials '(cotton))
+                (clone-entity 'pants :materials '(cotton))
+                (clone-entity 'shoes :materials '(worn-leather))
+                (clone-entity 'small-backpack :materials '(canvas))))
     (maybe-show-tutorial actor 'items "The seamstress have given you several
       items; type `inventory` or `inv` to list them.
 
@@ -581,7 +581,8 @@
 
 (defentity tulip-field-portal ()
   (:brief "the tulip field"
-   :pose "continues to the ~(~a~)."))
+   :pose "continues to the ~(~a~)."
+   :unmatchable t))
 
 (defentity tulip-field (isle-location)
   (:name "Field of Tulips"
@@ -589,7 +590,7 @@
    :surface :flowers)
 
   (:after-enter-world (self)
-    (spawn-if-missing self white-tulip)))
+    (spawn-unique-entity self 'white-tulip)))
 
 (deflocation tulip-field-sw (tulip-field)
   (:tutorial "Some items can be picked up using the `take` command. For example,

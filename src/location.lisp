@@ -45,9 +45,9 @@
   ;; FIXME: check for a matching exit; if found, pop it from the registry and
   ;; share its portal. Otherwise, create a new exit and register it to be found
   ;; later.
-  (make-exit :dir dir :dest dest :portal (apply #'clone-entity portal portal-args))))
+  (make-exit :dir dir :dest dest :portal (apply #'clone-entity portal portal-args)))
 
-(defun describe-exit (exit)
+(defmethod describe-full ((exit exit))
   (format nil "~a leads ~a."
           (if-let ((portal (exit-portal exit)))
             (describe-brief portal :article :definite :capitalize t)
@@ -103,12 +103,10 @@ starting and stopping simulation.")
   (let ((c (entity-container entity)))
     (when (typep c 'location) c)))
 
-(defmacro spawn (location proto-label &rest attributes)
-  "Creates a new entity and places it into `location'."
-  `(let ((entity (clone ',proto-label ,@attributes)))
-     (enter-world entity)
-     (enter-location entity ,location nil)))
+(defun spawn-entity (location &rest args)
+  (let ((entity (apply #'clone-entity args)))
+     (enter-location entity location nil)))
 
-(defmacro spawn-if-missing (location proto-label &rest attributes)
-  `(unless (contains-isa ,location :contents ',proto-label)
-     (spawn ,location ',proto-label ,@attributes)))
+(defun spawn-unique-entity (location proto-label &rest attributes)
+  (unless (contains-isa location :contents proto-label)
+     (apply #'spawn-entity location proto-label attributes)))

@@ -79,13 +79,14 @@ element of `subjects'."
       (:partial (when (not match) (setf match :partial))))))
 
 (defmethod match-subject (tokens (subject entity))
-  (if-let ((id-token (find-if (curry #'starts-with #\#) tokens)))
-    ;; The integer part of `id-token' must be non-nil and exactly match the
-    ;; identifier of `subject'. Any other input tokens are ignored.
-    (let ((id (parse-integer id-token :start 1 :junk-allowed t)))
-      (when (and id (eql id (entity-id subject))) :exact))
-    ;; Match `tokens' against matchable properties of `subject'.
-    (apply #'match-subjects tokens (? subject :name) (? subject :brief) (? subject :alts))))
+  (unless (? subject :unmatchable)
+    (if-let ((id-token (find-if (curry #'starts-with #\#) tokens)))
+      ;; The integer part of `id-token' must be non-nil and exactly match the
+      ;; identifier of `subject'. Any other input tokens are ignored.
+      (let ((id (parse-integer id-token :start 1 :junk-allowed t)))
+        (when (and id (eql id (entity-id subject))) :exact))
+      ;; Match `tokens' against matchable properties of `subject'.
+      (apply #'match-subjects tokens (? subject :name) (? subject :brief) (? subject :alts)))))
 
 (defmethod match-subject (tokens (subject exit))
   (with-slots (dir portal) subject
