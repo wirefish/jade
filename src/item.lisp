@@ -3,24 +3,8 @@
 
 (in-package :jade)
 
-;;; A prototype for items that defines generally-required attributes. Optional
-;;; attributes that influence item behavior are described below.
-
-(defclass item (entity) ())
-
-(defentity item (&class item)
-  (:brief "an item"
-   :pose "is here."
-   :full "The item is unremarkable."
-   :icon :pouch
-   :size +small+
-   :level 0
-   :item-group :miscellany
-   :quantity 1
-   :stackable nil))
-
-;;; The optional `:materials' attribute describes the composition of an item.
-;;; If present it must be a list of symbols bound to `material' structs.
+;;; A material represents a substance that goes into the construction of an
+;;; item. It is an uncountable noun, such as "wood" or "metal".
 
 (defstruct material
   label
@@ -45,8 +29,39 @@
 (defmethod transform-initval ((name (eql :traits)) value)
   `(quote ,value))
 
+(defun material-has-tag (material tag)
+  (with-slots (label tags) material
+      (or (eq tag label) (position tag tags))))
+
+;;; A prototype for items that defines generally-required attributes. Optional
+;;; attributes that influence item behavior are described below.
+
+(defclass item (entity) ())
+
+(defentity item (&class item)
+  (:brief "an item"
+   :pose "is here."
+   :full "The item is unremarkable."
+   :icon :pouch
+   :size +small+
+   :level 0
+   :item-group :miscellany
+   :quantity 1
+   :stackable nil))
+
+;;; The optional `:materials' attribute describes the composition of an item.
+;;; If present it must be a list of symbols bound to `material' structs.
+
 (defmethod transform-initval ((name (eql :materials)) value)
   `(quote ,value))
+
+(defmethod describe-brief ((item item) &key quantity (article :indefinite) capitalize)
+  (declare (ignore quantity article capitalize))
+  (apply #'format nil (call-next-method)
+         (mapcar (lambda (symbol)
+                   (let ((material (symbol-value symbol)))
+                     (or (material-adjective material) (material-name material))))
+                 (? item :materials))))
 
 ;;; If the item is associated with a quest, the `quest' attribute is the label
 ;;; of the quest.
