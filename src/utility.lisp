@@ -113,32 +113,6 @@ there was no such value, returns `default'."
 
 (set-dispatch-macro-character #\# #\h #'|#h-reader|)
 
-;;; Enable #`(...) syntax for a lambda with positional arguments. Each argument
-;;; is denoted by %N for N >= 1. (% is a synonym for %1.) The number of expected
-;;; arguments is the highest value seen for N.
-
-(defun |#`-reader| (stream char arg)
-  (declare (ignore char arg))
-  (labels ((arg-position (atom)
-             (when (eq (type-of atom) 'symbol)
-               (let ((name (symbol-name atom)))
-                 (when (eql (char name 0) #\%)
-                   (if (= (length name) 1)
-                       1
-                       (parse-integer name :start 1)))))))
-    (let* ((body (read stream t nil t))
-           (nargs (apply #'max (keep-leaves #'arg-position body)))
-           (arg-names (loop repeat nargs collect (gensym))))
-      `(lambda ,arg-names
-         (declare (ignorable ,@arg-names))
-         ,(mapleaves (lambda (node)
-                       (if-let ((pos (arg-position node)))
-                         (nth (1- pos) arg-names)
-                         node))
-                     body)))))
-
-(set-dispatch-macro-character #\# #\` #'|#`-reader|)
-
 ;;; Generic access to an element of a (possibly nested) data structure.
 
 (defgeneric ? (obj key &rest keys)
