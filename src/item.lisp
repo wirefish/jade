@@ -30,6 +30,9 @@
 
 (defparameter *materials* (make-hash-table))
 
+(defun find-material (label)
+  (gethash label *materials*))
+
 (defmacro defmaterial (label &body args)
   (with-gensyms (material)
     `(let ((,material (make-material :label ',label
@@ -39,13 +42,19 @@
        ,material)))
 
 (defmethod transform-initval ((name (eql :materials)) value)
-  `(list ,@value))
+  `(quote ,value))
 
 (defmethod encode-value ((entity entity) (name (eql :materials)) value)
-  (mapcar #'material-name value))
+  (mapcar #'material-label value))
 
 (defmethod decode-value ((entity entity) (name (eql :materials)) value)
-  (mapcar #'symbol-value value))
+  (mapcar #'find-material value))
+
+;;; If the item is associated with a quest, the `quest' attribute is the label
+;;; of the quest.
+
+(defmethod transform-initval ((name (eql :quest)) value)
+  `(quote ,value))
 
 ;;; If the item is equippable, the `equippable-slot' attribute describes where
 ;;; it can be equipped.
@@ -116,3 +125,6 @@ represents `count' of the same item. Returns nil if entity cannot be split."
       (progn
         (push item (? container slot))
         item)))
+
+(defun contains-isa (container slot label)
+  (some #`(entity-isa % label) (? container slot)))

@@ -298,30 +298,56 @@ location."
 
 ;;; Give an item to an NPC or some other sink.
 
-;; TODO:
+(defgeneric give (giver receiver items))
 
-;;; Receive a newly-created item from an NPC or some other source.
-
-(defgeneric receive (actor item source)
-  (:documentation "Called when `actor' receives `item' from `source'."))
-
-(defmethod receive :around (actor item source)
-  (let ((observers (list actor item source)))
-    (when (observers-allow-p observers :allow-receive actor item source)
-      (notify-observers observers :before-receive actor item source)
-      (call-next-method)
-      (notify-observers observers :after-receive actor item source)
+(defmethod give :around (giver receiver items)
+  (let* ((observers (list* giver receiver items)))
+    (when (observers-allow-p observers :allow-give giver receiver items)
+      (notify-observers observers :before-give giver receiver items)
+      (call-next-method giver receiver items)
+      (notify-observers observers :after-give giver receiver items)
       t)))
 
-(defmethod receive ((actor avatar) item source)
-  ;; FIXME: add a message if resulting encumbrance is over 100%.
+(defmethod give (giver (receiver avatar) items)
+  (if giver
+      (show receiver "~a gives you ~a."
+            (describe-brief giver :article :definite :capitalize t)
+            (format-list #'describe-brief items))
+      (show receiver "You receive ~a." (format-list #'describe-brief items)))
+  (update-inventory receiver
+                    (loop for item in items
+                          collect (insert-item receiver :inventory item)))
+  (check-encumbrance receiver))
+
+;; TODO: give command.
+
+;;; Receive one or more newly-created items from an NPC or some other source.
+
+(defgeneric receive (actor items source)
+  (:documentation "Called when `actor' receives `items' from `source'."))
+
+(defmethod receive :around (actor items source)
+  (let* ((items (loop for item in items
+                      if (listp item)
+                        collect (apply #'clone-entity item)
+                      else
+                        collect item))
+         (observers (list* actor source items)))
+    (when (observers-allow-p observers :allow-receive actor items source)
+      (notify-observers observers :before-receive actor items source)
+      (call-next-method actor items source)
+      (notify-observers observers :after-receive actor items source)
+      t)))
+
+(defmethod receive ((actor avatar) items source)
   (if source
       (show actor "~a gives you ~a."
             (describe-brief source :article :definite :capitalize t)
-            (describe-brief item))
-      (show actor "You receive ~a." (describe-brief item)))
-  (let ((stack (insert-item actor :inventory item)))
-    (update-inventory actor (list stack)))
+            (format-list #'describe-brief items))
+      (show actor "You receive ~a." (format-list #'describe-brief items)))
+  (update-inventory actor
+                    (loop for item in items
+                          collect (insert-item actor :inventory item)))
   (check-encumbrance actor))
 
 ;;; Discard an item.

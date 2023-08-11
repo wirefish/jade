@@ -55,7 +55,7 @@
     (apply #'sethash* (slot-value clone 'attributes) attributes)
     clone))
 
-;;; A mechanism for transforming initializer forms in `defproto' and similar
+;;; A mechanism for transforming initializer forms in `defentity' and similar
 ;;; macros.
 
 (defgeneric transform-initval (name expr)
@@ -76,6 +76,18 @@
        ,@(when behavior `((defbehavior ,entity ,@behavior)))
        (export ',name)
        ,entity)))
+
+(defmacro clone (proto &rest attributes)
+  "A wrapper for `clone-entity' that transforms attribute values in the same way
+as `defentity'."
+  `(clone-entity ',proto
+                 ,@(loop for (key value) on attributes by #'cddr
+                         nconc (list key
+                                     (transform-initval key value)))))
+
+(defmacro clone* (&rest arg-lists)
+  "Applies `clone' to each list in `arg-lists'."
+  `(list ,@(loop for arg-list in arg-lists collect `(clone ,@arg-list))))
 
 ;;; Working with entity attributes.
 

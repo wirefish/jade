@@ -172,6 +172,9 @@ complete, advances to the next phase. Returns the index of the new phase, or
                     (push label (dirty-quests avatar))
                     (show-notice avatar "You have completed the quest ~s!"
                                  (quest-name quest))
+                    (notify-observers (list* (location avatar)
+                                             (? (location avatar) :contents))
+                                      :after-finish-quest avatar quest)
                     :finished)))
             (set-active-quest-state avatar label phase new-state))))))
 

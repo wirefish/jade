@@ -103,3 +103,13 @@ starting and stopping simulation.")
   "Returns the entity's container if it is a location, or nil otherwise."
   (let ((c (entity-container entity)))
     (when (typep c 'location) c)))
+
+(defmacro spawn (location proto-label &rest attributes)
+  "Creates a new entity and places it into `location'."
+  `(let ((entity (clone ',proto-label ,@attributes)))
+     (enter-world entity)
+     (enter-location entity ,location nil)))
+
+(defmacro spawn-if-missing (location proto-label &rest attributes)
+  `(unless (contains-isa ,location :contents ',proto-label)
+     (spawn ,location ',proto-label ,@attributes)))

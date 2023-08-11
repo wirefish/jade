@@ -16,8 +16,9 @@
            #:entity-label
            #:entity-proto
            #:entity-isa
-           #:clone-entity
            #:defentity
+           #:clone
+           #:clone*
            #:with-attributes
            #:describe-brief
 
@@ -30,9 +31,13 @@
 
            #:item
            #:defmaterial
+           #:give
+           #:contains-isa
 
            #:location
            #:deflocation
+           #:spawn
+           #:spawn-if-missing
 
            #:avatar
            #:change-race
