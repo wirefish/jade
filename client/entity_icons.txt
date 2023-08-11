@@ -23,6 +23,7 @@ staff           $weapons/Staves_01.png
 
 # Clothing
 cloth_belt      $armor/Belts_04.png
+shirt           $resources/Common_Clothing.png
 
 # Light armor
 leather_head    $armor/Leather_01.png
@@ -48,6 +49,7 @@ copper_ring     $armor/Rings_01.png
 
 # Containers
 backpack        $inventory/Bag_Small.png
+pouch           $loot/Pouch.png
 
 # Mining
 pickaxe         $resources/Pickaxe.png

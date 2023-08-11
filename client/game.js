@@ -54,7 +54,7 @@ function look(s) {
 
 function setIcon(element, icon) {
     if (icon)
-        element.className = 'icon ' + icon;
+        element.className = 'entity_icon ' + icon;
 }
 
 //

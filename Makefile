@@ -52,7 +52,7 @@ $(IMAGEDIR):
 icons: $(IMAGEDIR)/entity_icons.png ui_icons
 
 $(IMAGEDIR)/entity_icons.png: tools/make_icons.py client/entity_icons.txt | $(IMAGEDIR)
-	tools/make_icons.py -b entity_icons -s 24 -o $(IMAGEDIR) client/entity_icons.txt
+	tools/make_icons.py -b entity_icons -s 34 -o $(IMAGEDIR) client/entity_icons.txt
 	mv $(IMAGEDIR)/entity_icons.css $(CLIENTDIR)
 
 ICONDIR = $(CLIENTDIR)/icons
