@@ -24,16 +24,22 @@ The following verbs/events interact with inventory:
 present, display a more detailed description of matching items."
   (with-attributes (inventory equipment) actor
     (if pattern
-        (if-let ((matches (find-matches pattern (hash-table-alist equipment) inventory)))
-          (dolist (item matches)
-            (show actor "~a (equipped): ~a"
-                  (describe-brief (cdr item) :article nil :capitalize t)
-                  (describe-full (cdr item)))
-            (show actor "~a: ~a"
-                  (describe-brief item :article nil :capitalize t)
-                  (describe-full item)))
-          (show actor "You are not carrying anything that matches \"~a\"."
-                (join-tokens pattern)))
+        (let ((equipped (find-matches pattern (hash-table-alist equipment)))
+              (carried (find-matches pattern inventory)))
+          (if (or equipped carried)
+              (progn
+                (dolist (item equipped)
+                  ;; FIXME: show slot name
+                  (show actor "~a (equipped): ~a"
+                        (describe-brief (cdr item) :article nil)
+                        (describe-full (cdr item))))
+                (dolist (item carried)
+                  (show actor "~a (#~a carried): ~a"
+                        (describe-brief item :article nil)
+                        (entity-id item)
+                        (describe-full item))))
+              (show actor "You are not carrying anything that matches \"~a\"."
+                    (join-tokens pattern))))
         (progn
           (if (> (hash-table-count equipment) 0)
               (show actor "You have the following items equipped: ~a."
@@ -141,17 +147,18 @@ on either hand, you can use \"on *slot*\" to specify the slot to use. For
 example, `equip gold ring on left finger`."
   ;; FIXME: slot. also deal with things like :either-finger, :both-hands, etc.
   (if item
-      (bind ((matches quality (find-matches-if (lambda (x) (? x :equippable-slot)) item
+      (bind ((item quantity (split-quantity item))
+             (matches quality (find-matches-if (lambda (x) (? x :equippable-slot)) item
                                                (? actor :inventory))))
         (cond
           ((null matches)
            (show actor "You are not carrying anything equippable that matches \"~a\"."
                  (join-tokens item)))
-          ((or (eq quality :exact) (= (length matches) 1))
+          ((or (eq quality :exact) (= (length matches) 1) (eql quantity 1))
            (equip actor (first matches) (? (first matches) :equippable-slot)))
           (t
            (show actor "Do you want to equip ~a?"
-                 (format-list #'describe-brief matches)))))
+                 (format-list #'describe-brief matches "or")))))
       (show-equipment actor)))
 
 ;;; Take an item from a container in the environment and place it into
