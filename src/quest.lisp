@@ -159,6 +159,9 @@ complete, advances to the next phase. Returns the index of the new phase, or
                   (let ((state (quest-phase-initial-state (elt phases next-phase))))
                     (set-active-quest-state avatar label next-phase
                                             (if (listp state) (copy-list state) state))
+                    (when (> next-phase 0)
+                      (show-notice avatar "You have progressed in the quest ~s!"
+                                   (quest-name quest)))
                     next-phase)
                   (progn
                     (deactivate-quest avatar label)
