@@ -84,13 +84,13 @@ examples showing the resulting article, singular, and plural:
              (case article
                (:definite (format nil "the ~a" (noun-singular noun)))
                (:indefinite (format nil "~a ~a" (noun-article noun) (noun-singular noun)))
-               (t (noun-singular noun))))
+               (t (copy-seq (noun-singular noun)))))
             ;; In the plural case, prepend the actual number unless quantity is
             ;; t, in which case optionally prepend the definite article.
             ((eq quantity t)
              (if (eq article :definite)
                  (format nil "the ~a" (noun-plural noun))
-                 (noun-plural noun)))
+                 (copy-seq (noun-plural noun))))
             (t
              (format nil "~a ~a" quantity (noun-plural noun))))))
     (when capitalize
