@@ -123,9 +123,9 @@ represents `count' of the same item. Returns nil if entity cannot be split."
 (defun remove-items-if (container slot pred)
   (bind ((kept removed (loop for item in (? container slot)
                              if (funcall pred item)
-                               collect item into kept
-                             else
                                collect item into removed
+                             else
+                               collect item into kept
                              finally (return (values kept removed)))))
     (setf (? container slot) kept)
     removed))
