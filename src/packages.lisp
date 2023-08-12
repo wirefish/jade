@@ -10,6 +10,7 @@
            #:->
            #:bind
            #:with-delay
+           #:uniform-random
 
            #:entity
            #:entity-id
