@@ -8,6 +8,8 @@ $resources    assets/purchased/resource-icons/PNG
 $loot         assets/purchased/loot-icons/PNG
 $unknown      assets/unknown
 
+!! Items
+
 # Weapons
 dagger          $weapons/Knives_03.png
 mace            $weapons/Bluntweapons_05.png
@@ -48,7 +50,7 @@ heavy_shield    $weapons/Shields_03.png
 copper_ring     $armor/Rings_01.png
 
 # Containers
-backpack        $inventory/Bag_Small.png
+small_pack      $inventory/Bag_Small.png
 pouch           $loot/Pouch.png
 
 # Mining
@@ -81,13 +83,21 @@ brass_key       $loot/Key_Type_4.png
 bread           $resources/Bread.png
 mushroom        $loot/Mushroom_Type_6.png
 
-# Creatures
+# Misc. items
+sack            $loot/Sack.png
+seashell        $loot/Sea_Shell.png
+
+!! Avatars
+
+human1          $unknown/human1.png
+
+!! Creatures
+
 kobold          $unknown/kobold.png
 pink_creature   $unknown/smile-creature.png
 
-# Misc
+!! Other
+
 arched_chest    $loot/Chest_Type_1.png
 flat_chest      $loot/Chest_Type_2.png
-sack            $loot/Sack.png
-seashell        $loot/Sea_Shell.png
 tombstone       $unknown/tombstone.png

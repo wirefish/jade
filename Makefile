@@ -49,11 +49,23 @@ $(IMAGEDIR):
 
 .PHONY: ui_icons
 
-icons: $(IMAGEDIR)/entity_icons.png ui_icons
+icons:  $(IMAGEDIR)/neighbor_icons.png $(IMAGEDIR)/inventory_icons.png \
+	$(IMAGEDIR)/avatar_icons.png ui_icons
 
-$(IMAGEDIR)/entity_icons.png: tools/make_icons.py client/entity_icons.txt | $(IMAGEDIR)
-	tools/make_icons.py -b entity_icons -s 34 -o $(IMAGEDIR) client/entity_icons.txt
-	mv $(IMAGEDIR)/entity_icons.css $(CLIENTDIR)
+$(IMAGEDIR)/neighbor_icons.png: tools/make_icons.py client/icons.txt | $(IMAGEDIR)
+	tools/make_icons.py -n neighbor -s 34 -g items -g creatures -g avatars -g other \
+		-o $(IMAGEDIR) client/icons.txt
+	mv $(IMAGEDIR)/neighbor_icons.css $(CLIENTDIR)
+
+$(IMAGEDIR)/inventory_icons.png: tools/make_icons.py client/icons.txt | $(IMAGEDIR)
+	tools/make_icons.py -n inventory -s 24 -g items \
+		-o $(IMAGEDIR) client/icons.txt
+	mv $(IMAGEDIR)/inventory_icons.css $(CLIENTDIR)
+
+$(IMAGEDIR)/avatar_icons.png: tools/make_icons.py client/icons.txt | $(IMAGEDIR)
+	tools/make_icons.py -n avatar -s 60 -g avatars \
+		-o $(IMAGEDIR) client/icons.txt
+	mv $(IMAGEDIR)/avatar_icons.css $(CLIENTDIR)
 
 ICONDIR = $(CLIENTDIR)/icons
 ICONS = $(wildcard client/icons/*.png)

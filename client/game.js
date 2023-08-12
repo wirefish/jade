@@ -52,9 +52,9 @@ function look(s) {
     return link(s, 'look');
 }
 
-function setIcon(element, icon) {
+function setIcon(element, type, icon) {
     if (icon)
-        element.className = 'entity_icon ' + icon;
+        element.className = '{0}_icons {0}_{1}'.format(type, icon);
 }
 
 //
@@ -72,7 +72,7 @@ function updatePlayerBio(name, icon, level, race) {
         '{0}, level {1} {2}'.format(name, level, race) :
         'level {0} {1}'.format(level, race);
     document.getElementById("player_name").innerHTML = summary;
-    setIcon(document.getElementById("header"), icon);
+    setIcon(document.getElementById("header"), "avatar", icon);
 }
 
 // Appends a block element to a scrollable text pane, removing the oldest block
@@ -229,7 +229,7 @@ MessageHandler.prototype.updateInventory = function(items) {
 
                 var icon_div = document.createElement('div');
                 div.appendChild(icon_div);
-                setIcon(icon_div, icon);
+                setIcon(icon_div, "inventory", icon);
 
                 var brief_div = document.createElement('div');
                 div.appendChild(brief_div);
@@ -246,7 +246,7 @@ MessageHandler.prototype.updateEquipment = function(equipment) {
         var div = document.getElementById('equip_' + slot);
         if (equipment[slot]) {
             const [icon, brief] = equipment[slot];
-            setIcon(div, icon);
+            setIcon(div, "inventory", icon);
             div.innerHTML = brief;
         } else {
             div.style.backgroundImage = 'none';
@@ -362,7 +362,7 @@ MessageHandler.prototype.setNeighborProperties = function(item, new_properties) 
     this.neighbors[key] = properties;
 
     if (properties.icon)
-        setIcon(item.children[0], properties.icon);
+        setIcon(item.children[0], "neighbor", properties.icon);
 
     if (properties.brief)
         item.children[1].children[0].innerHTML = properties.brief;
