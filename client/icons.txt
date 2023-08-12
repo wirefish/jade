@@ -16,7 +16,7 @@ mace            $weapons/Bluntweapons_05.png
 maul            $weapons/Bluntweapons_03.png
 sword           $weapons/Swords_04.png
 scimitar        $weapons/Swords_10.png
-greatsword      $weapons/swords_07.png
+greatsword      $weapons/Swords_07.png
 axe             $weapons/Axes_01.png
 battleaxe       $weapons/Axes_04.png
 spear           $weapons/Spears_01.png
