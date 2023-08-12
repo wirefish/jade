@@ -30,7 +30,7 @@ If `force' is true, do not allow observers to disallow the action."))
 (defmethod exit-location ((actor avatar) location exit &key force)
   (declare (ignore force))
   (reject-pending-offer actor)
-  (when-let ((message (and exit (? (exit-portal exit) :transit-message))))
+  (when-let ((message (? exit #'exit-portal :transit-message)))
     (show actor message))
   (call-next-method))
 
