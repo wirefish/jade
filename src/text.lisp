@@ -127,7 +127,7 @@ examples showing the resulting article, singular, and plural:
   (if (position #\[ s)
       (bind ((singular plural (singular-and-plural s)))
         (make-verb :singular singular :plural plural))
-      (let* ((sep (position #\space s))
+      (let* ((sep (position-if-not #'alpha-char-p s))
              (prefix (subseq s 0 sep)))
         (make-verb :singular s
                    :plural (strcat (guess-plural-verb prefix) (if sep (subseq s sep) ""))))))
