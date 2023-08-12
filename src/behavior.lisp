@@ -119,22 +119,26 @@ handler."
                            ,(make-event-handler-fn event params body))))
        ,entity)))
 
-(defgeneric observe-event (observer event &rest args)
-  (:method ((observer null) event &rest args)
-    (declare (ignore args)))
-  (:method ((observer entity) event &rest args)
-    (let ((handlers (? observer 'behavior event)))
-      (loop for handler in handlers do
-        (when (apply (event-handler-test handler) observer args)
-          (let ((x (apply (event-handler-fn handler) observer args)))
-            (unless (eq x :call-next-handler)
-              (return-from observe-event x))))))))
+(defgeneric observe-event (observer event &rest args))
+
+(defmethod observe-event ((observer null) event &rest args)
+  (declare (ignore args)))
+
+(defmethod observe-event ((observer entity) event &rest args)
+  (let ((handlers (? observer 'behavior event)))
+    (loop for handler in handlers do
+      (when (apply (event-handler-test handler) observer args)
+        (let ((x (apply (event-handler-fn handler) observer args)))
+          (unless (eq x :call-next-handler)
+            (return-from observe-event x)))))))
 
 (defun notify-observers (observers event &rest args)
   (dolist (observer observers)
     (apply #'observe-event observer event args)))
 
 (defun action-message (actor verb)
+  "Returns a closure that when called with an entity, returns a string that
+appropriate describes an action taken by `actor'."
   (let* ((verb (parse-verb verb))
          (self-message (format nil "You ~a" (verb-plural verb)))
          (other-message (format nil "~a ~a"
@@ -143,10 +147,11 @@ handler."
     (lambda (observer)
       (if (eq observer actor) self-message other-message))))
 
-(defun show-observers (observers message event &rest args)
+(defun show-observers (observers message &rest event-args)
   (dolist (observer observers)
     (show observer (if (functionp message) (funcall message observer) message))
-    (apply #'observe-event observer event args)))
+    (when event-args
+      (apply #'observe-event observer event-args))))
 
 (defun observers-allow-p (observers event &rest args)
   (dolist (observer observers)

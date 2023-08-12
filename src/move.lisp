@@ -5,14 +5,16 @@
 ;;;
 
 (defgeneric exit-location (actor location exit &key force)
-  (:documentation "Called when `actor' attempts to leave `location' via `exit'. If `force' is
-true, do not allow observers to disallow the action."))
+  (:documentation "Called when `actor' attempts to leave `location' via `exit'.
+If `force' is true, do not allow observers to disallow the action."))
 
 (defmethod exit-location :around (actor location exit &key force)
-  (let ((observers (list* location exit (? location :contents))))
+  (let ((observers (observer-list* actor exit location (? location :contents)))
+        (message (exit-message actor exit)))
     (when (or force
               (observers-allow-p observers :allow-exit-location actor location exit))
       (notify-observers observers :before-exit-location actor location exit)
+      (show-observers (cons actor (cddr observers)) message) ; ignoring exit
       (call-next-method)
       (notify-observers observers :after-exit-location actor location exit)
       t)))
@@ -27,17 +29,16 @@ true, do not allow observers to disallow the action."))
 
 (defmethod exit-location ((actor avatar) location exit &key force)
   (declare (ignore force))
-  ;; FIXME: check for exit message.
   (reject-pending-offer actor)
-  (when exit
-    (show actor "You head ~a." (direction-name (exit-dir exit))))
+  (when-let ((message (and exit (? (exit-portal exit) :transit-message))))
+    (show actor message))
   (call-next-method))
 
 ;;;
 
 (defgeneric exit-world (actor)
-  (:documentation "Called when `actor' attempts to leave the game, after having already left its
-location."))
+  (:documentation "Called when `actor' attempts to leave the game, after having
+already left its location."))
 
 (defmethod exit-world :around (actor)
   (observe-event actor :before-exit-world actor)
@@ -71,12 +72,14 @@ entering its initial location."))
 
 (defgeneric enter-location (actor location entry)
   (:documentation "Called when `actor' enters `location' via `entry'. There is
-  no allow phase."))
+no allow phase."))
 
 (defmethod enter-location :around (actor location entry)
-  (let ((observers (list* actor location entry (? location :contents))))
+  (let ((observers (list* actor entry location (? location :contents)))
+        (message (entry-message actor entry)))
     (notify-observers observers :before-enter-location actor location entry)
     (call-next-method)
+    (show-observers (cddr observers) message)  ; ignoring actor and entry
     (notify-observers observers :after-enter-location actor location entry)))
 
 (defmethod enter-location (actor location entry)

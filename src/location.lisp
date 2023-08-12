@@ -57,6 +57,32 @@
 (defmethod observe-event ((observer exit) event &rest args)
   (apply #'observe-event (exit-portal observer) event args))
 
+;;; An entity that acts as a portal may define several attributes used to
+;;; construct messages seen by observers when some entity passes through the
+;;; portal: :exit-verb, :entry-verb, and :transit-message.
+
+(defun exit-message (actor exit)
+  (action-message actor
+                  (if exit
+                      (with-slots (dir portal) exit
+                        (format nil
+                                (or (? portal :exit-verb) "heads ~a.")
+                                (direction-name dir)))
+                      "disappears!")))
+
+(defun entry-message (actor entry)
+  (action-message actor
+                  (if entry
+                      (with-slots (dir portal) entry
+                        (format nil
+                                (or (? portal :entry-verb)
+                                    (case dir
+                                      (:up "arrives from above.")
+                                      (:down "arrives from below.")
+                                      (t "arrives from the ~a.")))
+                                (direction-name dir)))
+                      "appears!")))
+
 ;;; A location is a subclass of entity only so it can be used to specialize
 ;;; generic functions.
 
