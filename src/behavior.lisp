@@ -82,6 +82,8 @@ satisfies `constraint'."
            `(eq (quest-label ,param) ',quest))))
     ((eq (first constraint) '&race)
      `(eq (? ,param :race 'label) ',(second constraint)))
+    ((eq (first constraint) '&dir)
+     `(eq (exit-dir ,param) ,(second constraint)))
     ((symbolp (first constraint))
      `(entity-isa ,param ',(first constraint)))
     (t

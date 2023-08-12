@@ -27,6 +27,7 @@
            #:self
            #:&quest
            #:&race
+           #:&dir
 
            #:item
            #:defmaterial

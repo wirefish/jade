@@ -51,6 +51,7 @@
                        (:file "creatures")
                        (:file "materials")
                        (:file "clothing")
+                       (:file "weapons")
                        ))
              (:file "isle-of-dawn")
              ))))

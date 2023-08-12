@@ -18,6 +18,10 @@
 
 ;;; Metal
 
+(defmaterial copper
+  :name "copper"
+  :tags (metal soft))
+
 (defmaterial gold
   :name "gold"
   :adjective "golden"

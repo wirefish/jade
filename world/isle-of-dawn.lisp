@@ -717,69 +717,81 @@
       listening, so be careful what you say! If you speak a single word that the
       orb deems suitable, that word will become your name. Choose wisely.")))
 
-#|
 ;;; guard-station
 
 (defquest kill-some-plants
   (:name "Weed Control"
    :summary "Prove your worth to the guard by killing a vineling. Lashleaf?
      Whatever."
-   :prerequisites (choose-a-name))
+   :required-quests (choose-a-name))
 
-  (:before-offer-quest (actor self npc)
-    (tell npc actor "Greetings, ~a. It seems you're nearly ready to leave this
+  (active
+      :summary "Kill a vineling. Lashleaf? Whatever.")
+
+  (done
+      :summary "Return to the guard."))
+
+(defentity copper-dirk (dagger)
+  (:brief "a pitted copper dirk"
+   :description "The dirk's blade is so worn that it seems likely to snap at any
+     time."
+   :materials (copper)))
+
+(defentity guard (humanoid)
+  (:brief "a burly guard"
+   :pose "stands nearby."
+   :description "The guard wears a long chainmail shirt and carries a
+     double-bladed axe. His bristly red beard spills out across his ample
+     belly."
+   :offers-quests (kill-some-plants))
+
+  (:when-talk ((actor &quest kill-some-plants :finished) self topic)
+    (tell self actor "Good to see you again, plant-slayer."))
+
+  (:when-talk ((actor &quest kill-some-plants :available) self topic)
+    (tell self actor "Greetings, ~a. It seems you're nearly ready to leave this
       place, but I have my doubts. Before I allow you to venture further, I'm
       going to teach you how to fight! You'll need to be able to handle a weapon
-      if you want to survive in the real world."
-          (describe-brief actor)))
+      if you want to survive in the real world." (? actor :name))
+    (offer-quest self 'kill-some-plants actor))
 
-  (:after-accept-quest (actor self npc)
-    (tell npc actor "West of here you'll find some...plants. Not normal
+  (:after-accept-quest (actor (quest &quest kill-some-plants) self)
+    (tell self actor "West of here you'll find some...plants. Not normal
       plants, but vicious killers! Vinelings, I think they're called. Or maybe
       lashleaves? Whatever. The name's not important. Here, take this.")
-    (receive actor (make-entity 'hunting-knife :materials copper) npc)
-    (tell npc actor "Go ahead, `equip` that knife and kill one of those plants.
+
+    (give self actor (list (clone-entity 'copper-dirk)))
+
+    (tell self actor "Go ahead, `equip` that knife and kill one of those plants.
       Strike fast and true! If you can overcome such a fearsome foe, I'll
       happily let you pass."))
 
-  (:after-advise-quest (actor self npc)
-    (tell npc actor "Any progress so far? Kill one of those plant things and
+  (:when-talk ((actor &quest kill-some-plants active) self topic)
+    (tell self actor "Any progress so far? Kill one of those plant things and
       we'll talk."))
 
-  (:after-finish-quest (actor self npc)
-    (tell npc actor "Great job! I'll confess, those things give me the heebie
+  (:when-talk ((actor &quest kill-some-plants done) self topic)
+    (tell self actor "Great job! I'll confess, those things give me the heebie
       jeebies. Plants shouldn't writhe around like that. Please, feel free to
-      keep the knife. You may head south whenever you like.")))
+      keep the dirk. You may head south whenever you like.")
+    (advance-quest self actor 'kill-some-plants))
 
-(defentity guard (npc)
-  (:brief "a burly guard"
-   :pose "stands nearby."
-   :full "The guard wears a long chainmail shirt and carries a double-bladed
-     axe. His bristly red beard spills out across his ample belly."
-   :begins-quests (kill-some-plants)
-   :ends-quests (kill-some-plants))
+  (:allow-exit-location ((actor &quest kill-some-plants :finished) location (exit &dir :south))
+    (show actor "The guard salutes as you head toward the gate."))
 
-  (:when-talk (actor self topic)
-    (if (quest-complete actor 'kill-some-plants)
-        (tell self actor "Good to see you again, plant-slayer.")
-        (show actor "The guard grunts in your general direction.")))
+  (:allow-exit-location ((actor avatar) location (exit &dir :south))
+    (show actor "The guard refuses to let you go that way.")
+    (tell self actor "Stop right there, friend. You need to perform the tasks
+      set for you by me and my comrades to the north before I will let you
+      pass.")
+    (disallow-action)))
 
-  (:allow-exit-location ((actor avatar) location exit)
-    (when (and exit
-               (eq (direction exit) :south)
-               (not (quest-finished actor 'kill-some-plants)))
-      (show actor "The guard refuses to let you go that way.")
-      (tell self actor "Stop right there, friend. You need to perform the tasks
-        set for you by me and my comrades to the north before I will let you
-        pass.")
-      :disallow)))
-
-(defentity iron-gate (portal)
+(defentity iron-gate ()
   (:brief "an iron gate"))
 
 (deflocation guard-station (isle-location)
   (:name "Guard Station"
-   :full "A small guard post stands alongside the path."
+   :description "A small guard post stands alongside the path."
    :tutorial "In your adventures you will have the chance to learn many
      different `help:skills`. Each skill allows you to perform a certain type of
      action, such as fighting with weapons, casting magic spells, or crafting
@@ -789,52 +801,55 @@
      The guard here has a quest that will teach you your first weapon skill.
      Talk to him to get started. You can also type `help skills` to learn more
      about skills in general."
+   :contents (guard)
    :exits ((gravel-path :north circle-of-names :west overgrown-field-se)
-           (iron-gate :south cobbled-square))
-   :contents (guard)))
+           (iron-gate :south cobbled-square))))
 
 ;;; overgrown-field
 
 (defentity lashling-tendril (weapon)
   (:brief "a thorny tendril"
+   :speed 5
    :damage-type :slashing
    :damage-range (2 6)
    :attack-verb "whips"))
 
-(defentity lashling (combatant)
+(defentity lashling ()
   (:brief "a lashling"
    :pose "flails its tendrils in a menacing display."
-   :full "The lashling is a small mass of writhing vines and weeds that has
-     somehow gained the ability to move, albeit very slowly. Sharp thorns
-     protrude from the ends of its leafy, tentacle-like appendages.")
-  ;; FIXME: :entry-message "~a emerges from beneath the weeds."
-  ;; FIXME: :default-attack lashling-tendril
-  ;; FIXME: :natural-armor 0.5
+   :description "The lashling is a small mass of writhing vines and weeds that
+     has somehow gained the ability to move, albeit very slowly. Sharp thorns
+     protrude from the ends of its leafy, tentacle-like appendages."
+   :entry-message "~a emerges from beneath the weeds."
+   :attacks '(lashling-tendril)
+   :traits '(:defense 0.5))
 
-  (:after-kill (actor self attack)
-    (advance-quest actor 'kill-some-plants)))
+  (:after-kill ((actor &quest kill-some-plants active) self)
+    (advance-quest self actor 'kill-some-plants)))
 
-(defentity overgrown-field-portal (portal)
+(defentity overgrown-field-portal ()
   (:brief "the field"
-   :pose "continues to the ~(~a~)."))
+   :pose "continues to the ~(~a~)."
+   :unmatchable t))
 
 (defentity overgrown-field (isle-location)
   (:name "Overgrown Field"
-   :full "Tangled vines and weeds make it difficult to move through this area."
+   :description "Tangled vines and weeds make it difficult to move through this
+     area."
    :surface :weeds)
 
   (:after-enter-world (self)
-    (spawn-if-missing self 'lashling))
+    (spawn-unique-entity self 'lashling))
 
-  (:after-kill (actor (target lashling) attack)
+  (:after-kill (actor (target lashling))
     (with-delay (15)
-      (spawn-if-missing self 'lashling))))
+      (spawn-unique-entity self 'lashling))))
 
 (deflocation overgrown-field-sw (overgrown-field)
   (:exits ((overgrown-field-portal :east overgrown-field-se :north overgrown-field-nw))))
 
 (deflocation overgrown-field-se (overgrown-field)
-  (:tutorial "To begin attacking a lashling, type `attack lashling`. You will
+  (:tutorial "To enter combat with a lashling, type `attack lashling`. You will
      automatically perform basic attacks with the weapon in your main hand.
      Combat ends when you or your opponent is dead!
 
