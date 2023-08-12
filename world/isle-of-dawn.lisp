@@ -782,12 +782,13 @@
   (:allow-exit-location ((actor avatar) location (exit &dir :south))
     (show actor "The guard refuses to let you go that way.")
     (tell self actor "Stop right there, friend. You need to perform the tasks
-      set for you by me and my comrades to the north before I will let you
+      set for you by myself and my comrades to the north before I will let you
       pass.")
     (disallow-action)))
 
 (defentity iron-gate ()
-  (:brief "an iron gate"))
+  (:brief "an iron gate"
+   :transit-message "The gate swings shut silently behind you."))
 
 (deflocation guard-station (isle-location)
   (:name "Guard Station"
@@ -867,15 +868,16 @@
 
 ;;; cobbled-square
 
-(defentity sandy-path (portal)
+(defentity sandy-path ()
   (:brief "a sandy path"))
 
-(defentity cobbled-lane (portal)
+(defentity cobbled-lane ()
   (:brief "a cobbled lane"))
 
 (deflocation cobbled-square (isle-location)
   (:name "Cobbled Square"
-   :full "The fresh smell of the sea pleasantly fills this small seaside plaza."
+   :description "The fresh smell of the sea pleasantly fills this small seaside
+     plaza."
    :tutorial "Completing quests has given you enough experience to gain a level!
      By doing so you have also gained `help:karma`, which you can use to join
      `help:guilds` and learn `help:skills`. Skills grant you access to special
@@ -883,23 +885,26 @@
      induct you into their guilds and teach you a variety of skills."
    :surface :stone
    :exits ((iron-gate :north guard-station) (sandy-path :west beach-east)
-           (cobbled-lane :east pier) (lib:entry-doorway :south dockmaster-shack))))
+           (cobbled-lane :east pier) (entry-doorway :south dockmaster-shack))))
 
 ;;; beach
 
-(defentity shiny-seashell (stackable-item)
+(defentity shiny-seashell (item)
   (:brief "a shiny seashell"
-   :full "The seashell's polished surface is covered with an intricate pattern
-     of white and orange whorls."
-   :alts ("a shiny shell")))
+   :description "The seashell's polished surface is covered with an intricate
+     pattern of white and orange whorls."
+   :alts ("a shiny shell")
+   :stackable t))
 
-(defentity beach-portal (portal)
+(defentity beach-portal ()
   (:brief "the beach"
-   :pose "continues to the ~(~a~)."))
+   :pose "continues to the ~(~a~)."
+   :unmatchable t))
 
 (defentity beach-location (isle-location)
   (:name "Rocky Beach"
-   :full "The sand on this narrow beach is full of pebbles and shell fragments."
+   :description "The sand on this narrow beach is full of pebbles and shell
+     fragments."
    :surface :sand))
 
 (deflocation beach-east (beach-location)
@@ -912,12 +917,13 @@
   (:exits ((beach-portal :east beach-center)))
 
   (:after-enter-world (self)
-    (spawn-if-missing self 'shiny-seashell))
+    (spawn-unique-entity self 'shiny-seashell))
 
   (:after-take (actor (item shiny-seashell) self)
     (with-delay (300)
-      (spawn-if-missing self 'shiny-seashell))))
+      (spawn-unique-entity self 'shiny-seashell))))
 
+#|
 ;;; dockmaster-shack
 
 (defentity bundle-of-documents (quest-item)
