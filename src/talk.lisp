@@ -39,35 +39,35 @@ particular topic of interest."
 
 ;;; Say something to everyone at the same location.
 
-#|
-(defun punct-char-p (c)
-  (not (or (alpha-char-p c) (digit-char-p c))))
+(defun join-words (tokens)
+  "Formats input tokens as words and punctuation with appropriate spacing."
+  (labels ((punct-p (c) (position c "!?,.")))
+    (apply #'strcat
+     (loop for token in tokens for i from 0
+           nconc (if (or (= i 0) (punct-p (char token 0)))
+                     (list token)
+                     (list " " token))))))
 
-(defun format-message (words)
-  "Formats a raw sequence of words for presentation to an avatar."
-  (let ((message (format nil "~{~a~^ ~}" words)))
-    (setf (char message 0) (char-upcase (char message 0)))
-    (if (not (punct-char-p (char message (1- (length message)))))
-        (concatenate 'string message ".")
-        message)))
+(defgeneric say (actor message))
 
-(defgeneric say (actor message location)
-  (:method :around (actor message location)
-    (let ((observers (list* location (contents location))))
-      (when (observers-allow observers :allow-say actor message)
+(defmethod say :around (actor message)
+  (let ((location (location actor)))
+    (let ((observers (list* location (? location :contents))))
+      (when (observers-allow-p observers :allow-say actor message)
         (notify-observers observers :before-say actor message)
         (call-next-method)
-        (notify-observers observers :after-say actor message))))
-  (:method (actor message location)
-    (dolist (observer (contents location))
+        (notify-observers observers :after-say actor message)))))
+
+(defmethod say (actor message)
+  (let ((actor-description (describe-brief actor :capitalize t)))
+    (dolist (observer (? (location actor) :contents))
       (if (eq observer actor)
           (show observer "You say, ~s" message)
-          (show observer "~a says, ~s" (describe-brief actor :capitalize t))))))
+          (show observer "~a says, ~s" actor-description message)))))
 
-(defcommand say (actor ("say" "\"") :rest words)
-  (say actor (format-message words) (location actor)))
-
-|#
+(defcommand say (actor ("say") :rest message)
+  "Say something to everyone in your location."
+  (say actor (join-words message)))
 
 ;;; TODO: Yell something that can be heard at your location and nearby locations.
 
