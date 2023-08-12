@@ -296,25 +296,30 @@ a:link {
     grid-area: neighbors;
 }
 
-.neighbors > div {
-    position: relative;
-    margin: 4px 2px;
-    height: 34px;
-    background-repeat: no-repeat;
-    padding-left: 37px;
-    cursor: pointer;
-}
-
-.neighbors > div:nth-child(1) {
+.neighbor {
     display: none;
+    cursor: pointer;
+    margin-top: 4px;
 }
 
-.neighbors > div > div:nth-child(1) {
+.neighbor > div:nth-child(1) {
+    width: 34px;
+    height: 34px;
+}
+
+.neighbor_info {
+    margin-left: 4px;
+    margin-right: 4px;
+    height: 34px;
+    flex-grow: 1;
+}
+
+.neighbor_brief {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     font-size: 9pt;
-    line-height: 18px;
+    line-height: 20px;
 }
 
 .neighbors .statbar {

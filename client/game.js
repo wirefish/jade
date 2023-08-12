@@ -355,16 +355,16 @@ MessageHandler.prototype.setNeighborProperties = function(item, new_properties) 
     this.neighbors[key] = properties;
 
     if (properties.icon)
-        setIcon(item, properties.icon);
+        setIcon(item.children[0], properties.icon);
 
     if (properties.brief)
-        item.children[0].innerHTML = properties.brief;
+        item.children[1].children[0].innerHTML = properties.brief;
 
     if (properties.health && properties.max_health) {
-        item.children[1].children[0].style.width =
+        item.children[1].children[1].children[0].style.width =
             (100.0 * properties.health / properties.max_health) + "%";
     } else {
-        item.children[1].style.visibility = 'hidden';
+        item.children[1].children[1].style.visibility = 'hidden';
     }
 
     // Set a command to perform when clicking the item. TODO: make it
@@ -377,8 +377,8 @@ MessageHandler.prototype.createNeighbor = function(properties) {
     var neighbors = document.getElementById("neighbors");
     var item = neighbors.children[0].cloneNode(true);
     item.id = getNeighborId(properties.key);
-    item.className = "do_enter";
-    item.style.display = "block";
+    item.className = "neighbor do_enter";
+    item.style.display = "flex";
     this.setNeighborProperties(item, properties);
     neighbors.appendChild(item);
     return item;
