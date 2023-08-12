@@ -318,7 +318,6 @@ a:link {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    font-size: 9pt;
     line-height: 20px;
 }
 
@@ -473,14 +472,24 @@ a:link {
 
 #inventory_contents > div {
     flex: 0 0 50%;
+    display: flex;
     max-width: 50%;
     height: 24px;
     margin-top: 3px;
+}
+
+#inventory_contents > div > div:nth-child(1) {
+    width: 24px;
+    height: 24px;
+}
+
+#inventory_contents > div > div:nth-child(2) {
+    flex-grow: 1
     line-height: 20px;
-    text-indent: 28px;
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
+    margin-left: 4px;
 }
 
 /* The combat pane shows resources, attributes that determine combat modifiers,

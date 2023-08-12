@@ -226,8 +226,15 @@ MessageHandler.prototype.updateInventory = function(items) {
             } else {
                 div = document.createElement('div');
                 div.id = 'inv_' + id;
-                setIcon(div, icon);
-                div.innerHTML = brief;
+
+                var icon_div = document.createElement('div');
+                div.appendChild(icon_div);
+                setIcon(icon_div, icon);
+
+                var brief_div = document.createElement('div');
+                div.appendChild(brief_div);
+                brief_div.innerHTML = brief;
+
                 contents_div.insertBefore(div, null);
             }
         }
