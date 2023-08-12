@@ -9,3 +9,10 @@
 * In describe-full for an item, use the materials.
 
 * Fix command parsing to allow unambiguous prefixes.
+
+* Combat.
+
+* Skills.
+
+* UI state for an avatar. This way show-location can check if the name or
+  description has changed and avoid resending it.
