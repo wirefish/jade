@@ -557,7 +557,7 @@
    :description "A wooden market stall has been erected beside the path. Its
      counter is piled with basic clothing items in myriad styles and sizes."
    :contents (seamstress)
-   :exits ((gravel-path :north wildflower-field :south fountain-plaza
+   :exits ((gravel-path :north wildflower-field :south circle-of-names
                         :east tulip-field-sw))))
 
 ;;; tulip-field
@@ -610,137 +610,54 @@
 (deflocation tulip-field-ne (tulip-field)
   (:exits ((tulip-field-portal :west tulip-field-nw :south tulip-field-se))))
 
-#|
-;;; fountain-plaza
-
-(defentity stone-fountain (fixture)
-  (:brief "a stone fountain"
-   :pose "stands in the middle of the plaza."
-   :full "This large fountain depicts a circle of men and women holding hands
-     and dancing around a central pillar. Water bursts forth from atop the
-     pillar, creating a delightful sound as it lands at the figures' feet."))
-
-(defquest choose-a-gender
-  (:name "He or She?"
-   :summary "Select your gender by meditating at one of the shrines near the
-     Fountain Plaza, then return to the cherub."
-   :prerequisites (get-some-clothes))
-
-  (:before-offer-quest (actor self npc)
-    (tell npc actor "Another new arrival! Good to see you. We're certain to
-      need more heroes of your caliber before long. Right now, though, it's high
-      time you chose a gender. I assume you remember the difference between
-      males and females from your previous life?"))
-
-  (:after-accept-quest (actor self npc)
-    (tell npc actor "To the east and west you will find statues that symbolize
-      the two sexes. Simply `meditate` near the statue that represents your
-      preferred gender. Come back to me when you're done."))
-
-  (:after-advise-quest (actor self npc)
-    (tell npc actor "Did you find the statues? They're hard to miss!"))
-
-  (:after-finish-quest (actor self npc)
-    (tell npc actor "You did it! I must admit I'm somewhat surprised by your
-      choice. No matter; I'm sure I'll get used to it. Eventually.")))
-
-(defentity cherub (npc)
-  (:brief "a cherub"
-   :pose "hovers nearby, its wings flapping madly."
-   :full "The cherub is a small, chubby creature with white feathered wings.
-     Although its stature and harmless aspect are those of a child, its dark and
-     penetrating eyes make it clear this is a creature both ancient and wise."
-   :begins-quests (choose-a-gender)
-   :ends-quests (choose-a-gender))
-
-  (:when-talk (actor self topic)
-    (tell self actor "Hello there! Do you like my wings? I recently had them
-      waxed.")))
-
-(deflocation fountain-plaza (isle-location)
-  (:name "Fountain Plaza"
-   :full "This hexagonal plaza is paved with multi-colored stone tiles."
-   :surface :stone
-   :exits ((gravel-path :north clothing-stall :south circle-of-names
-                        :west male-shrine :east female-shrine))
-   :contents (stone-fountain cherub)))
-
-;;; male-shrine
-
-(defentity male-statue (fixture)
-  (:brief "a large marble statue"
-   :pose "stands in the center of the plaza."
-   :full "The statue stands over twelve feet tall. Its form subtly shifts as you
-     view it, taking on properties of different races and embodying various
-     masculine virtues. It somehow reflects your own personal concept of the
-     perfect male."))
-
-(deflocation male-shrine (isle-location)
-  (:name "Shrine of Masculinity"
-   :full "Low shrubs, cut in complex geometric patterns, surround a plaza
-     covered with white gravel."
-   :exits ((gravel-path :east fountain-plaza))
-   :contents (male-statue))
-
-  (:after-meditate (actor)
-    (if (quest-incomplete actor 'choose-a-gender)
-        (progn
-          (show actor "The statue's mouth begins to move and a deep voice intones
-            several archaic words you don't understand.")
-          (change-gender actor :male)
-          (advance-quest actor 'choose-a-gender))
-        (show actor "You feel no more clarity than you did prior to meditation."))))
-
-;;; female-shrine
-
-(defentity female-statue (fixture)
-  (:brief "a large jade statue"
-   :pose "stands in the center of the area."
-   :full "The statue stands over twelve feet tall. Its eyes seem to follow you.
-     As you consider the statue, your thoughts wander; its features change in
-     your mind's eye to reflect your personal ideal of femininity."))
-
-(deflocation female-shrine (isle-location)
-  (:name "Shrine of Femininity"
-   :full "A multitude of flowering vines have been trained to ornate trellises
-     that surround a bowl-shaped area covered with a carpet of blossoming
-     clover."
-   :exits ((gravel-path :west fountain-plaza))
-   :contents (female-statue))
-
-  (:after-meditate (actor)
-    (if (quest-incomplete actor 'choose-a-gender)
-        (progn
-          (show actor "The statue slowly turns its head to face you and says several
-            arcane words in a powerful, mellifluous voice.")
-          (change-gender actor :female)
-          (advance-quest actor 'choose-a-gender))
-        (show actor "You feel no more clarity than you did prior to meditation."))))
-
 ;;; circle-of-names
 
-(defentity tree-of-names (fixture)
+(defentity tree-of-names ()
   (:brief "a beautiful tree"
    :pose "grows in the center of the lawn."
-   :full "The tree has smooth, silvery bark and broad leaves of the deepest
-     green. Thousands of names have been written in luminous ink upon its trunk,
-     all using the same flowing script."))
+   :description "The tree has smooth, silvery bark and broad leaves of the
+     deepest green. Thousands of names have been written in luminous ink upon
+     its trunk, all using the same flowing script."))
 
 (defquest choose-a-name
   (:name "Nameless No More"
    :summary "Choose your name by saying it in the presence of the orb of naming,
      then return to the mistress of names."
-   :prerequisites (choose-a-gender))
+   :required-quests (get-some-clothes))
 
-  (:before-offer-quest (actor self npc)
-    (tell npc actor "Oh, hello. I didn't see you standing there. I hope you
+  (active
+      :summary "Speak your name in the presence of the orb of naming.")
+
+  (done
+      :summary "Return to the mistress of names."))
+
+(defentity mistress-of-names (humanoid)
+  (:brief "the mistress of names"
+   :pose "stands beneath the tree."
+   :description "The mistress of names is a short, slender woman of
+     indeterminate age. Her long auburn hair is bound in a loose ponytail. She
+     wears a pair of horn-rimmed spectacles and her clothing is rumpled and
+     ink-stained."
+   :offers-quests (choose-a-name))
+
+  (:when-talk ((actor &quest choose-a-name :finished) self topic)
+    (tell self actor "Ah, ~a. I just love the sound of your name! It simply
+      rolls off the tongue. My name, you ask? I don't have one."
+          (? actor :name)))
+
+  (:when-talk ((actor &quest choose-a-name :unavailable) self topic)
+    (show actor "The mistress of names frowns at you over her glasses."))
+
+  (:when-talk ((actor &quest choose-a-name :available) self topic)
+    (tell self actor "Oh, hello. I didn't see you standing there. I hope you
       haven't been waiting long. How can I help you?
 
       Ah! You need a name, don't you. You've come to the right place; I'd be
-      happy to help you out."))
+      happy to help you out.")
+    (offer-quest self 'choose-a-name actor))
 
-  (:after_accept-quest (actor self npc)
-    (tell npc actor "Just to the east you'll see a magical orb. Find it and say
+  (:after-accept-quest (actor (quest &quest choose-a-name) self)
+    (tell self actor "Just to the east you'll see a magical orb. Find it and say
       the word. Literally! Stand next to the orb and `say` the word you want to
       have as your name. The orb's power is truly remarkable.
 
@@ -748,75 +665,59 @@
       new name on the trunk of this tree with the names of all the other heroes
       who have passed this way."))
 
-  (:after-advise-quest (actor self npc)
-    (tell npc actor "Still going incognito? You'll find the orb of naming just
+  (:when-talk ((actor &quest choose-a-name active) self topic)
+    (tell self actor "Still going incognito? You'll find the orb of naming just
       to the east."))
 
-  (:after-finish-quest (actor self npc)
-    (tell npc actor "Yes, what is it? Of course, you've chosen your name! Let
-      me see, where is my pen? Ah, there it is. And now to write your name...how
-      did you spell it, again? Just a few strokes of the pen, and...done!
-
-      ~a is a fine name. Wear it proudly." (name actor))))
-
-(defentity mistress-of-names (npc)
-  (:brief "the mistress of names"
-   :pose "stands beneath the tree."
-   :full "The mistress of names is a short, slender woman of indeterminate age.
-     Her long auburn hair is bound in a loose ponytail. She wears a pair of
-     horn-rimmed spectacles and her clothing is rumpled and ink-stained."
-   :begins-quests (choose-a-name)
-   :ends-quests (choose-a-name))
-
-  (:when-talk (actor self topic)
-    (if (quest-complete actor 'choose-a-name)
-        (tell self actor "Ah, %s. I just love the sound of your name! It simply
-          rolls off the tongue." (name actor))
-        (show actor "The mistress of names frowns at you over her glasses."))))
+  (:when-talk ((actor &quest choose-a-name done) self topic)
+    (tell self actor "Yes, what is it? Of course, you've chosen your name! Let me see, where is my
+      pen? Ah, there it is. And now to write your name --- how did you spell it,
+      again? Just a few strokes of the pen, and... done!")
+    (advance-quest self actor 'choose-a-name)
+    (tell self actor "~a is a fine name. Wear it proudly." (? actor :name))))
 
 (deflocation circle-of-names (isle-location)
   (:name "Circle of Names"
-   :full "You stand within a wide circle of well-tended lawn surrounded by a low
-     stone wall."
-   :exits ((gravel-path :north fountain-plaza :east clifftop :south guard-station))
-   :contents (tree-of-names mistress-of-names)))
+   :description "You stand within a wide circle of well-tended lawn surrounded
+     by a low stone wall."
+   :contents (tree-of-names mistress-of-names)
+   :exits ((gravel-path :north clothing-stall :east clifftop :south guard-station))))
 
 ;;; clifftop
 
-(defentity orb-of-naming (fixture)
+(defentity orb-of-naming ()
   (:brief "the orb of naming"
    :pose "hovers a few feet above the ground."
-   :full "The orb is a spherical stone about two feet in diameter. Its surface
-     is smooth and cloudy. If a creature speaks a word within its presence, the
-     orb has the power to make that word the creature's name.")
+   :description "The orb is a spherical stone about two feet in diameter. Its
+     surface is smooth and cloudy. If a creature speaks a word within its
+     presence, the orb has the power to make that word the creature's name.")
 
-  (:after-say (actor message)
-    (if (quest-incomplete actor 'choose-a-name)
-        (progn
-          (show actor "The orb begins to glow, dimly at first, but then more
-            brightly. Sparks skitter across its smooth surface and you feel an
-            uncomfortable tingle beneath your skin.")
-          (if (change-name actor message)
-              (advance-quest actor 'choose-a-name)
-              (show actor "The sparks subside and the orb's glow dims; nothing seems
-                to happen.")))
-        (show actor "The orb glows dimly for a moment, but nothing happens."))))
+  (:after-say ((actor &quest choose-a-name active) message)
+    (show actor "The orb begins to glow, dimly at first, but then more brightly.
+      Sparks skitter across its smooth surface and you feel an uncomfortable
+      tingle beneath your skin.")
+    (if (change-name actor message)
+        (advance-quest self actor 'choose-a-name)
+        (show actor "The sparks subside and the orb's glow dims; nothing seems
+           to happen."))))
 
 (deflocation clifftop (isle-location)
   (:name "Windy Clifftop"
-   :full "You stand atop a rocky cliff that falls perhaps a hundred feet to a
-     narrow beach. The wind is brisk and smells of the sea."
+   :description "You stand atop a rocky cliff that falls perhaps a hundred feet
+     to a narrow beach. The wind is brisk and smells of the sea."
    :tutorial "To speak, use the `say` command. For example, to say \"hello\",
      you could type `say hello`. Everyone (and everything!) in your location
-     will hear what you say.
-
-     In this room, the `look:orb of naming` is always listening, so be careful
-     what you say! If you speak a single word that the orb deems suitable, that
-     word will become your name. Choose wisely."
+     will hear what you say."
    :surface :stone
-   :exits ((gravel-path :west circle-of-names))
-   :contents (orb-of-naming)))
+   :contents (orb-of-naming)
+   :exits ((gravel-path :west circle-of-names)))
 
+  (:after-enter-location ((actor &quest choose-a-name active) location entry)
+    (maybe-show-tutorial actor 'orb-of-naming "The `look:orb of naming` is
+      listening, so be careful what you say! If you speak a single word that the
+      orb deems suitable, that word will become your name. Choose wisely.")))
+
+#|
 ;;; guard-station
 
 (defquest kill-some-plants

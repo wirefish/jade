@@ -138,13 +138,16 @@
 (defun validate-name (name)
   "If `name' is a valid avatar name after stripping trailing punctuation, then
   return it after capitalizing it appropriately. Otherwise, return `nil'."
-  (labels ((valid-char (ch) (or (alpha-char-p ch) (eql ch #\-) (eql ch #\'))))
-    (let* ((end (position-if-not #'valid-char name))
-           (bad (position-if #'valid-char name :start end)))
-      (unless bad
-        (let ((name (string-downcase (subseq name 0 end))))
-          (setf (char name 0) (char-upcase (char name 0)))
-          name)))))
+  (labels ((valid-char (c) (or (alpha-char-p c) (eql c #\-) (eql c #\'))))
+    (let ((name (string-right-trim '(#\! #\? #\.) name)))
+      (when (and (>= (length name) 3)
+                 (every #'valid-char name)
+                 (alpha-char-p (char name 0))
+                 (alpha-char-p (char name (1- (length name))))
+                 (<= (count #\- name) 2)
+                 (null (search "--" name))
+                 (<= (count #\' name) 1))
+        name))))
 
 (defun change-name (avatar name)
   ;; FIXME: check for naughty words?
