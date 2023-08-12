@@ -64,7 +64,7 @@ The state associated with a quest phase can take one of three forms:
    (initial-state :initarg :initial-state :initform nil :reader quest-phase-initial-state
                   :documentation "The state stored upon entering this phase.")))
 
-(defun questify (arg)
+(defun ensure-quest (arg)
   (ctypecase arg
     (quest arg)
     (symbol (symbol-value-as 'quest arg))))
@@ -243,7 +243,7 @@ complete, advances to the next phase. Returns the index of the new phase, or
 
 (defmethod offer-quest :around (npc quest avatar)
   (let ((observers (list avatar npc))
-        (quest (questify quest)))
+        (quest (ensure-quest quest)))
     (notify-observers observers :before-offer-quest avatar quest npc)
     (call-next-method npc quest avatar)
     (notify-observers observers :after-offer-quest avatar quest npc)))
