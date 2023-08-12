@@ -117,9 +117,9 @@ satisfies `constraint'."
 (defmethod observe-event ((observer entity) event &rest args)
   (let ((fns (? observer 'behavior event)))
     (loop for fn in fns do
-      (let ((x (apply fn observer args)))
-        (unless (eq x :call-next-handler)
-          (return-from observe-event x))))))
+      (let ((result (apply fn observer args)))
+        (unless (eq result :call-next-handler)
+          (return-from observe-event result))))))
 
 (defun observers-allow-p (observers event &rest args)
   (dolist (observer observers)
@@ -149,7 +149,7 @@ appropriate describes an action taken by `actor'."
       (apply #'observe-event observer event-args))))
 
 (defun reacts-to-event-p (observer event)
-  (not (null (? observer 'behavior event))))
+  (? observer 'behavior event))
 
 (defun observer-list* (actor &rest objects)
   "Like list* except that `actor' appears only once in the resulting list, and
