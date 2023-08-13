@@ -512,9 +512,14 @@ MessageHandler.prototype.showLinks = function(heading, prefix, topics) {
     appendBlock(wrapElements('div', elements, 'help'));
 }
 
-MessageHandler.prototype.showLocation = function(brief, description, exits, contents) {
-    var elements = [makeTextElement('h1', brief)];
-    Array.prototype.push.apply(elements, formatText(description));
+MessageHandler.prototype.showLocation = function(name, description, exits, contents) {
+    var elements = [];
+
+    if (name != null)
+        elements.push(makeTextElement('h1', name));
+
+    if (description != null)
+        elements.push(...formatText(description));
 
     if (exits != null) {
         var exit_links = [makeTextElement('span', 'Exits:')].concat(

@@ -154,8 +154,8 @@ name and whose subsequent elements are arguments to that command."
   (let ((location (or location (entity-container avatar))))
     (send-client-command
      avatar "showLocation"
-     (? location :name)
-     (? location :description)
+     (update-client-state avatar :location-name (? location :name))
+     (update-client-state avatar :location-description (? location :description))
      (loop for exit in (? location :exits)
            when t  ; FIXME: (visiblep exit avatar)
              collect (exit-dir exit))

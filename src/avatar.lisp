@@ -19,7 +19,8 @@
    (active-quests :initform nil :accessor active-quests)
    (finished-quests :initform (make-hash-table) :accessor finished-quests)
    (dirty-quests :initform nil :accessor dirty-quests)
-   (pending-offer :initform nil :accessor pending-offer)))
+   (pending-offer :initform nil :accessor pending-offer)
+   (client-state :initform (make-hash-table) :accessor client-state)))
 
 (defentity avatar (&class avatar) ())
 
@@ -162,6 +163,20 @@
     (update-avatar avatar :name)
     (show-notice avatar "Your name is now ~a!" name)
     name))
+
+;;;
+
+(defun clear-client-state (avatar &rest keys)
+  (with-slots (client-state) avatar
+    (loop for key in keys do (remhash key client-state))))
+
+(defun update-client-state (avatar key value &key (test #'eql))
+  "Returns `value' if it is different than the avatar's current client state for
+`key', or nil otherwise."
+  (with-slots (client-state) avatar
+      (unless (funcall test value (gethash key client-state))
+        (sethash key client-state value)
+        value)))
 
 #|
 ;;;

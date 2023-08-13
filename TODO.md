@@ -14,5 +14,4 @@
 
 * Skills.
 
-* UI state for an avatar. This way show-location can check if the name or
-  description has changed and avoid resending it.
+* Remove separate chat pane.

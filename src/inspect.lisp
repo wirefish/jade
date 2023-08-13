@@ -14,6 +14,7 @@
     (notify-observers observers :after-inspect actor subject tool)))
 
 (defmethod inspect ((actor avatar) (subject location) tool)
+  (clear-client-state actor :location-name :location-description)
   (show-location actor subject))
 
 (defmethod inspect ((actor avatar) subject tool)
