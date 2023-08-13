@@ -234,10 +234,15 @@ MessageHandler.prototype.updateEquipment = function(equipment) {
         var div = document.getElementById('equip_' + slot);
         if (equipment[slot]) {
             const [icon, brief] = equipment[slot];
-            setIcon(div, "inventory", icon);
-            div.innerHTML = brief;
+
+            var icon_div = document.createElement('div');
+            div.appendChild(icon_div);
+            setIcon(icon_div, "inventory", icon);
+
+            var brief_div = document.createElement('div');
+            div.appendChild(brief_div);
+            brief_div.innerHTML = brief;
         } else {
-            div.style.backgroundImage = 'none';
             div.innerHTML = null;
         }
     }

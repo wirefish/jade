@@ -443,13 +443,22 @@ a:link {
 
 #equipment_pane > div > div > div:nth-child(even) {
     flex: 0 1 75%;
+    display: flex;
     margin-top: 3px;
+}
+
+#equipment_pane > div > div > div:nth-child(even) > div:nth-child(1) {
+    width: 24px;
     height: 24px;
-    text-indent: 28px;
+}
+
+#equipment_pane > div > div > div:nth-child(even) > div:nth-child(2) {
+    flex-grow: 1;
     line-height: 20px;
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
+    margin-left: 4px;
 }
 
 #equipment_pane > div > hr {
@@ -474,7 +483,6 @@ a:link {
     flex: 0 0 50%;
     display: flex;
     max-width: 50%;
-    height: 24px;
     margin-top: 3px;
 }
 
