@@ -155,3 +155,26 @@ appropriate describes an action taken by `actor'."
   "Like list* except that `actor' appears only once in the resulting list, and
 always as the first element."
   (cons actor (remove actor (apply #'list* objects))))
+
+;;;
+
+(defmacro defaction (name args (&key observers) &body body)
+  "Defines a generic function with an :around method and an unspecialized normal
+method with the given body to implement the machinery for processing events
+associated with an action."
+  (let* ((name-str (symbol-name name))
+         (allow-event (make-keyword (strcat "ALLOW-" name-str)))
+         (before-event (make-keyword (strcat "BEFORE-" name-str)))
+         (after-event (make-keyword (strcat "AFTER-" name-str)))
+         (observers-var (gensym)))
+    `(progn
+       (defgeneric ,name ,args)
+       (defmethod ,name :around ,args
+           (let ((,observers-var ,observers))
+             (when (observers-allow-p ,observers-var ,allow-event ,@args)
+               (notify-observers ,observers-var ,before-event ,@args)
+               (call-next-method)
+               (notify-observers ,observers-var ,after-event ,@args)
+               t)))
+       (defmethod ,name ,args
+         ,@body))))
