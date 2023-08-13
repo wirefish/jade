@@ -920,135 +920,200 @@
     (spawn-unique-entity self 'shiny-seashell))
 
   (:after-take (actor (item shiny-seashell) self)
-    (with-delay (300)
+    (with-delay ((uniform-random 200 500))
       (spawn-unique-entity self 'shiny-seashell))))
 
-#|
 ;;; dockmaster-shack
-
-(defentity bundle-of-documents (quest-item)
-  (:brief "a bundle[s] of documents"
-   :full "The documents are rather mundane shipping records. A scrawled note on
-     top reads, \"Pay the messenger 10 silver. Q.M.\""
-   :item-quest 'special-delivery))
 
 (defquest special-delivery
   (:name "On to Arwyck"
    :summary "Deliver the dockmaster's documents to the surly stevedore at the
      Arwyck docks."
-   :prerequisites (kill-some-plants))
+   :required-quests (kill-some-plants))
 
-  (:before-offer-quest (actor self npc)
-    (tell npc actor "You there. I've an errand that needs doing if you've a
-      mind to earn some coin."))
+  (active
+      :summary "Board the *Siren* and arrive at the Arwyck docks.")
 
-  (:after-accept-quest (actor self npc)
-    (tell npc actor "Good, good. Take these.")
-    (receive actor (make-entity 'bundle-of-documents) npc)
-    (tell npc actor "I need you to deliver those documents to my man in Arwyck.
+  (done
+      :summary "Talk to the surly stevedore."))
+
+(defentity bundle-of-documents (item)
+  (:brief "a bundle[s] of documents"
+   :description "The documents are rather mundane shipping records. A scrawled
+     note on top reads, \"Pay the messenger 10 silver. Q.M.\""
+   :quest special-delivery))
+
+(defentity dockmaster (humanoid)
+  (:brief "the dockmaster"
+   :pose "sits behind the desk."
+   :description "The dockmaster is a grizzled man with a short salt-and-pepper
+     beard. His left eye is covered with a leather patch, but his right eye
+     harbors a dangerous gleam."
+   :offers-quests (special-delivery))
+
+  (:when-talk ((actor &quest special-delivery :available) self topic)
+    (tell self actor "You there. I've an errand that needs doing if you've a
+      mind to earn some coin.")
+    (offer-quest self 'special-delivery actor))
+
+  (:after-accept-quest (actor (quest &quest special-delivery) self)
+    (tell self actor "Good, good. Take these.")
+    (give self actor (list (clone-entity 'bundle-of-documents)))
+    (tell self actor "I need you to deliver those documents to my man in Arwyck.
       Surly fellow near the docks. Can't miss him. He'll pay you once he has the
       documents."))
 
-  (:after-advise-quest (actor self npc)
-    (tell npc actor "What are you doing here? My man needs those documents.
-      The *Siren* departs for Arwyck from the dock just east of here."))
+  (:when-talk ((actor &quest special-delivery active) self topic)
+    (tell self actor "What are you doing here? My man needs those documents. The
+      *Siren* departs for Arwyck from the dock just east of here."))
 
-  (:after-finish-quest (actor self npc)
-    (tell npc actor "Hey, thanks. I've been needin' those. Here's your coin!
+  (:when-talk ((actor &quest special-delivery :finished) self topic)
+    (tell self actor "Thanks for your help with the documents. You never know, I
+      might have need for your services again.")))
+
+#| FIXME: move to guy in arwyck
+  (:when-talk ((actor &quest special-delivery done) self topic)
+    (tell talk actor "Hey, thanks. I've been needin' those. Here's your coin!
       You'll be glad of it if you'll be visitin' the shops here in Arwyck. It's
       no bleedin' city, but you can find most of what you'll be needin' here in
       town.")
     ;; FIXME: (receive actor (make-entity 'silver-coin :quantity 10) npc)
-    nil))
+  nil))
+|#
 
-(defentity dockmaster (npc)
-  (:brief "the dockmaster"
-   :pose "sits behind the desk."
-   :full "The dockmaster is a grizzled man with a short salt-and-pepper beard.
-     His left eye is covered with a leather patch, but his right eye harbors a
-     dangerous gleam."
-   :begins-quests (special-delivery)))
-
-(defentity desktop-documents (fixture)
+(defentity desktop-documents ()
   (:brief "a document"
-   :full "A discreet scan the papers on top of the pile show them to be
-      schedules, manifests, and other such shipping-related documents."
+   :description "A discreet scan the papers on top of the pile show them to be
+     schedules, manifests, and other such shipping-related documents."
    :implicit t))
 
-(defentity wine-bottles (fixture)
+(defentity wine-bottles ()
   (:brief "an empty wine bottle"
-   :full "You may have been dead for hundreds of years, but wine hasn't changed
-     all that much; you still recognize the cheap stuff when you smell it."
+   :description "You may have been dead for hundreds of years, but wine hasn't
+     changed all that much; you still recognize the cheap stuff when you smell
+     it."
    :implicit t))
 
 (deflocation dockmaster-shack (isle-location)
   (:name "Dockmaster's Shack"
-   :full "This one-room structure is dominated by a large desk that is piled with
-    documents and empty wine bottles."
+   :description "This one-room structure is dominated by a large desk that is
+     piled with documents and empty wine bottles."
    :domain :indoor
    :surface :wood
-   :exits ((lib:exit-doorway :north cobbled-square)
-           (lib:stairway :down dockmaster-basement))
-   :contents (dockmaster desktop-documents wine-bottles)))
+   :contents (dockmaster desktop-documents wine-bottles)
+   :exits ((exit-doorway :north cobbled-square) (stairway :down dockmaster-basement))))
 
 ;;; dockmaster-basement
 
 (deflocation dockmaster-basement (isle-location)
   (:name "Basement of the Dockmaster's Shack"
-   :full "This low, damp space is more of a crawlspace than a basement. Several
-     barrels and crates have been pushed into one corner of the dirt floor."
+   :description "This low, damp space is more of a crawlspace than a basement.
+     Several barrels and crates have been pushed into one corner of the dirt
+     floor."
    :domain :indoor
    :surface :dirt
-   :exits ((lib:stairway :up dockmaster-shack))))
+   :exits ((stairway :up dockmaster-shack))))
 
 ;;; pier
 
-(defentity dock-sign (fixture)
+(defentity dock-sign ()
   (:brief "an informative sign"
    :pose "is posted here."
-   :full "The sign indicates that a ship frequently arrives here to carry
-     passengers across the sea to the town of Arwyck."))
+   :description "The sign indicates that a ship called the *Siren* frequently
+     arrives here to carry passengers across the sea to the town of Arwyck."))
 
 (deflocation pier (isle-location)
   (:name "Sturdy Pier"
-   :full "This stone pier juts out into the sea, giving ships that visit the
-     isle a safe place to dock."
+   :description "This stone pier juts out into the sea, giving ships that visit
+     the isle a safe place to dock."
    :tutorial "To board a ship for Arwyck, wait until it arrives and then move
      `east`. Once the ship reaches its destination, move `south` to disembark."
    :surface :stone
-   :exits ((cobbled-lane :west cobbled-square))
-   :contents (dock-sign)))
+   :contents (dock-sign)
+   :exits ((cobbled-lane :west cobbled-square))))
 
-(defentity gangplank (portal)
+;;; the-siren
+
+(defentity gangplank ()
   (:brief "a gangplank"))
 
-(defentity sailor (npc)
+(defentity sailor (humanoid)
   (:brief "a grizzled sailor"
-   :full "The sailor has a short, salt-and-pepper beard and wears a faded
+   :description "The sailor has a short, salt-and-pepper beard and wears a faded
      uniform.")
 
   (:when-talk (actor self topic)
     (tell self actor "Welcome aboard the *Siren*! Every few moments we make the
       short run between Arwyck and the Isle of Dawn. Relax and enjoy the trip!")))
 
-(deflocation the-siren (location)
+(defentity moving-location (location)
+  (:route-exits nil)  ; list of (portal dir dest) as with :exits
+
+  (:after-enter-world (self)
+    ;; Convert route from a list of (portal dir dest) to a circular list of
+    ;; (location exit entry), where exit is to be added to location and entry is
+    ;; to be added to self while self is "docked" at location.
+    (setf (? self :route)
+          (apply #'circular-list
+                 (loop for (portal dir dest) in (? self :route-exits)
+                       collect (let ((portal (clone-entity portal)))
+                                 (list (symbol-value dest)
+                                       (make-exit :dir dir :dest dest :portal portal)
+                                       (make-exit :dir (direction-opposite dir)
+                                                  :dest (entity-label self)
+                                                  :portal portal))))))
+    (with-delay (0)
+      (observe-event self :arrive self)))
+
+  (:before-exit-world (self)
+    (bind (((curr-location exit entry) (first (? self :route))))
+      (deletef (? self :exits) exit)
+      (deletef (? curr-location :exits) entry)))
+
+  (:arrive (self)
+    (with-attributes (route) self
+      (bind ((prev-location (caar route))
+             ((curr-location exit entry) (second route)))
+        (push exit (? self :exits))
+        (push entry (? curr-location :exits))
+        ;; FIXME: update maps for everyone in range.
+        (announce curr-location 3  "~a arrives from ~a."
+                  (describe-brief self :capitalize t)
+                  (? prev-location :name))))
+    (pop (? self :route))
+    (with-delay (15)
+      (observe-event self :announce-departure self)))
+
+  (:announce-departure (self)
+    (with-attributes (route) self
+      (let ((curr-location (caar route))
+            (next-location (caadr route)))
+        (announce curr-location 3 "~a is about to depart for ~a. All aboard!"
+                  (describe-brief self :capitalize t)
+                  (? next-location :name))))
+    (with-delay (5)
+      (observe-event self :depart self)))
+
+  (:depart (self)
+    (with-attributes (route) self
+      (bind (((curr-location exit entry) (first route))
+             (next-location (caadr route)))
+        (announce curr-location 3 "~a departs for ~a."
+                  (describe-brief self :capitalize t)
+                  (? next-location :name))
+        (deletef (? self :exits) exit)
+        (deletef (? curr-location :exits) entry)))
+    (with-delay (3)
+      (observe-event self :arrive self))))
+
+(deflocation the-siren (moving-location)
   (:name "The *Siren*"
-   :full "This sturdy single-masted vessel makes frequent trips between the Isle
+   :description "This sturdy single-masted vessel makes frequent trips between the Isle
      of Dawn and the town of Arwyck on the mainland."
    :domain :outdoor
    :surface :wood
-   :surrounding :water
-   :icon :boat
-   :contents (sailor))
+   :surround :water
+   :icon 'boat
+   :contents (sailor)
 
-  (:after-enter-world (self)
-    (start-behavior
-     self
-     (lib:follow-route self (list (make-entity 'gangplank
-                                               :direction :west
-                                               :destination 'pier)
-                                  (make-entity 'gangplank
-                                               :direction :south
-                                               :destination 'arwyck::west-dock))))))
-
-|#
+   :route-exits '((gangplank :west pier))))
