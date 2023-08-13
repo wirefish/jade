@@ -51,6 +51,7 @@
 
            #:show
            #:show-notice
+           #:show-map
            #:tell
            #:announce
 

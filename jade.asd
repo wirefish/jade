@@ -20,6 +20,7 @@
              (:file "websocket")
 
              (:file "entity")
+             (:file "activity")
              (:file "behavior")
              (:file "item")
              (:file "location")
@@ -30,7 +31,6 @@
              (:file "map")
              (:file "client")
              (:file "command")
-             (:file "activity")
 
              (:file "help")
              (:file "tutorial")
@@ -53,6 +53,7 @@
                        (:file "clothing")
                        (:file "weapons")
                        (:file "portals")
+                       (:file "vehicles")
                        ))
              (:file "isle-of-dawn")
              ))))
