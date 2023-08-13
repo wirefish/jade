@@ -41,9 +41,9 @@ If `force' is true, do not allow observers to disallow the action."))
 already left its location."))
 
 (defmethod exit-world :around (actor)
-  (observe-event actor :before-exit-world actor)
+  (observe-event actor :before-exit-world)
   (call-next-method)
-  (observe-event actor :after-exit-world actor))
+  (observe-event actor :after-exit-world))
 
 (defmethod exit-world (actor)
   ;;(stop-all-behaviors actor)
@@ -56,9 +56,9 @@ already left its location."))
 entering its initial location."))
 
 (defmethod enter-world :around (actor)
-  (observe-event actor :before-enter-world actor)
+  (observe-event actor :before-enter-world)
   (call-next-method)
-  (observe-event actor :after-enter-world actor))
+  (observe-event actor :after-enter-world))
 
 (defmethod enter-world (actor)
   ;; FIXME: start required behaviors?

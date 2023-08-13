@@ -16,6 +16,3 @@
 
 * UI state for an avatar. This way show-location can check if the name or
   description has changed and avoid resending it.
-
-* Remove extraneous parameter from enter-world and exit-world. There are no
-  observers.

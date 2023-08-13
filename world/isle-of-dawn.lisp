@@ -590,7 +590,7 @@
    :description "Tulips in myriad colors have been planted here."
    :surface :flowers)
 
-  (:after-enter-world (self)
+  (:after-enter-world ()
     (spawn-unique-entity self 'white-tulip)))
 
 (deflocation tulip-field-sw (tulip-field)
@@ -839,7 +839,7 @@
      area."
    :surface :weeds)
 
-  (:after-enter-world (self)
+  (:after-enter-world ()
     (spawn-unique-entity self 'lashling))
 
   (:after-kill (actor (target lashling))
@@ -916,7 +916,7 @@
 (deflocation beach-west (beach-location)
   (:exits ((beach-portal :east beach-center)))
 
-  (:after-enter-world (self)
+  (:after-enter-world ()
     (spawn-unique-entity self 'shiny-seashell))
 
   (:after-take (actor (item shiny-seashell) self)
@@ -1049,7 +1049,7 @@
 (defentity moving-location (location)
   (:route-exits nil)  ; list of (portal dir dest) as with :exits
 
-  (:after-enter-world (self)
+  (:after-enter-world ()
     ;; Convert route from a list of (portal dir dest) to a circular list of
     ;; (location exit entry), where exit is to be added to location and entry is
     ;; to be added to self while self is "docked" at location.
@@ -1065,7 +1065,7 @@
     (with-delay (0)
       (observe-event self :arrive self)))
 
-  (:before-exit-world (self)
+  (:before-exit-world ()
     (bind (((curr-location exit entry) (first (? self :route))))
       (deletef (? self :exits) exit)
       (deletef (? curr-location :exits) entry)))
