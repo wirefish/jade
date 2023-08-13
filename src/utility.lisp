@@ -97,6 +97,15 @@ there was no such value, returns `default'."
 (defun pophash* (hash-table &rest keys)
   (apply #'values (loop for key in keys collect (pophash key hash-table))))
 
+(defun merge-hash-tables (output fn &rest inputs)
+  "Merges the entries from each of `inputs' into `output', calling `fn' to combine
+two values for the same key. Returns `output'."
+  (loop for input in inputs do
+    (loop for key being the hash-keys in input using (hash-value value) do
+      (multiple-value-bind (output-value found) (gethash key output)
+        (sethash key output (if found (funcall fn output-value value) value)))))
+  output)
+
 ;;; Enable #h(...) syntax for hash-table literals. If the number of elements is
 ;;; odd, the first is a list of arguments to pass to `make-hash-table'.
 ;;; Subsequent elements are alternating keys and values.
