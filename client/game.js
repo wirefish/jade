@@ -15,18 +15,6 @@ function resize() {
 window.onresize = resize;
 
 //
-// Give the input focus whenever the user hits Return inside the window.
-//
-function keypress(e) {
-    var input = document.getElementById("command");
-    if (document.activeElement != input && String.fromCharCode(e.which) == "\r") {
-        document.getElementById("command").focus();
-        return false;
-    }
-}
-window.onkeypress = keypress;
-
-//
 // Add some useful String methods.
 //
 
@@ -667,7 +655,9 @@ function sendInput(s) {
 function onUserInput(event) {
     var obj = document.getElementById("command");
     command_history[command_pos] = obj.value;
-    if (event.key == "Enter") {
+    if (event.key == "Escape") {
+        document.activeElement.blur();
+    } else if (event.key == "Enter") {
         if (obj.value.length > 0)
             sendInput(obj.value);
         obj.value = "";
@@ -681,6 +671,29 @@ function onUserInput(event) {
         }
     } else if (event.shiftKey && (event.key == "PageUp" || event.key == "PageDown")) {
         handler.cyclePane(event.key == "PageUp" ? 1 : -1);
+    }
+}
+
+const keyCommands = {
+    "w": "go north",
+    "a": "go west",
+    "s": "go south",
+    "d": "go east",
+};
+
+window.onkeydown = function (e) {
+    var input = document.getElementById("command");
+    if (document.activeElement != input) {
+        if (e.key == "Enter") {
+            input.focus();
+            return false;
+        } else {
+            const command = keyCommands[e.key];
+            if (command) {
+                sendInput(command);
+                return false;
+            }
+        }
     }
 }
 
