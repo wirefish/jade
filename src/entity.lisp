@@ -61,11 +61,11 @@
       (list (if (eql (car expr) 'quote) expr `(list ,@expr)))
       (t expr))))
 
+
 (defmacro defentity (name (&rest proto-spec) attributes &body behavior)
-  (let (proto class)
-    (if (eq (first proto-spec) '&class)
-        (setf class (second proto-spec))
-        (setf proto (first proto-spec)))
+  (let* ((pos (position '&class proto-spec))
+         (proto (unless (eql pos 0) (first proto-spec)))
+         (class (when (numberp pos) (elt proto-spec (1+ pos)))))
     (with-gensyms (entity)
       `(let ((,entity (create-named-entity
                        ',name ',proto ',class
