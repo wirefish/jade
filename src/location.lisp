@@ -144,7 +144,8 @@ starting and stopping simulation.")
 
 (defun spawn-entity (location &rest args)
   (let ((entity (apply #'clone-entity args)))
-     (enter-location entity location nil)))
+    (enter-world entity)
+    (enter-location entity location nil)))
 
 (defun spawn-unique-entity (location proto-label &rest attributes)
   (unless (contains-isa location :contents proto-label)
