@@ -1,5 +1,14 @@
 (in-package :jade.isle-of-dawn)
 
+(defentity isle-of-dawn ()
+  (:name "Isle of Dawn"
+   :description "The souls of ancient heroes are reborn atop a sacred hill in
+     the middle of this small island. The magical energies of the place allow a
+     soul to regain its physical form so it may join the battle against the
+     great evil that threatens Atalea."
+   :climate :temperate
+   :level-range '(0 1)))
+
 (defentity isle-location (location)
   (:domain :outdoor
    :surface :grass))

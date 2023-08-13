@@ -204,7 +204,7 @@ name and whose subsequent elements are arguments to that command."
     (apply #'send-client-command
            avatar "showMap"
            (? origin :name)
-           (or (? origin :region) "")
+           (or (? origin :region :name) "")
            (or (? origin :subregion) "")
            radius
            (loop for (x y z location) in map

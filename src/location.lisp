@@ -83,6 +83,18 @@
                                 (direction-name dir)))
                       "appears!")))
 
+;;; A region is an entity with the same name as the package in which it is
+;;; defined (without the leading "jade."). It describes label as the that
+;;; describes properties shared by all locations defined within that package.
+
+(defun location-region (location)
+  "Returns the region entity associated with a location, if any."
+  (let* ((package (symbol-package (entity-label location)))
+         (package-name (package-name package))
+         (sep (position #\. package-name :from-end t))
+         (region-name (if sep (subseq package-name (1+ sep)) package-name)))
+    (symbol-value-or-nil (intern region-name package))))
+
 ;;; A location is a subclass of entity only so it can be used to specialize
 ;;; generic functions.
 
@@ -103,6 +115,7 @@ starting and stopping simulation.")
   (with-gensyms (loc)
     `(let ((,loc (defentity ,name (,proto) ,attributes ,@behaviors)))
        (assert (typep ,loc 'location))
+       (setf (? ,loc :region) (location-region ,loc))
        (sethash ',name *locations* ,loc)
        ,loc)))
 
