@@ -831,8 +831,8 @@
      has somehow gained the ability to move, albeit very slowly. Sharp thorns
      protrude from the ends of its leafy, tentacle-like appendages."
    :entry-message "~a emerges from beneath the weeds."
-   :attacks '(lashling-tendril)
-   :traits '(:defense 0.5))
+   :attacks (lashling-tendril)
+   :traits (:defense 0.5))
 
   (:after-kill ((actor &quest kill-some-plants active) self)
     (advance-quest self actor 'kill-some-plants)))

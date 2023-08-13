@@ -88,13 +88,6 @@ element of `subjects'."
       ;; Match `tokens' against matchable properties of `subject'.
       (apply #'match-subjects tokens (? subject :name) (? subject :brief) (? subject :alts)))))
 
-(defmethod match-subject (tokens (subject exit))
-  (with-slots (dir portal) subject
-    (best-match-quality (match-subject tokens (direction-name dir))
-                        (when-let ((abbrev (direction-abbrev dir)))
-                          (match-subject tokens abbrev))
-                        (match-subject tokens portal))))
-
 (defmethod match-subject (tokens (subject cons))
   (match-subject tokens (cdr subject)))
 

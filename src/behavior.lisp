@@ -178,3 +178,18 @@ associated with an action."
                t)))
        (defmethod ,name ,args
          ,@body))))
+
+(defmacro process-simple-event (name args (&key observers force) &body body)
+  "Returns an expression that implements the common case for processing the phases
+of an event."
+  (let* ((name-str (symbol-name name))
+         (allow-phase (make-keyword (strcat "ALLOW-" name-str)))
+         (before-phase (make-keyword (strcat "BEFORE-" name-str)))
+         (after-phase (make-keyword (strcat "AFTER-" name-str)))
+         (observers-var (gensym)))
+    `(let ((,observers-var ,observers))
+       (when (or ,force (observers-allow-p ,observers-var ,allow-phase ,@args))
+         (notify-observers ,observers-var ,before-phase ,@args)
+         ,@body
+         (notify-observers ,observers-var ,after-phase ,@args)
+         t))))

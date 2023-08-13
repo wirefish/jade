@@ -22,7 +22,7 @@
    (pending-offer :initform nil :accessor pending-offer)
    (client-state :initform (make-hash-table) :accessor client-state)))
 
-(defentity avatar (&class avatar)
+(defentity avatar (combatant &class avatar)
   (:attitude :friendly))
 
 (defmethod print-object ((obj avatar) stream)
@@ -179,28 +179,7 @@
         (sethash key client-state value)
         value)))
 
-#|
 ;;;
 
-(defun merge-traits (to from)
-  "Given plist `from' of trait keys and values, add the values into hash table
-  `to' under the matching keys."
-  (loop for (trait value) on from by #'cddr do
-    (setf (gethash trait to)
-          (+ value (or (gethash trait to) 0))))
-  to)
-
-(defun calculate-traits (avatar)
-  "Computes effective traits for `avatar' based on race, equipment, skills,
-  and auras."
-  ;; TODO: skills and auras
-  (let ((traits (make-hash-table)))
-    (with-slots (race equipment skills auras) avatar
-      (when race
-        (merge-traits traits (race-traits race)))
-      (maphash-values #'(lambda (item)
-                          (when item
-                            (merge-traits traits (equipment-traits item))))
-                      equipment))
-    traits))
-|#
+(defmethod select-attack ((actor avatar) target)
+  (? actor :equipment :main-hand))

@@ -57,6 +57,13 @@
 (defmethod observe-event ((observer exit) event &rest args)
   (apply #'observe-event (exit-portal observer) event args))
 
+(defmethod match-subject (tokens (subject exit))
+  (with-slots (dir portal) subject
+    (best-match-quality (match-subject tokens (direction-name dir))
+                        (when-let ((abbrev (direction-abbrev dir)))
+                          (match-subject tokens abbrev))
+                        (match-subject tokens portal))))
+
 ;;; An entity that acts as a portal may define several attributes used to
 ;;; construct messages seen by observers when some entity passes through the
 ;;; portal: :exit-verb, :entry-verb, and :transit-message.
