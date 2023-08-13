@@ -177,19 +177,23 @@ a:link {
 .header {
     grid-area: header;
     margin: 2px;
-    background-size: contain;
-    background-position: left;
-    background-repeat: no-repeat;
-    padding-left: 65px;
-    padding-right: 5px;
+    display: flex;
 }
 
-.header > div:nth-child(1) {
-    font-size: 12pt;
-    line-height: 20pt;
+#player_icon {
+    width: 60px;
+    height: 60px;
+}
+
+#player_info {
+    flex-grow: 1;
+    padding-left: 8px;
+    padding-right: 8px;
 }
 
 #player_name_auras {
+    font-size: 12pt;
+    line-height: 20pt;
     display: flex;
     justify-content: space-between;
     flex-flow: row nowrap;
@@ -682,7 +686,7 @@ a:link {
     display: grid;
     height: 100%;
     grid-template-columns: 180px 1fr 35%;
-    grid-template-rows: 60px auto 30px 1fr 40px;
+    grid-template-rows: auto auto 30px 1fr 40px;
     grid-template-areas:
       "header header weather"
       "neighbors main map"

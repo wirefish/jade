@@ -60,7 +60,7 @@ function updatePlayerBio(name, icon, level, race) {
         '{0}, level {1} {2}'.format(name, level, race) :
         'level {0} {1}'.format(level, race);
     document.getElementById("player_name").innerHTML = summary;
-    setIcon(document.getElementById("header"), "avatar", icon);
+    setIcon(document.getElementById("player_icon"), "avatar", icon);
 }
 
 // Appends a block element to a scrollable text pane, removing the oldest block
