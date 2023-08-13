@@ -156,6 +156,7 @@ of `avatar'. If `npc' is not nil, makes it appear that items are given to `npc';
 otherwise, `message' is used to construct feedback to the player."
   (when-let ((items (remove-items-if avatar :inventory
                                      (lambda (i) (eq (? i :quest) label)))))
+    (update-inventory avatar nil items)
     (let ((brief (format-list #'describe-brief items)))
       (if npc
           (show avatar "You give ~a to ~a."

@@ -303,7 +303,7 @@ location."
                       (format-list #'describe-brief containers "or"))))))))
       (show actor "What do you want to drop?")))
 
-;;; Give an item to an NPC or some other sink.
+;;; An entity gives one or more items to another entity.
 
 (defgeneric give (giver receiver items))
 
