@@ -824,7 +824,7 @@
    :damage-range (2 6)
    :attack-verb "whips"))
 
-(defentity lashling ()
+(defentity lashling (combatant)
   (:brief "a lashling"
    :pose "flails its tendrils in a menacing display."
    :description "The lashling is a small mass of writhing vines and weeds that

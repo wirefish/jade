@@ -3,7 +3,7 @@
 ;;; An avatar is an entity that represents a player in the world. It defines
 ;;; additional slots used internally by the server.
 
-(defclass avatar (entity)
+(defclass avatar (combatant)
   ;; TODO: document slots
   ((avatar-id :initarg :avatar-id :initform nil :accessor avatar-id)
    (account-id :initform nil :accessor avatar-account-id)
@@ -22,7 +22,8 @@
    (pending-offer :initform nil :accessor pending-offer)
    (client-state :initform (make-hash-table) :accessor client-state)))
 
-(defentity avatar (&class avatar) ())
+(defentity avatar (&class avatar)
+  (:attitude :friendly))
 
 (defmethod print-object ((obj avatar) stream)
   (print-unreadable-object (obj stream :type t :identity t)

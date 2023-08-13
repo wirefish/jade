@@ -12,7 +12,8 @@ If `force' is true, do not allow observers to disallow the action."))
   (let ((observers (observer-list* actor exit location (? location :contents)))
         (message (exit-message actor exit)))
     (when (or force
-              (observers-allow-p observers :allow-exit-location actor location exit))
+              (and (try-leave-combat actor)
+                   (observers-allow-p observers :allow-exit-location actor location exit)))
       (notify-observers observers :before-exit-location actor location exit)
       (show-observers (cons actor (cddr observers)) message) ; ignoring exit
       (call-next-method)

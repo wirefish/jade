@@ -1,8 +1,4 @@
-* Get icons working. Three sizes -- avatar (60), neighbor (34), inventory (24)
-  -- with different icons for each group. The neighbor group includes the others
-  as well as more. The icon divs need to be their own thing instead of partially
-  filling the background of a larger div. Let make-icons take multiple input
-  files to help with the various combinations.
+* Add aura icons.
 
 * Make exits just entities? Add exit-message and entry-message.
 
@@ -10,8 +6,11 @@
 
 * Fix command parsing to allow unambiguous prefixes.
 
-* Combat.
+* Combat. Pop-in modal with you and allies on one side, enemies on the other,
+  shows health and auras, animates attacks?
 
 * Skills.
 
 * Remove separate chat pane? Or duplicate all say/tell/yell in both?
+
+* Init health, energy, etc. with max-health, etc are present.
