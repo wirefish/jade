@@ -84,8 +84,8 @@
                       "appears!")))
 
 ;;; A region is an entity with the same name as the package in which it is
-;;; defined (without the leading "jade."). It describes label as the that
-;;; describes properties shared by all locations defined within that package.
+;;; defined (without the leading "jade."). It describes properties shared by all
+;;; locations defined within that package.
 
 (defun location-region (location)
   "Returns the region entity associated with a location, if any."
