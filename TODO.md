@@ -14,4 +14,4 @@
 
 * Skills.
 
-* Remove separate chat pane.
+* Remove separate chat pane? Or duplicate all say/tell/yell in both?

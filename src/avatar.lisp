@@ -94,7 +94,7 @@
 
 (defmacro for-avatars-near ((var origin radius) &body body)
   (with-gensyms (dx dy dz loc)
-    `(loop for (,dx ,dy ,dz ,loc) in (walk-map ,origin ,radius :updown t :cross-domains t)
+    `(loop for (,dx ,dy ,dz ,loc) in (walk-map ,origin ,radius :up-down t :cross-domains t)
            do (for-avatars-in (,var ,loc)
                 ,@body))))
 

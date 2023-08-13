@@ -1,11 +1,11 @@
 (in-package :jade)
 
-(defun walk-map (origin radius &key observer updown cross-domains)
+(defun walk-map (origin radius &key observer up-down cross-domains)
   "Returns a list that contains, for every location reachable from `origin' within
 `radius' steps, a list (dx dy dz location) where `dx', `dy', and `dz' are the
 position of `location' relative to `origin'. If `observer' is non-nil, only
 exits visible to that entity are traversed. Up and down exits are considered
-only if `updown' is t. Locations with a different domain than `origin' are
+only if `up-down' is t. Locations with a different domain than `origin' are
 visited only if `cross-domains' is t."
   (let* ((result nil)
          (visited (make-hash-table))
@@ -17,9 +17,9 @@ visited only if `cross-domains' is t."
            (when (or cross-domains (eq (? location :domain) start-domain))
              (dolist (exit (? location :exits))
                (destructuring-bind (dx dy dz) (direction-offset (exit-dir exit))
-                 (when (and (or updown (= dz 0))
+                 (when (and (or up-down (= dz 0))
                             (or (/= dx 0) (/= dy 0))
-                            (<= (max (abs (+ x dx)) (abs (+ y dy))) radius))
+                            (<= (max (abs (+ x dx)) (abs (+ y dy)) (abs (+ z dz))) radius))
                    (let ((dest (and (or (null observer) t)  ; FIXME: check if visible
                                     (find-location (exit-dest exit)))))
                      (when (and dest (null (gethash (entity-label dest) visited)))
