@@ -100,11 +100,10 @@ name and whose subsequent elements are arguments to that command."
      "says"
      (format-text control-string args))))
 
-(defun announce (location control-string &rest args)
-  (when-let ((observers (? location :contents)))
-    (let ((message (format-text control-string args)))
-      (dolist (x observers)
-        (show-notice x message)))))
+(defun announce (origin radius control-string &rest args)
+  (let ((message (format-text control-string args)))
+    (for-avatars-near (avatar origin radius)
+      (show-notice avatar message))))
 
 ;;; Update elements of the avatar status bar on top of the screen.
 

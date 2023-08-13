@@ -25,6 +25,7 @@
            #:defbehaviors
            #:disallow-action
            #:call-next-handler
+           #:observe-event
            #:self
            #:&quest
            #:&race
@@ -39,14 +40,19 @@
            #:deflocation
            #:spawn-entity
            #:spawn-unique-entity
+           #:make-exit
+           #:direction-opposite
 
            #:avatar
            #:change-race
            #:change-name
+           #:for-avatars-in
+           #:for-avatars-near
 
            #:show
            #:show-notice
            #:tell
+           #:announce
 
            #:maybe-show-tutorial
 
