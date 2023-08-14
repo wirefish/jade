@@ -187,7 +187,9 @@
 
 (defmethod describe-attack ((avatar avatar) actor target attack damage)
   (with-attributes (brief attack-verb) attack
-    (update-neighbor avatar target :health (? target :health))
+    (if (eq avatar target)
+        (update-avatar avatar :health)
+        (update-neighbor avatar target :health (? target :health)))
     (cond
       ((eq avatar actor)
        (format nil "You ~a ~a ~@[with ~a ~]for ~d damage!"
@@ -196,7 +198,6 @@
                (and brief (describe-brief attack))
                damage))
       ((eq avatar target)
-       (update-avatar avatar :health)
        (format nil "~a ~a you ~@[with ~a ~]for ~d damage!"
                (describe-brief actor :capitalize t)
                (or (and attack-verb (verb-singular attack-verb)) "attacks")
