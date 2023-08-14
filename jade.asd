@@ -49,13 +49,13 @@
 
    (:module "world" :components
             ((:module "lib" :components
-                      ((:file "avatar")
-                       (:file "creatures")
+                      ((:file "creatures")
                        (:file "materials")
                        (:file "clothing")
                        (:file "weapons")
                        (:file "portals")
                        (:file "vehicles")
+                       (:file "avatar")
                        ))
              (:file "isle-of-dawn")
              ))))

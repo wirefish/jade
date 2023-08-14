@@ -13,10 +13,22 @@
 (defentity two-handed-weapon (weapon)
   (:equippable-slot :both-hands))
 
+;;; A natural weapon inherits its user's level.
+
 (defentity natural-weapon (weapon)
   (:level nil))
 
-;;;
+(defentity fist (natural-weapon)
+  (:brief "a fist"
+   :speed 2
+   :attack-verb "punches"))
+
+(defentity foot (natural-weapon)
+  (:brief "a foot"
+   :speed 2
+   :attack-verb "kicks"))
+
+;;; Daggers.
 
 (defentity dagger (one-handed-weapon)
   (:brief "a ~a dagger"
