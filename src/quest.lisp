@@ -44,7 +44,7 @@ The state associated with a quest phase can take one of three forms:
   ((label :initarg :label :initform nil :reader quest-label)
    (name :initarg :name :initform nil :reader quest-name)
    (summary :initarg :summary :initform nil :reader quest-summary)
-   (level :initarg :level :initform 0 :reader quest-level
+   (level :initarg :level :initform 1 :reader quest-level
           :documentation "The minimum level required to accept the quest.
           Determines the base XP reward.")
    (xp-multiplier :initarg :xp-multiplier :initform 1.0 :reader quest-xp-multiplier
@@ -204,7 +204,7 @@ complete, advances to the next phase. Returns the index of the new phase, or
                     (notify-observers (list* (location avatar)
                                              (? (location avatar) :contents))
                                       :after-finish-quest avatar quest)
-                    (gain-xp avatar (* xp-multiplier (xp-granted-by-quest level)))
+                    (gain-xp avatar (round (* xp-multiplier (xp-granted-by-quest level))))
                     :finished)))
             (set-active-quest-state avatar label phase new-state))))))
 
