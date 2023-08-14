@@ -159,16 +159,8 @@ linear progression as `rate' becomes very large."
       (:observers (cons (location actor) (? (location actor) :contents)))
     (call-next-method)))
 
-(defun describe-death (observer actor target)
-  (cond
-    ((eq observer actor)
-     (format nil "You kill ~a!" (describe-brief target)))
-    ((eq observer target)
-     (format nil "~a kills you!" (describe-brief actor :capitalize t)))
-    (t
-     (format nil "~a kills ~a!"
-             (describe-brief actor :capitalize t)
-             (describe-brief target)))))
+(defgeneric describe-death (observer actor target)
+  (:method (observer actor target)))
 
 (defmethod kill ((actor combatant) (target combatant))
   (show-observers (? (location actor) :contents)

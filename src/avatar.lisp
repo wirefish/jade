@@ -210,3 +210,14 @@
                (describe-brief target)
                (and brief (describe-brief attack))
                damage)))))
+
+(defmethod describe-death ((avatar avatar) actor target)
+  (cond
+    ((eq avatar actor)
+     (format nil "You kill ~a!" (describe-brief target)))
+    ((eq avatar target)
+     (format nil "~a kills you!" (describe-brief actor :capitalize t)))
+    (t
+     (format nil "~a kills ~a!"
+             (describe-brief actor :capitalize t)
+             (describe-brief target)))))
