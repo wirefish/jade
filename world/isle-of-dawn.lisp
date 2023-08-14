@@ -817,7 +817,7 @@
 
 ;;; overgrown-field
 
-(defentity lashling-tendril (weapon)
+(defentity lashling-tendril (natural-weapon)
   (:brief "a thorny tendril"
    :speed 5
    :damage-type :slashing

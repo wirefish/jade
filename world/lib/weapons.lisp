@@ -13,6 +13,9 @@
 (defentity two-handed-weapon (weapon)
   (:equippable-slot :both-hands))
 
+(defentity natural-weapon (weapon)
+  (:level nil))
+
 ;;;
 
 (defentity dagger (one-handed-weapon)

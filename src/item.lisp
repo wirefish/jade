@@ -44,7 +44,7 @@
    :full "The item is unremarkable."
    :icon :pouch
    :size +small+
-   :level 0
+   :level 1
    :item-group :miscellany
    :quantity 1
    :stackable nil))

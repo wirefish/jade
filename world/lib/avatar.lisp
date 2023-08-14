@@ -34,5 +34,5 @@
 
 (defentity new-avatar (avatar)
   (:race reborn-spirit
-   :level 0
+   :level 1
    :xp 0))

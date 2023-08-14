@@ -12,8 +12,30 @@
 
 ;;;
 
-(defun compute-max-health (level traits)
-  (* level (+ 10 (1- level) (gethash :constitution traits 0))))
+(defun level-scale (level)
+  (let ((k 20))
+    (float (/ (* level (+ k (1- level))) k))))
+
+(defun scale-value-for-level (value level)
+  (* value (level-scale level)))
+
+(defun max-health (level traits)
+  (round (scale-value-for-level (+ 10 (gethash :constitution traits 0)) level)))
+
+(defun attack-level (actor attack)
+  (let ((actor-level (or (? actor :level) 1))
+        (attack-level (? attack :level)))
+    (if (null attack-level)
+        actor-level
+        (/ (+ actor-level attack-level) 2))))
+
+(defun attack-damage (actor attack target)
+  ;; FIXME: take target's level and defense into account.
+  (declare (ignore target))
+  (round-random
+   (scale-value-for-level
+    (apply #'random-range (? attack :damage-range))
+    (attack-level actor attack))))
 
 ;;; A combatant represents an entity that can enter combat.
 
@@ -31,9 +53,9 @@
    :attitude :neutral)  ; or :friendly, :hostile
 
   (:before-enter-world ()
-    (print 123)
+    (print self)
     (let* ((traits (compute-combat-traits self))
-           (max-health (compute-max-health (? self :level) traits)))
+           (max-health (max-health (? self :level) traits)))
       (setf (? self :max-health) max-health
             (? self :health) max-health
             (? self 'combat-traits) traits))))
@@ -44,7 +66,7 @@
 (defmethod transform-initval ((name (eql :traits)) value)
   `(quote ,value))
 
-;;; An attack is any entity that defines the following attributes: speed,
+;;; An attack is any entity that defines the following attributes: level, speed,
 ;;; damage-type, damage-range, and attack-verb.
 
 (defmethod transform-initval ((name (eql :attack-verb)) value)
@@ -107,7 +129,7 @@
 (defmethod attack ((actor combatant) (target combatant))
   (with-slots (attack-timer current-attack) actor
     (with-attributes (damage-range attack-verb) current-attack
-      (let ((damage (apply #'uniform-random damage-range)))
+      (let ((damage (attack-damage actor current-attack target)))
         ;; FIXME:
         (show actor "You ~a ~a with ~a for ~d damage!"
               (verb-plural attack-verb)
