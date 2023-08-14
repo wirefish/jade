@@ -182,4 +182,5 @@
 ;;;
 
 (defmethod select-attack ((actor avatar) target)
-  (? actor :equipment :main-hand))
+  (or (? actor :equipment :main-hand)
+      (call-next-method)))
