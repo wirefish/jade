@@ -184,3 +184,28 @@
 (defmethod select-attack ((actor avatar) target)
   (or (? actor :equipment :main-hand)
       (call-next-method)))
+
+(defmethod describe-attack ((avatar avatar) actor target attack damage)
+  (with-attributes (brief attack-verb) attack
+    (update-neighbor avatar target :health (? target :health))
+    (cond
+      ((eq avatar actor)
+       (format nil "You ~a ~a ~@[with ~a ~]for ~d damage!"
+               (or (and attack-verb (verb-plural attack-verb)) "attack")
+               (describe-brief target)
+               (and brief (describe-brief attack))
+               damage))
+      ((eq avatar target)
+       (update-avatar avatar :health)
+       (format nil "~a ~a you ~@[with ~a ~]for ~d damage!"
+               (describe-brief actor :capitalize t)
+               (or (and attack-verb (verb-singular attack-verb)) "attacks")
+               (and brief (describe-brief attack))
+               damage))
+      (t
+       (format nil "~a ~a ~a ~@[with ~a ~]for ~d damage!"
+               (describe-brief actor :capitalize t)
+               (or (and attack-verb (verb-singular attack-verb)) "attacks")
+               (describe-brief target)
+               (and brief (describe-brief attack))
+               damage)))))

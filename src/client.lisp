@@ -112,6 +112,8 @@ name and whose subsequent elements are arguments to that command."
      :race (lambda (a) (describe-brief (? a :race) :article nil))
      :icon #'get-icon
      :level (lambda (a) (? a :level))
+     :health (lambda (a) (? a :health))
+     :max-health (lambda (a) (? a :max-health))
      :xp (lambda (a) (? a :xp))
      :max-xp (lambda (a) (xp-required-for-level (1+ (? a :level))))))
 

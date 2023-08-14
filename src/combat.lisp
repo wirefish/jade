@@ -64,8 +64,6 @@ linear progression as `rate' becomes very large."
    :attitude :neutral)  ; or :friendly, :hostile
 
   (:before-enter-world ()
-    (print self)
-    (print (? self :base-health))
     (setf (? self 'combat-traits) (compute-combat-traits self))
     (let ((max-health (max-health self)))
       (setf (? self :max-health) max-health
@@ -134,26 +132,50 @@ linear progression as `rate' becomes very large."
 
 (defmethod attack :around ((actor combatant) (target combatant))
   (process-simple-event attack (actor target)
-      (:observers (? (location actor) :contents))
+      (:observers (cons (location actor) (? (location actor) :contents)))
     (call-next-method)))
+
+(defgeneric describe-attack (observer actor target attack damage)
+  (:method (observer actor target attack damage)))
 
 (defmethod attack ((actor combatant) (target combatant))
   (with-slots (attack-timer current-attack) actor
-    (with-attributes (damage-range attack-verb) current-attack
-      (let ((damage (attack-damage actor current-attack target)))
-        ;; FIXME:
-        (show actor "You ~a ~a with ~a for ~d damage!"
-              (verb-plural attack-verb)
-              (describe-brief target)
-              (describe-brief current-attack)
-              damage)
-        (show target "~a ~a you with ~a for ~d damage!"
-              (describe-brief actor :capitalize t)
-              (verb-singular attack-verb)
-              (describe-brief current-attack)
-              damage))
-      (setf attack-timer nil)
-      (begin-attack actor target))))
+    (let ((damage (attack-damage actor current-attack target)))
+      (when (> (? target :health) 0)
+        (when (<= (decf (? target :health) damage) 0)
+          ;; The target dies but not until after this event has been fully
+          ;; processed.
+          (with-delay (0)
+            (kill actor target))))
+      (show-observers (? (location actor) :contents)
+                      (lambda (e) (describe-attack e actor target current-attack damage))))
+    (setf attack-timer nil)
+    (begin-attack actor target)))
+
+;;;
+
+(defmethod kill :around ((actor combatant) (target combatant))
+  (process-simple-event kill (actor target)
+      (:observers (cons (location actor) (? (location actor) :contents)))
+    (call-next-method)))
+
+(defun describe-death (observer actor target)
+  (cond
+    ((eq observer actor)
+     (format nil "You kill ~a!" (describe-brief target)))
+    ((eq observer target)
+     (format nil "~a kills you!" (describe-brief actor :capitalize t)))
+    (t
+     (format nil "~a kills ~a!"
+             (describe-brief actor :capitalize t)
+             (describe-brief target)))))
+
+(defmethod kill ((actor combatant) (target combatant))
+  (show-observers (? (location actor) :contents)
+                  (lambda (e) (describe-death e actor target)))
+  ;; FIXME: create a 'death' portal to provide a better message.
+  (exit-location target (location target) nil :force t)
+  (exit-world target))
 
 ;;;
 
@@ -198,10 +220,11 @@ linear progression as `rate' becomes very large."
     (deletef (combatants battle) actor)
     (when attack-timer
       (cl-async:remove-event attack-timer))
-    (let ((msg (format nil "~a has left the battle." (describe-brief actor :capitalize t))))
-      (dolist (c (combatants battle))
-        (show c msg)))
-    (show actor "You are no longer in combat.")
+    (when (> (? actor :health) 0)
+      (show-observers
+       (combatants battle)
+       (format nil "~a has left the battle." (describe-brief actor :capitalize t)))
+      (show actor "You are no longer in combat."))
     (setf current-target nil attack-timer nil battle nil)
     battle))
 
