@@ -107,6 +107,18 @@
 
 (defclass location (entity) ())
 
+(defmethod enter-world ((location location))
+  (call-next-method)
+  (dolist (entity (? location :contents))
+    (enter-world entity)))
+
+(defmethod exit-world ((location location))
+  (dolist (entity (? location :contents))
+    (exit-world entity))
+  (call-next-method))
+
+;;; A prototype for locations.
+
 (defentity location (&class location) ())
 
 ;;; Use `deflocation' to create an actual location in the world.

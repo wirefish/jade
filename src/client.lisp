@@ -114,6 +114,8 @@ name and whose subsequent elements are arguments to that command."
      :level (lambda (a) (? a :level))
      :health (lambda (a) (? a :health))
      :max-health (lambda (a) (? a :max-health))
+     :energy (lambda (a) (? a :energy))
+     :max-energy (lambda (a) (? a :max-energy))
      :xp (lambda (a) (? a :xp))
      :max-xp (lambda (a) (xp-required-for-level (1+ (? a :level))))))
 

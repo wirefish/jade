@@ -46,9 +46,7 @@ already left its location."))
   (call-next-method)
   (observe-event actor :after-exit-world))
 
-(defmethod exit-world (actor)
-  ;;(stop-all-behaviors actor)
-  )
+(defmethod exit-world (actor))
 
 ;;;
 
@@ -61,13 +59,7 @@ entering its initial location."))
   (call-next-method)
   (observe-event actor :after-enter-world))
 
-(defmethod enter-world (actor)
-  ;; FIXME: start required behaviors?
-  nil)
-
-(defmethod enter-world ((actor avatar))
-  ;; FIXME: start regen behavior
-  (call-next-method))
+(defmethod enter-world (actor))
 
 ;;;
 

@@ -182,7 +182,7 @@ is complete."
 complete, advances to the next phase. Returns the index of the new phase, or
 :finished if all phases have been completed."
   (let ((quest (symbol-value label)))
-    (with-slots (phases) quest
+    (with-slots (phases xp-multiplier level) quest
       (bind (((phase &optional state) (active-quest-state avatar label))
              (new-state phase-complete (advance-quest-state state arg1 arg2)))
         (if phase-complete
@@ -204,6 +204,7 @@ complete, advances to the next phase. Returns the index of the new phase, or
                     (notify-observers (list* (location avatar)
                                              (? (location avatar) :contents))
                                       :after-finish-quest avatar quest)
+                    (gain-xp avatar (* xp-multiplier (xp-granted-by-quest level)))
                     :finished)))
             (set-active-quest-state avatar label phase new-state))))))
 

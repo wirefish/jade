@@ -23,7 +23,10 @@
    (client-state :initform (make-hash-table) :accessor client-state)))
 
 (defentity avatar (combatant &class avatar)
-  (:attitude :friendly))
+  (:energy 100
+   :max-energy 100
+   :xp 0
+   :attitude :friendly))
 
 (defmethod print-object ((obj avatar) stream)
   (print-unreadable-object (obj stream :type t :identity t)
@@ -99,13 +102,42 @@
            do (for-avatars-in (,var ,loc)
                 ,@body))))
 
-;;;
+;;; Regeneration.
+
+(defmethod regenerate ((actor avatar))
+  (call-next-method)
+  (setf (? actor :energy) (min (? actor :max-energy)
+                               (+ (? actor :energy) 10)))
+  ;; FIXME: update neighbors. check for change.
+  (update-avatar actor :health :energy))
+
+;;; Skills.
 
 (defun skill-rank (avatar skill)
   (? avatar :skills skill))
 
+;;; Experience.
+
 (defun xp-required-for-level (level)
-  (+ (* 1000 level) (* 200 level (1- level))))
+  (round (* 1000 (level-scale (1- level) :rate 5))))
+
+(defun xp-granted-by-kill (level)
+  (round (* 10 (level-scale level :rate 20))))
+
+(defun xp-granted-by-quest (level)
+  (round (* 200 (level-scale level :rate 20))))
+
+(defun gain-xp (avatar xp)
+  (show avatar "You gain ~d experience." xp)
+  (let ((xp (incf (? avatar :xp) xp))
+        (xp-needed (xp-required-for-level (1+ (? avatar :level)))))
+    (if (>= xp xp-needed)
+        (progn
+          (decf (? avatar :xp) xp-needed)
+          (show-notice avatar "You are now level ~d!"
+                       (incf (? avatar :level)))
+          (update-avatar avatar :level :xp :max-xp))
+        (update-avatar avatar :xp))))
 
 ;;; The `:inventory' slot is a list of items carried by the avatar.
 
@@ -221,3 +253,6 @@
      (format nil "~a kills ~a!"
              (describe-brief actor :capitalize t)
              (describe-brief target)))))
+
+(defmethod kill :after ((avatar avatar) (target combatant))
+  (gain-xp avatar (xp-granted-by-kill (? target :level))))

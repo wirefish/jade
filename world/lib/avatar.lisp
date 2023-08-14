@@ -34,6 +34,4 @@
 
 (defentity new-avatar (avatar)
   (:race reborn-spirit
-   :level 1
-   :xp 0
    :attacks (fist foot)))

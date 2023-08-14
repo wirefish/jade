@@ -1,15 +1,5 @@
 (in-package :jade)
 
-;;; Combat traits represent values that impact an entity's combat performance.
-
-(defgeneric compute-combat-traits (entity))
-
-(defmethod compute-combat-traits (entity)
-  nil)
-
-(defmethod compute-combat-traits ((entity combatant))
-  (plist-hash-table (? entity :traits)))
-
 ;;;
 
 (defun level-scale (level &key (rate 20))
@@ -18,9 +8,6 @@ a geometric progression, i.e. the return value is (* level level). A higher
 value for `rate' will cause the scale value to grow more slowly, approaching a
 linear progression as `rate' becomes very large."
   (float (/ (* level (+ rate (1- level))) rate)))
-
-(defun scale-value-for-level (value level)
-  (* value (level-scale level)))
 
 (defun attack-level (actor attack)
   (let ((actor-level (or (? actor :level) 1))
@@ -33,9 +20,8 @@ linear progression as `rate' becomes very large."
   ;; FIXME: take target's level and defense into account.
   (declare (ignore target))
   (round-random
-   (scale-value-for-level
-    (apply #'random-range (? attack :damage-range))
-    (attack-level actor attack))))
+   (* (level-scale (attack-level actor attack))
+      (apply #'random-range (? attack :damage-range)))))
 
 ;;; A combatant represents an entity that can enter combat.
 
@@ -44,7 +30,14 @@ linear progression as `rate' becomes very large."
    (current-target :initform nil :accessor current-target)
    (current-attack :initform nil :accessor current-attack)
    (attack-timer :initform nil :accessor attack-timer)
+   (regen-interval :initform nil)
    (combat-traits :initform nil :accessor combat-traits)))
+
+(defgeneric compute-combat-traits (entity)
+  (:method (entity)))
+
+(defmethod compute-combat-traits ((entity combatant))
+  (plist-hash-table (? entity :traits)))
 
 (defgeneric base-health (entity)
   (:method ((entity combatant))
@@ -52,7 +45,27 @@ linear progression as `rate' becomes very large."
        (gethash :vitality (combat-traits entity) 0))))
 
 (defun max-health (combatant)
-  (round (scale-value-for-level (base-health combatant) (? combatant :level))))
+  (round (* (base-health combatant) (level-scale (? combatant :level)))))
+
+;;; Regeneration.
+
+(defparameter *regen-tick-seconds* 3)
+
+(defgeneric regenerate (actor))
+
+(defmethod regenerate :around ((actor combatant))
+  (unless (battle actor)
+    (process-simple-event regenerate nil
+        (:observers (cons (location actor) (? (location actor) :contents)))
+      (call-next-method))))
+
+(defun health-regen-per-tick (combatant)
+  (round (level-scale (? combatant :level) :rate 100)))
+
+(defmethod regenerate ((actor combatant))
+  (setf (? actor :health)
+        (min (? actor :max-health)
+             (+ (? actor :health) (health-regen-per-tick actor)))))
 
 ;;;
 
@@ -61,19 +74,32 @@ linear progression as `rate' becomes very large."
    :base-health 10
    :attacks nil
    :traits nil
-   :attitude :neutral)  ; or :friendly, :hostile
-
-  (:before-enter-world ()
-    (setf (? self 'combat-traits) (compute-combat-traits self))
-    (let ((max-health (max-health self)))
-      (setf (? self :max-health) max-health
-            (? self :health) max-health))))
+   :attitude :neutral))  ; or :friendly, :hostile
 
 (defmethod transform-initval ((name (eql :attacks)) value)
   `(mapcar #'symbol-value ',value))
 
 (defmethod transform-initval ((name (eql :traits)) value)
   `(quote ,value))
+
+;;;
+
+(defmethod enter-world ((actor combatant))
+  (call-next-method)
+  (with-slots (combat-traits regen-interval) actor
+    (setf combat-traits (compute-combat-traits actor))
+    (let ((max-health (max-health actor)))
+      (setf (? actor :max-health) max-health
+            (? actor :health) max-health))
+    (setf regen-interval
+          (cl-async:with-interval (*regen-tick-seconds*)
+            (regenerate actor)))))
+
+(defmethod exit-world ((actor combatant))
+  (call-next-method)
+  (with-slots (regen-interval) actor
+      (cl-async:remove-interval regen-interval)
+    (setf regen-interval nil)))
 
 ;;; An attack is any entity that defines the following attributes: level, speed,
 ;;; damage-type, damage-range, and attack-verb.

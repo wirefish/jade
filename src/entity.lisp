@@ -48,9 +48,9 @@
     (error "unknown prototype ~s" proto-name)))
 
 (defmethod clone-entity ((proto entity) &rest attributes)
-  (let ((clone (make-instance (type-of proto) :proto proto :behavior (entity-behavior proto))))
-    (apply #'sethash* (slot-value clone 'attributes) attributes)
-    clone))
+  (make-instance (type-of proto)
+                 :attributes (plist-hash-table attributes)
+                 :proto proto :behavior (entity-behavior proto)))
 
 ;;; A mechanism for transforming initializer forms in `defentity' and similar
 ;;; macros.

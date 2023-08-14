@@ -830,6 +830,7 @@
    :description "The lashling is a small mass of writhing vines and weeds that
      has somehow gained the ability to move, albeit very slowly. Sharp thorns
      protrude from the ends of its leafy, tentacle-like appendages."
+   :icon 'pink_creature
    :entry-message "~a emerges from beneath the weeds."
    :attacks (lashling-tendril)
    :traits (:defense 0.5))
