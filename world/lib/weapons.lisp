@@ -19,12 +19,12 @@
   (:level nil))
 
 (defentity fist (natural-weapon)
-  (:brief "a fist"
+  (:brief nil
    :speed 2
    :attack-verb "punches"))
 
 (defentity foot (natural-weapon)
-  (:brief "a foot"
+  (:brief nil
    :speed 2
    :attack-verb "kicks"))
 
