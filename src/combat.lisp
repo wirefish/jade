@@ -182,7 +182,7 @@ linear progression as `rate' becomes very large."
 
 (defmethod kill :around ((actor combatant) (target combatant))
   (process-simple-event kill (actor target)
-      (:observers (cons (location actor) (? (location actor) :contents)))
+      (:observers (observer-list* target (location actor) (? (location actor) :contents)))
     (call-next-method)))
 
 (defgeneric describe-death (observer actor target)
