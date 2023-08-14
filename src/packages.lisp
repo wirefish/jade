@@ -22,6 +22,14 @@
            #:with-attributes
            #:describe-brief
 
+           #:+miniscule+
+           #:+tiny+
+           #:+small+
+           #:+medium+
+           #:+large+
+           #:+huge+
+           #:+gigantic+
+
            #:defbehaviors
            #:disallow-action
            #:call-next-handler

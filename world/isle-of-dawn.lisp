@@ -1,5 +1,9 @@
 (in-package :jade.isle-of-dawn)
 
+;;; This is the zone where all new players start out. It introduces some
+;;; fundamental game mechanics and provides the player with basic starter gear
+;;; and a weapon skill.
+
 (defentity isle-of-dawn ()
   (:name "Isle of Dawn"
    :description "The souls of ancient heroes are reborn atop a sacred hill in
@@ -7,16 +11,11 @@
      soul to regain its physical form so it may join the battle against the
      great evil that threatens Atalea."
    :climate :temperate
-   :level-range '(0 1)))
+   :level-range '(1 2)))
 
 (defentity isle-location (location)
   (:domain :outdoor
    :surface :grass))
-
-(defentity gravel-path ()
-  (:brief "a gravel path"
-   :description "The path's surface of finely crushed white stone contrasts with
-     the lush greenery which surrounds you."))
 
 ;;; hilltop
 
@@ -981,16 +980,6 @@
     (tell self actor "Thanks for your help with the documents. You never know, I
       might have need for your services again.")))
 
-#| FIXME: move to guy in arwyck
-  (:when-talk ((actor &quest special-delivery done) self topic)
-    (tell talk actor "Hey, thanks. I've been needin' those. Here's your coin!
-      You'll be glad of it if you'll be visitin' the shops here in Arwyck. It's
-      no bleedin' city, but you can find most of what you'll be needin' here in
-      town.")
-    ;; FIXME: (receive actor (make-entity 'silver-coin :quantity 10) npc)
-  nil))
-|#
-
 (defentity desktop-documents ()
   (:brief "a document"
    :description "A discreet scan the papers on top of the pile show them to be
@@ -1066,4 +1055,5 @@
    :icon 'boat
    :contents (sailor)
 
-   :route-exits '((gangplank :west pier))))
+   :route-exits '((gangplank :west pier)
+                  (gangplank :south jade.arwyck:west-dock))))
