@@ -72,3 +72,25 @@ particular topic of interest."
 ;;; TODO: Yell something that can be heard at your location and nearby locations.
 
 ;;; TODO: Tell something to a specific player.
+
+;;; Say something without words.
+
+(defgeneric emote (actor message))
+
+(defmethod emote :around (actor message)
+  (process-simple-event emote (actor message)
+      (:observers (? (location actor) :contents))
+    (call-next-method)))
+
+(defmethod emote (actor message)
+  (let ((actor-description (describe-brief actor :capitalize t))
+        (verb (parse-verb (first message)))
+        (rest (join-words (rest message))))
+    (dolist (observer (? (location actor) :contents))
+      (if (eq observer actor)
+          (show observer "You ~a ~a" (verb-plural verb) rest)
+          (show observer "~a ~a ~a" actor-description (verb-singular verb) rest)))))
+
+(defcommand emote (actor ("emote" "em") message)
+  "Perform a simple action to be seen by everyone in your location."
+  (emote actor (or message (list "pout."))))
