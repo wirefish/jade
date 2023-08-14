@@ -12,15 +12,15 @@
 
 ;;;
 
-(defun level-scale (level)
-  (let ((k 20))
-    (float (/ (* level (+ k (1- level))) k))))
+(defun level-scale (level &key (rate 20))
+  "Returns a multiplier that scales a value based on `level'. A `rate' of 1 causes
+a geometric progression, i.e. the return value is (* level level). A higher
+value for `rate' will cause the scale value to grow more slowly, approaching a
+linear progression as `rate' becomes very large."
+  (float (/ (* level (+ rate (1- level))) rate)))
 
 (defun scale-value-for-level (value level)
   (* value (level-scale level)))
-
-(defun max-health (level traits)
-  (round (scale-value-for-level (+ 10 (gethash :constitution traits 0)) level)))
 
 (defun attack-level (actor attack)
   (let ((actor-level (or (? actor :level) 1))
@@ -46,19 +46,30 @@
    (attack-timer :initform nil :accessor attack-timer)
    (combat-traits :initform nil :accessor combat-traits)))
 
+(defgeneric base-health (entity)
+  (:method ((entity combatant))
+    (+ (? entity :base-health)
+       (gethash :vitality (combat-traits entity) 0))))
+
+(defun max-health (combatant)
+  (round (scale-value-for-level (base-health combatant) (? combatant :level))))
+
+;;;
+
 (defentity combatant (&class combatant)
   (:level 1
+   :base-health 10
    :attacks nil
    :traits nil
    :attitude :neutral)  ; or :friendly, :hostile
 
   (:before-enter-world ()
     (print self)
-    (let* ((traits (compute-combat-traits self))
-           (max-health (max-health (? self :level) traits)))
+    (print (? self :base-health))
+    (setf (? self 'combat-traits) (compute-combat-traits self))
+    (let ((max-health (max-health self)))
       (setf (? self :max-health) max-health
-            (? self :health) max-health
-            (? self 'combat-traits) traits))))
+            (? self :health) max-health))))
 
 (defmethod transform-initval ((name (eql :attacks)) value)
   `(mapcar #'symbol-value ',value))
