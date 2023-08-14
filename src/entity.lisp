@@ -158,14 +158,14 @@ all attributes."
 
 (defun decode-entity (data)
   (if-let ((proto (symbol-value-or-nil (first data))))
-    (let ((entity (make-instance (type-of proto) :proto proto)))
+    (let ((entity (clone-entity proto)))
       (loop for (name slot-data) on (rest data) by #'cddr do
         (setf (slot-value entity name) (decode-value entity name slot-data)))
       entity)
-    (progn
-      (format-log :warning "cannot decode entity with unknown prototype ~a"
-                  (first data))
-      nil)))
+  (progn
+    (format-log :warning "cannot decode entity with unknown prototype ~a"
+                (first data))
+    nil)))
 
 ;;; Standard entity attributes. Each may define a transform method used when
 ;;; parsing the attribute's value in `defentity' and similar macros, or a set of
