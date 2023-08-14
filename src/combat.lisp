@@ -33,6 +33,21 @@ linear progression as `rate' becomes very large."
    (regen-interval :initform nil)
    (combat-traits :initform nil :accessor combat-traits)))
 
+(defentity combatant (&class combatant)
+  (:level 1
+   :base-health 10
+   :attacks nil
+   :traits nil
+   :attitude :neutral))  ; or :friendly, :hostile
+
+(defmethod transform-initval ((name (eql :attacks)) value)
+  `(mapcar #'symbol-value ',value))
+
+(defmethod transform-initval ((name (eql :traits)) value)
+  `(quote ,value))
+
+;;;
+
 (defgeneric compute-combat-traits (entity)
   (:method (entity)))
 
@@ -66,21 +81,6 @@ linear progression as `rate' becomes very large."
   (setf (? actor :health)
         (min (? actor :max-health)
              (+ (? actor :health) (health-regen-per-tick actor)))))
-
-;;;
-
-(defentity combatant (&class combatant)
-  (:level 1
-   :base-health 10
-   :attacks nil
-   :traits nil
-   :attitude :neutral))  ; or :friendly, :hostile
-
-(defmethod transform-initval ((name (eql :attacks)) value)
-  `(mapcar #'symbol-value ',value))
-
-(defmethod transform-initval ((name (eql :traits)) value)
-  `(quote ,value))
 
 ;;;
 
