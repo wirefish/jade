@@ -82,8 +82,8 @@
   (declare (ignore new-value))
   (if (keywordp slot-name)
       (with-slots (attributes proto) instance
-        (let ((value (gethash slot-name attributes)))
-          (or value (when proto (slot-value proto slot-name)))))
+        (multiple-value-bind (value found) (gethash slot-name attributes)
+          (if found value (when proto (slot-value proto slot-name)))))
       (call-next-method)))
 
 (defmethod slot-missing (class (instance entity) slot-name
@@ -175,7 +175,7 @@ all attributes."
 ;; does not have a proper name. It is also used when matching against user
 ;; input.
 (defmethod transform-initval ((name (eql :brief)) value)
-  `(parse-noun ,value))
+  `(when ,value (parse-noun ,value)))
 
 ;; The `:pose' attribute is a verb phrase that describes how observers see the
 ;; entity, e.g. "is standing against the wall." Note the trailing punctuation is
