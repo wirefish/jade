@@ -328,21 +328,21 @@
           (? self :pose) (? self :standing)))
 
   (:after-enter-location (self location entry)
-    (with-delay (3)
+    (with-delay (5)
       (observe-event self :lay-down)))
 
   (:lay-down ()
     (show-observers (? (location self) :contents)
                     "The shaggy dog lays down in a comfortable spot.")
     (setf (? self :pose) (? self :lying-down))
-    (with-delay (15)
+    (with-delay (20)
       (observe-event self :stand-up)))
 
   (:stand-up ()
     (show-observers (? (location self) :contents)
                     "The shaggy dog stands up and stretches.")
     (setf (? self :pose) (? self :standing))
-    (with-delay (3)
+    (with-delay (5)
       (observe-event self :move-on)))
 
   (:move-on ()
@@ -365,99 +365,81 @@
   (:exits ((square-portal :west square-nw :east square-ne :south square-c)
            (dirt-road :north harbor-road-2))))
 
+(deflocation square-ne (square)
+  (:exits ((square-portal :west square-n :south square-e)
+           (entry-doorway :east inn-common-room :north axe-shop))))
+
+(deflocation square-w (square)
+  (:exits ((square-portal :north square-nw :east square-c :south square-sw)
+           (entry-doorway :west tower-library))))
+
+(defentity square-sign ()
+  (:brief "a directional sign"
+   :pose "stands nearby."
+   :description "Wooden arrows affixed atop the signpost read as follows:
+
+     | North: Docks
+     | West: Silverwood
+     | South: Wall Street
+     | East: Mistmarsh"))
+
+(defentity square-spiritstone () ; FIXME: spiritstone
+  (:pose "stands on a small pedestal in the center of the square."))
+
+(deflocation square-c (square)
+  (:contents (square-spiritstone square-sign)
+   :exits ((square-portal :west square-w :east square-e
+                          :north square-n :south square-s))
+   :tutorial "You can `use` a spiritstone to bind your life essence to its
+     location. If you later die, your spirit will return here and your body will
+     be resurrected by the stone."))
+
+(deflocation square-e (square)
+  (:exits ((square-portal :north square-ne :west square-c :south square-se)
+           (dirt-road :east east-road-1))))
+
+(deflocation square-sw (square)
+  (:exits ((square-portal :east square-s :north square-w)
+           (entry-doorway :south lodge-foyer)
+           (dirt-road :west forest-road-1))))
+
+(deflocation square-s (square)
+  (:exits ((square-portal :west square-sw :east square-se :north square-c)
+           (dirt-road :south south-road-1))))
+
+(defentity crone (humanoid)
+  (:brief "an old crone"
+   :pose "stands off to the side, watching people pass by."
+   :description "The crone wears a faded gray cloak. Her wavy white hair spills
+     from beneath her hood. Her eyes are bright, and she watches any passersby
+     with great interest.")
+
+  (:after-enter-location ((actor avatar) location entry)
+    (show actor "The crone stares at you for a moment, then looks away."))
+
+  (:when-talk (actor self topic)
+    (tell self actor "Greetings, stranger. Your new body may be young, but I can
+      sense the age of your spirit. This is not your first time around the
+      block, so to speak. In a past life you were a great hero, but perhaps you
+      have forgotten your deeds. A pity.
+
+      Know this: you are here for a reason. This world needs you; I feel it in
+      my bones, I hear it on the wind...but I know not why. What threat could be
+      so grave that, in order to overcome it, we must tear history's heroes away
+      from their peaceful slumber in the Dreamlands?
+
+      Of course that raises another question: who or what is doing the tearing?
+
+      In the village of my birth there is an old curse: \"May you live in
+      interesting times.\" Perhaps I will be lucky and my days will end before
+      things become too interesting. For you, though, I foresee no such
+      luck.")))
+
+(deflocation square-se (square)
+  (:contents (crone)
+   :exits ((square-portal :west square-s :north square-e))))
+
 #|
-deflocation squareNe: square
-  exits [squarePortal -> 'west to squareN, squarePortal -> 'south to squareE,
-       entryDoorway -> 'east to innCommonRoom,
-       exitDoorway -> 'north to axeShop]
-)
-
-deflocation squareW: square
-  exits [squarePortal -> 'north to squareNw, squarePortal -> 'east to squareC,
-       squarePortal -> 'south to squareSw,
-       entryDoorway -> 'west to towerLibrary]
-)
-
-(defentity squareSign: fixture
-  brief "a directional sign"
-  pose "stands nearby."
-  description |
-    Wooden arrows affixed atop the signpost read as follows:
-
-    | North: Docks
-    | West: Silverwood
-    | South: Wall Street
-    | East: Mistmarsh
-)
-
-(defentity spiritstone: spiritstone
- pose "stands on a small pedestal in the center of the square."
-)
-
-deflocation squareC: square
-  contents [spiritstone, squareSign]
-  exits [squarePortal -> 'west to squareW, squarePortal -> 'east to squareE,
-       squarePortal -> 'north to squareN, squarePortal -> 'south to squareS]
-
-  tutorial |
-    You can `use` a spiritstone to bind your life essence to its location.
-    If you later die, your spirit will return here and your body will be
-    resurrected by the stone.
-)
-
-deflocation squareE: square
-  exits [squarePortal -> 'west to squareC, squarePortal -> 'north to squareNe,
-       squarePortal -> 'south to squareSe, dirtRoad -> 'east to eastRoad1]
-)
-
-deflocation squareSw: square
-  exits [squarePortal -> 'north to squareW, squarePortal -> 'east to squareS,
-       dirtRoad -> 'west to forestRoad1, entryDoorway -> 'south to lodgeFoyer]
-)
-
-deflocation squareS: square
-  exits [squarePortal -> 'west to squareSw, squarePortal -> 'east to squareSe,
-       squarePortal -> 'north to squareC, dirtRoad -> 'south to southRoad1]
-)
-
-(defentity crone: npc
-  brief "an old crone"
-  pose "stands off to the side, watching people pass by."
-  description |
-    The crone wears a faded gray cloak. Her wavy white hair spills from
-    beneath her hood. Her eyes are bright, and she watches any passersby
-    with great interest.
-
-  after enterLocation(actor: avatar, location, entry)
-    show(actor) "The crone stares at you for a moment, then looks away."
-  )
-
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      Greetings, stranger. Your new body may be young, but I can sense the
-      age of your spirit. This is not your first time around the block, so
-      to speak. In a past life you were a great hero, but perhaps you have
-      forgotten your deeds. A pity.
-
-      Know this: you are here for a reason. This world needs you; I feel
-      it in my bones, I hear it on the wind...but I know not why. What
-      threat could be so grave that, in order to overcome it, we must tear
-      history's heroes away from their peaceful slumber in the Dreamlands?
-
-      Of course that raises another question: who or what is doing the
-      tearing?
-
-      In the village of my birth there is an old curse: "May you live in
-      interesting times." Perhaps I will be lucky and my days will end
-      before things become too interesting. For you, though, I foresee no
-      such luck.
-  )
-)
-
-deflocation squareSe: square
-  contents [crone]
-  exits [squarePortal -> 'west to squareS, squarePortal -> 'north to squareE]
-)
 
 // sword shop
 

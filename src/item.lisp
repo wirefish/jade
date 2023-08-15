@@ -3,25 +3,23 @@
 
 (in-package :jade)
 
-;;; A material represents a substance that goes into the construction of an
-;;; item. It is an uncountable noun, such as "wood" or "metal".
+;;; A material is an entity that represents a substance that goes into the
+;;; construction of an item. It is an uncountable noun, such as "wood" or
+;;; "metal".
 
-(defstruct material
-  label
-  (name "something")
-  (adjective nil)
-  (tags nil)
-  (traits nil)
-  (level 0))
+;; FIXME: make a material class that inherits from some new base class for
+;; entity that only has label and attributes -- named-object?
 
-(defmacro defmaterial (label &body args)
-  (with-gensyms (material)
-    `(let ((,material (make-material :label ',label
-                                    ,@(loop for (key value) on args by #'cddr
-                                            nconc (list key (transform-initval key value))))))
-       (set ',label ,material)
-       (export ',label)
-       ,material)))
+(defentity material ()
+  (:name "something"
+   :adjective nil
+   :level 1
+   :tags nil
+   :traits nil
+   :durability 1.0))
+
+(defmacro defmaterial (label (&optional proto) attributes &body behaviors)
+  `(defentity ,label (,(or proto 'material)) ,attributes ,@behaviors))
 
 (defmethod transform-initval ((name (eql :tags)) value)
   `(quote ,value))
@@ -60,7 +58,7 @@
   (apply #'format nil (call-next-method)
          (mapcar (lambda (symbol)
                    (let ((material (symbol-value symbol)))
-                     (or (material-adjective material) (material-name material))))
+                     (or (? material :adjective) (? material :name))))
                  (? item :materials))))
 
 ;;; If the item is associated with a quest, the `quest' attribute is the label
@@ -130,6 +128,19 @@ represents `count' of the same item. Returns nil if entity cannot be split."
     (setf (? container slot) kept)
     removed))
 
+(defun contains-isa (container slot label)
+  (some (lambda (e) (entity-isa e label)) (? container slot)))
+
+(defun find-item-isa (container slot proto-label &optional (quantity t))
+  (find-if (lambda (e)
+             (and (entity-isa e proto-label)
+                  (or (eq quantity t) (>= (? e :quantity) quantity))))
+           (? container slot)))
+
+(defun remove-item-isa (container slot proto-label &optional (quantity t))
+  (when-let ((item (find-item-with-proto container slot proto-label quantity)))
+    (remove-item container slot item quantity)))
+
 (defun stackable-p (item stack)
   (when (eq (entity-proto item) (entity-proto stack))
     (when-attributes (stackable) stack
@@ -155,6 +166,3 @@ represents `count' of the same item. Returns nil if entity cannot be split."
       (progn
         (push item (? container slot))
         item)))
-
-(defun contains-isa (container slot label)
-  (some (lambda (e) (entity-isa e label)) (? container slot)))

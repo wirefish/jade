@@ -48,6 +48,8 @@
            #:defmaterial
            #:receive
            #:contains-isa
+           #:find-item-isa
+           #:remove-item-isa
 
            #:location
            #:deflocation
