@@ -167,7 +167,8 @@
 
 (deflocation bayside-plaza-3 (plaza-location)
   (:contents (young-laborer)
-   :exits ((plaza-portal :west bayside-plaza-2 :east bayside-plaza-4))))
+   :exits ((plaza-portal :west bayside-plaza-2 :east bayside-plaza-4)
+           (dirt-road :south harbor-road-1))))
 
 (deflocation bayside-plaza-4 (plaza-location)
   (:exits ((plaza-portal :west bayside-plaza-3 :east bayside-plaza-5)
@@ -243,140 +244,129 @@
   (:contents (attendant ticket-dispenser)
    :exits ((plaza-portal :west bayside-plaza-4))))
 
-#|
+;;; harbor road
 
-// harbor road
+(defentity harbor-road (location)
+  (:name "Harbor Road"
+   :description "A rutted dirt road runs between the harbor and the village
+     proper."
+   :surface :dirt
+   :domain :outdoor))
 
-(defentity harborRoad: location
-  name "Harbor Road"
-  description |
-    A rutted dirt road runs between the harbor and the village proper.
-  surface 'dirt
-  domain 'outdoor
-)
+(deflocation harbor-road-1 (harbor-road)
+  (:exits ((dirt-road :north bayside-plaza-3 :south harbor-road-2)
+           (entry-doorway :east miners-guildhall))))
 
-deflocation harborRoad1: harborRoad
-  exits [dirtRoad -> 'north to baysidePlaza3, dirtRoad -> 'south to harborRoad2,
-       entryDoorway -> 'east to minersGuildhall]
-)
+(deflocation harbor-road-2 (harbor-road)
+  (:exits ((dirt-road :north harbor-road-1 :south square-n))))
 
-deflocation harborRoad2: harborRoad
-  exits [dirtRoad -> 'north to harborRoad1, dirtRoad -> 'south to squareN]
-)
+;;; miner's guild
 
-// miner's guild
+(defentity marigold (humanoid) ; FIXME: (mining-trainer)
+  (:name "Marigold"
+   :pose "is nearby, poking through a stack of ore."
+   :description "Marigold is a cheerful, rosy-cheeked dwarven woman who looks
+     strong enough to crush rocks. Her leather garments are streaked with soot.")
 
-(defentity miningTrainer: miningTrainer
-  brief "Marigold"
-  pose "is nearby, poking through a stack of ore."
-  description |
-    Marigold is a cheerful, rosy-cheeked dwarven woman who looks strong
-    enough to crush rocks. Her leather garments are streaked with soot.
-
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      Welcome to Arwyck! I am the local representative of the Underhill
-      Consortium, a guild for those interested in mining. This workshop
-      serves as a gathering place for our members.
+  (:when-talk (actor self topic)
+    (tell self actor "Welcome to Arwyck! I am the local representative of the
+      Underhill Consortium, a guild for those interested in mining. This
+      workshop serves as a gathering place for our members.
 
       As a miner you can extract ore, raw gemstones, and other valuable
-      resources from deposits scattered around the world. If this sounds
-      useful, I'd love to welcome you to our guild! Type `guild info` for
-      more information or `guild join` to sign up.
+      resources from deposits scattered around the world. If this sounds useful,
+      I'd love to welcome you to our guild! Type `guild info` for more
+      information or `guild join` to sign up.
 
       If you decide mining's for you, Hermetch over there sells the tools
-      you'll need to begin your mining career.
-  )
-)
+      you'll need to begin your mining career.")))
 
-(defentity miningVendor: npc  // FIXME: vendor
-  brief "Hermetch the Bald"
-  pose "stands in front of the tool rack, whistling idly."
-  description |
-    Hermetch lives up to his apellation; his head shines almost as brightly
-    as the polished blades of the pickaxes on the rack behind him.
-  sells [lib.copperPickaxe, bronzePickaxe]
+(defentity hermetch (humanoid) ; FIXME: (vendor)
+  (:name "Hermetch the Bald"
+   :pose "stands in front of the tool rack, whistling idly."
+   :description "Hermetch lives up to his apellation; his head shines almost as
+     brightly as the polished blades of the pickaxes on the rack behind him."
+   :sells ()) ; FIXME: copper-pickaxe, bronze-pickaxe
 
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      I sell the finest tools in the land! The absolute finest!
-    await sleep(1)
-    show(actor) "Marigold rolls her eyes."
-    await sleep(1)
-    tell(self, actor) |
-      Pay her no mind... Type `buy` to see what's available.
-  )
-)
+  (:when-talk (actor self topic)
+    (tell self actor "I sell the finest tools in the land! The absolute finest!")
+    (with-delay (1)
+      (show actor "Marigold rolls her eyes.")
+      (with-delay (1)
+        (show actor "Pay her no mind. Type `buy` to see what's available.")))))
 
-deflocation minersGuildhall: location
-  name "Miners' Guildhall"
-  description |
-    This cavernous warehouse contains numerous carts filled with different
-    types of ore. A rack on the south wall holds a variety of pickaxes,
-    shovels, and other tools useful for mining.
-  domain 'indoor
-  surface 'wood
-  contents [miningTrainer, miningVendor]
-  exits [lib.exitDoorway -> 'west to harborRoad1]
-)
+(deflocation miners-guildhall ()
+  (:name "Miners' Guildhall"
+   :description "This cavernous warehouse contains numerous carts filled with
+     different types of ore. A rack on the south wall holds a variety of
+     pickaxes, shovels, and other tools useful for mining."
+   :domain :indoor
+   :surface :wood
+   :contents (marigold hermetch)
+   :exits ((exit-doorway :west harbor-road-1))))
 
-// village square
+;;; village square
 
-(defentity square: location
-  name "Village Square"
-  description |
-    This cobbled plaza is the heart of the village. Various shops line its
-    perimeter.
-  domain 'outdoor
-  surface 'stone
-)
+(defentity square (location)
+  (:name "Village Square"
+   :description "This cobbled plaza is the heart of the village. Various shops
+     line its perimeter."
+   :domain :outdoor
+   :surface :stone))
 
-(defentity squarePortal: continuingPortal
- brief "the square"
-)
+(defentity square-portal (continuing-portal)
+  (:brief "the square"))
 
-(defentity shaggyDog: npc
-  brief "a shaggy white dog"
-  description |
-    The dog is very curious and closely watches anyone who passes by. Its
-    fur is matted and dirty but it seems happy.
+(defentity shaggy-dog (creature)
+  (:brief "a shaggy white dog"
+   :description "The dog is very curious and closely watches anyone who passes
+     by. Its fur is matted and dirty but it seems happy.")
 
-  lyingDown "lies nearby, curiously eyeing passers-by."
-  standing "stands nearby and looks around."
+  (:after-enter-world ()
+    (setf (? self :lying-down) (parse-verb "lies nearby, curiously eyeing passers-by.")
+          (? self :standing) (parse-verb "stands nearby and looks around.")
+          (? self :pose) (? self :standing))
+    (with-delay (3)
+      (observe-event self :lay-down)))
 
-  when startWorld()
-    while true
-      showNear(self, "The shaggy dog lays down in a comfortable spot.")
-      self.pose self.lyingDown
-      await sleep(20)
+  (:lay-down ()
+    (show-observers (? (location self) :contents)
+                    "The shaggy dog lays down in a comfortable spot.")
+    (setf (? self :pose) (? self :lying-down))
+    (with-delay (15)
+      (observe-event self :stand-up)))
 
-      showNear(self, "The shaggy dog stands up and stretches.")
-      self.pose self.standing
-      await sleep(5)
+  (:stand-up ()
+    (show-observers (? (location self) :contents)
+                    "The shaggy dog stands up and stretches.")
+    (setf (? self :pose) (? self :standing))
+    (with-delay (3)
+      (observe-event self :move-on)))
 
-      var exits [exit for exit in self.location.exits if isa(exit, squarePortal)]
-      travel(self, randomElement(exits))
-      await sleep(5)
-    )
-  )
+  (:move-on ()
+    (if-let ((exits (remove-if-not (lambda (e)
+                                     (when-let ((dest (symbol-value-or-nil (exit-dest e))))
+                                       (entity-isa dest 'square)))
+                                   (? (location self) :exits))))
+      (progn
+        (traverse-portal self (location self) (random-elt exits))
+        (with-delay (3)
+          (observe-event self :lay-down)))
+      (observe-event self :lay-down)))
 
-  when talk(actor, self, topic)
-    show(actor) "The dog's ears perk up and it tilts its head to the side."
-  )
-)
+  (:when-talk (actor self topic)
+    (show actor "The dog's ears perk up and it tilts its head to the side.")))
 
-deflocation squareNw: square
-  contents [shaggyDog]
-  exits [squarePortal -> 'east to squareN, squarePortal -> 'south to squareW,
-       entryDoorway -> 'north to armoryTrainingHall,
-       entryDoorway -> 'west to swordShop]
-)
+(deflocation square-nw (square)
+  (:contents (shaggy-dog)
+   :exits ((square-portal :east square-n :south square-w)
+           (entry-doorway :north armory-training-hall :west sword-shop))))
 
-deflocation squareN: square
-  exits [squarePortal -> 'west to squareNw, squarePortal -> 'east to squareNe,
-       squarePortal -> 'south to squareC, dirtRoad -> 'north to harborRoad2]
-)
+(deflocation square-n (square)
+  (:exits ((square-portal :west square-nw :east square-ne :south square-c)
+           (dirt-road :north harbor-road-2))))
 
+#|
 deflocation squareNe: square
   exits [squarePortal -> 'west to squareN, squarePortal -> 'south to squareE,
        entryDoorway -> 'east to innCommonRoom,

@@ -3,7 +3,8 @@
   (:use :cl :alexandria-2)
   (:import-from :cl-async :with-delay)
   (:shadow :inspect)
-  (:export #:strcat
+  (:export #:symbol-value-or-nil
+           #:strcat
            #:string-starts-with
            #:string-ends-with
            #:?
@@ -11,6 +12,9 @@
            #:bind
            #:with-delay
            #:random-range
+
+           #:parse-noun
+           #:parse-verb
 
            #:entity
            #:entity-id
@@ -34,6 +38,7 @@
            #:disallow-action
            #:call-next-handler
            #:observe-event
+           #:show-observers
            #:self
            #:&quest
            #:&race
@@ -49,7 +54,10 @@
            #:spawn-entity
            #:spawn-unique-entity
            #:make-exit
+           #:exit-dir
+           #:exit-dest
            #:direction-opposite
+           #:traverse-portal
 
            #:avatar
            #:change-race

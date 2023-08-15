@@ -110,7 +110,8 @@
 (defmethod enter-world ((location location))
   (call-next-method)
   (dolist (entity (? location :contents))
-    (enter-world entity)))
+    (enter-world entity)
+    (setf (entity-container entity) location)))
 
 (defmethod exit-world ((location location))
   (dolist (entity (? location :contents))
