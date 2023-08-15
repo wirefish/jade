@@ -370,3 +370,14 @@ location."
 ;;; Discard an item.
 
 ;; TODO:
+
+;;; For testing:
+
+(defcommand create (avatar "create" :raw thing)
+  "Materialize items in your inventory. Cheater!"
+  (bind ((args (read-from-string (format nil "(~a)" thing)))
+         (proto (symbol-value-or-nil (first args))))
+    (if proto
+        (let ((item (apply #'clone-entity proto (rest args))))
+          (receive avatar nil (list item)))
+        (show avatar "You can't create that."))))
