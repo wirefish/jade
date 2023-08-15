@@ -52,7 +52,6 @@
 
 (defmaterial gold (soft-metal)
   (:name "gold"
-   :adjective "golden"
    :level 20
    :traits (:precision 1)
    :level 20))

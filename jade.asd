@@ -44,6 +44,7 @@
              (:file "meditate")
              (:file "attack")
              (:file "use")
+             (:file "craft")
 
              (:file "server")
              ))
@@ -57,6 +58,7 @@
                        (:file "currency")
                        (:file "portals")
                        (:file "vehicles")
+                       (:file "mining")
                        (:file "avatar")
                        ))
              (:file "isle-of-dawn")

@@ -8,7 +8,7 @@
    :attack-verb "hits"
    :item-group :weapons))
 
-;;; A natural weapon inherits its user's level. A nil brief can be used to avoid
+m;;; A natural weapon inherits its user's level. A nil brief can be used to avoid
 ;;; messages like "Ann kicks Bob with a foot".
 
 (defentity natural-weapon (weapon)
