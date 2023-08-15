@@ -122,10 +122,10 @@ satisfies `constraint'."
           (return-from observe-event result))))
     nil))
 
-(defun observers-allow-p (observers event &rest args)
+(defun observers-allow (observers event &rest args)
   (dolist (observer observers)
     (when (eq (apply #'observe-event observer event args) :disallow-action)
-      (return-from observers-allow-p nil)))
+      (return-from observers-allow nil)))
   t)
 
 (defun observer-explicity-allows (observer event &rest args)
@@ -173,7 +173,7 @@ phases."
          (after-phase (make-keyword (strcat "AFTER-" name-str)))
          (observers-var (gensym)))
     `(let ((,observers-var ,observers))
-       (when (or ,force (observers-allow-p ,observers-var ,allow-phase ,@args))
+       (when (or ,force (observers-allow ,observers-var ,allow-phase ,@args))
          (notify-observers ,observers-var ,before-phase ,@args)
          ,@body
          (notify-observers ,observers-var ,after-phase ,@args)

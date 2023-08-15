@@ -12,7 +12,7 @@
   ;; Assume that actor and target are both contained within actor's location.
   (if (talkative target)
       (let ((observers (list* (location actor) (? (location actor) :contents))))
-        (when (observers-allow-p observers :allow-talk actor target topic)
+        (when (observers-allow observers :allow-talk actor target topic)
           (notify-observers observers :before-talk actor target topic)
           (call-next-method)
           (notify-observers observers :after-talk actor target topic)))
@@ -51,12 +51,9 @@ particular topic of interest."
 (defgeneric say (actor message))
 
 (defmethod say :around (actor message)
-  (let ((location (location actor)))
-    (let ((observers (list* location (? location :contents))))
-      (when (observers-allow-p observers :allow-say actor message)
-        (notify-observers observers :before-say actor message)
-        (call-next-method)
-        (notify-observers observers :after-say actor message)))))
+  (process-simple-event say (actor message)
+      (:observers (list* (location actor) (? (location actor) :contents)))
+    (call-next-method)))
 
 (defmethod say (actor message)
   (let ((actor-description (describe-brief actor :capitalize t)))
