@@ -91,10 +91,10 @@
    :summary "Choose your physical form by meditating at one of the racial
      shrines on the Isle of Dawn, then return to the officious kobold.")
 
-  (meditate
+  (:active
       :summary "Meditate at one of the racial shrines on the Isle of Dawn.")
 
-  (done
+  (:done
       :summary "Talk to the officious kobold in the wildflower field."))
 
 (defentity officious-kobold (humanoid)
@@ -129,12 +129,12 @@
       see the quests you've accepted and track your progress toward their
       completion."))
 
-  (:when-talk ((actor &quest choose-a-race meditate) self topic)
+  (:when-talk ((actor &quest choose-a-race :active) self topic)
     (tell self actor "Have you selected a race yet? The caretakers to the west
       will be more than happy to describe their races and help you make the
       right decision."))
 
-  (:when-talk ((actor &quest choose-a-race done) self topic)
+  (:when-talk ((actor &quest choose-a-race :done) self topic)
     (tell self actor "A fine choice! I had no doubt you would choose to become
       ~a. I am something of an expert in these matters, after all."
           (describe-brief (? actor :race)))
@@ -210,7 +210,7 @@
    :exits ((gravel-path :east wildflower-field :north elven-shrine
                         :west ogre-shrine)))
 
-  (:after-meditate ((actor &quest choose-a-race meditate))
+  (:after-meditate ((actor &quest choose-a-race :active))
     (show actor "A calming warmth suffuses your being. The caretaker smiles broadly as she
       reaches out to you with her open hand, holding it inches from your ghostly
       form. She smiles broadly as the warmth spreads to her hand.
@@ -270,7 +270,7 @@
    :contents (wooden-sculpture elven-caretaker)
    :exits ((gravel-path :south human-shrine :north sidhe-shrine :west goblin-shrine)))
 
-  (:after-meditate ((actor &quest choose-a-race meditate))
+  (:after-meditate ((actor &quest choose-a-race :active))
     (show actor "The caretaker approaches the nearby sculpture and raises her
       hands to the sky. Motes of light rise from the bowl atop the sculpture;
       they quickly become so bright you are forced to look away. A swirling wind
@@ -337,7 +337,7 @@
    :contents (sidhe-caretaker tree boulder)
    :exits ((gravel-path :south elven-shrine :west dwarven-shrine)))
 
-  (:after-meditate ((actor &quest choose-a-race meditate))
+  (:after-meditate ((actor &quest choose-a-race :active))
     (show actor "As you begin your meditation, the shadows in the area deepen.
       The leaves above begin to rustle, as if the tree is growing restless.
 
@@ -384,7 +384,7 @@
    :contents (dwarven-caretaker)
    :exits ((gravel-path :east sidhe-shrine :south goblin-shrine)))
 
-  (:after-meditate ((actor &quest choose-a-race meditation))
+  (:after-meditate ((actor &quest choose-a-race :active))
     (show actor "The caretaker grasps his maul with both hands and holds it out
       before him. After a moment the hammer begins to vibrate and erupts with
       amber light, echoing the statues' eyes. The vibrations grow stronger and
@@ -447,7 +447,7 @@
    :exits ((gravel-path :north dwarven-shrine :south ogre-shrine
                         :east elven-shrine)))
 
-  (:after-meditate ((actor &quest choose-a-race meditate))
+  (:after-meditate ((actor &quest choose-a-race :active))
     (show actor "As soon as you close your eyes, you have a vision of the world
       around you getting larger...or are you getting smaller? For a moment you
       are stricken with vertigo as the world shifts and spins.
@@ -486,7 +486,7 @@
    :contents (ogre-caretaker)
    :exits ((gravel-path :north goblin-shrine :east human-shrine)))
 
-  (:after-meditate ((actor &quest choose-a-race meditate))
+  (:after-meditate ((actor &quest choose-a-race :active))
     (show actor "The caretaker selects a boulder and tosses it on the ground
       before you. He then steps over, raises his hammer, and crushes the rock as
       he lets out an enormous belly laugh.
@@ -505,10 +505,10 @@
    :summary "Pick a white tulip for Dhalia to exchange for a set of clothes."
    :required-quests (choose-a-race))
 
-  (active
+  (:active
       :summary "Pick a white tulip.")
 
-  (done
+  (:done
       :summary "Give the white tulip to Dhalia."))
 
 (defentity seamstress (humanoid)
@@ -531,11 +531,11 @@
       work here prevents me from taking the time to gather them. Would you head
       to the east and get one for me?"))
 
-  (:when-talk ((actor &quest get-some-clothes active) self topic)
+  (:when-talk ((actor &quest get-some-clothes :active) self topic)
     (tell self actor "Have you found a white tulip for me? They're just to the
       east."))
 
-  (:when-talk ((actor &quest get-some-clothes done) self topic)
+  (:when-talk ((actor &quest get-some-clothes :done) self topic)
     (tell self actor "What is that you have in your hand?")
     (advance-quest self actor 'get-some-clothes))
 
@@ -548,8 +548,8 @@
                    (clone-entity 'pants :materials '(cotton))
                    (clone-entity 'shoes :materials '(worn-leather))
                    (clone-entity 'small-backpack :materials '(canvas))))
-    (maybe-show-tutorial actor 'items "The seamstress have given you several
-      items; type `inventory` or `inv` to list them.
+    (maybe-show-tutorial actor 'items "Dhalia has given you several items; type
+      `inventory` or `inv` to list them.
 
       To wear an item, use the `equip` command. For example, type `equip shirt`.
       Type just `equip` to list the items you currently have equipped.
@@ -577,7 +577,7 @@
    :entry-message "catches your eye."
    :quest get-some-clothes)
 
-  (:allow-take ((actor &quest get-some-clothes active) self container))
+  (:allow-take ((actor &quest get-some-clothes :active) self container))
 
   (:allow-take (actor self container)
     (show actor "It would be rude to pick the tulip right now.")
@@ -633,10 +633,10 @@
      then return to the mistress of names."
    :required-quests (get-some-clothes))
 
-  (active
+  (:active
       :summary "Speak your name in the presence of the orb of naming.")
 
-  (done
+  (:done
       :summary "Return to the mistress of names."))
 
 (defentity mistress-of-names (humanoid)
@@ -673,11 +673,11 @@
       new name on the trunk of this tree with the names of all the other heroes
       who have passed this way."))
 
-  (:when-talk ((actor &quest choose-a-name active) self topic)
+  (:when-talk ((actor &quest choose-a-name :active) self topic)
     (tell self actor "Still going incognito? You'll find the orb of naming just
       to the east."))
 
-  (:when-talk ((actor &quest choose-a-name done) self topic)
+  (:when-talk ((actor &quest choose-a-name :done) self topic)
     (tell self actor "Yes, what is it? Of course, you've chosen your name! Let me see, where is my
       pen? Ah, there it is. And now to write your name --- how did you spell it,
       again? Just a few strokes of the pen, and... done!")
@@ -700,7 +700,7 @@
      surface is smooth and cloudy. If a creature speaks a word within its
      presence, the orb has the power to make that word the creature's name.")
 
-  (:after-say ((actor &quest choose-a-name active) message)
+  (:after-say ((actor &quest choose-a-name :active) message)
     (show actor "The orb begins to glow, dimly at first, but then more brightly.
       Sparks skitter across its smooth surface and you feel an uncomfortable
       tingle beneath your skin.")
@@ -720,7 +720,7 @@
    :contents (orb-of-naming)
    :exits ((gravel-path :west circle-of-names)))
 
-  (:after-enter-location ((actor &quest choose-a-name active) location entry)
+  (:after-enter-location ((actor &quest choose-a-name :active) location entry)
     (maybe-show-tutorial actor 'orb-of-naming "The `look:orb of naming` is
       listening, so be careful what you say! If you speak a single word that the
       orb deems suitable, that word will become your name. Choose wisely.")))
@@ -733,10 +733,10 @@
      Whatever."
    :required-quests (choose-a-name))
 
-  (active
+  (:active
       :summary "Kill a vineling. Lashleaf? Whatever.")
 
-  (done
+  (:done
       :summary "Return to the guard."))
 
 (defentity copper-dirk (dagger)
@@ -774,11 +774,11 @@
       Strike fast and true! If you can overcome such a fearsome foe, I'll
       happily let you pass."))
 
-  (:when-talk ((actor &quest kill-some-plants active) self topic)
+  (:when-talk ((actor &quest kill-some-plants :active) self topic)
     (tell self actor "Any progress so far? Kill one of those plant things and
       we'll talk."))
 
-  (:when-talk ((actor &quest kill-some-plants done) self topic)
+  (:when-talk ((actor &quest kill-some-plants :done) self topic)
     (tell self actor "Great job! I'll confess, those things give me the heebie
       jeebies. Plants shouldn't writhe around like that. Please, feel free to
       keep the dirk. You may head south whenever you like.")
@@ -834,7 +834,7 @@
    :attacks (lashling-tendril)
    :traits (:defense 0.5))
 
-  (:after-kill ((actor &quest kill-some-plants active) self)
+  (:after-kill ((actor &quest kill-some-plants :active) self)
     (advance-quest self actor 'kill-some-plants)))
 
 (defentity overgrown-field-portal ()
@@ -940,10 +940,10 @@
      Arwyck docks."
    :required-quests (kill-some-plants))
 
-  (active
+  (:active
       :summary "Board the *Siren* and arrive at the Arwyck docks.")
 
-  (done
+  (:done
       :summary "Talk to the surly stevedore."))
 
 (defentity bundle-of-documents (item)
@@ -972,7 +972,7 @@
       Surly fellow near the docks. Can't miss him. He'll pay you once he has the
       documents."))
 
-  (:when-talk ((actor &quest special-delivery active) self topic)
+  (:when-talk ((actor &quest special-delivery :active) self topic)
     (tell self actor "What are you doing here? My man needs those documents. The
       *Siren* departs for Arwyck from the dock just east of here."))
 

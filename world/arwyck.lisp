@@ -46,7 +46,7 @@
    :pose "stares out to sea."
    :description "The man wears stained overalls and a sour frown.")
 
-  (:when-talk ((actor &quest jade.isle-of-dawn:special-delivery done) self topic)
+  (:when-talk ((actor &quest jade.isle-of-dawn:special-delivery :done) self topic)
     (tell self actor "Hey, thanks. I've been needin' those. Here's your coin!
       You'll be glad of it if you'll be visitin' the shops here in Arwyck. It's
       no bleedin' city, but you can find most of what you'll be needin' here in
@@ -65,7 +65,7 @@
    :contents (stevedore)
    :exits ((gravel-path :south bayside-plaza-2)))
 
-  (:after-enter-location ((actor &quest jade.isle-of-dawn:special-delivery active) self entry)
+  (:after-enter-location ((actor &quest jade.isle-of-dawn:special-delivery :active) self entry)
     (show actor "You've arrived in Arwyck!")
     (advance-quest self actor 'jade.isle-of-dawn:special-delivery)))
 
@@ -122,9 +122,9 @@
   (:name "Dance Monkey"
    :summary "Find the monkey and dance for it, dance for it, dance for it, oh oh
      oh.")
-  (active
+  (:active
       :summary "Dance in the presence of the monkey in Arwyck.")
-  (done
+  (:done
       :summary "Return to the young laborer and recount your dancing exploits."))
 
 (defentity young-laborer (humanoid)
@@ -152,11 +152,11 @@
       `emote` command. For example, you could type `emote dances for the
       monkey.` Type `help emote` for more information."))
 
-  (:when-talk ((actor &quest dance-monkey active) self topic)
+  (:when-talk ((actor &quest dance-monkey :active) self topic)
     (tell self actor "Did you find the monkey? When you're done I won't make you
       do it all again, I promise."))
 
-  (:when-talk ((actor &quest dance-monkey done) self topic)
+  (:when-talk ((actor &quest dance-monkey :done) self topic)
     (tell self actor "Look me in the eyes...you did it, didn't you? Ha ha I
       never thought you would, but thank you anyway!")
     (advance-quest self actor 'dance-monkey))
@@ -176,9 +176,9 @@
 (defquest ticket-please
   (:name "Ticket, Please"
    :summary "Grab a ticket from the dispenser and present it to the attendant.")
-  (active
+  (:active
       :summary "Grab a ticket from the dispenser.")
-  (done
+  (:done
     :summary "Present the ticket to the attendant."))
 
 (defentity yellow-ticket (item)
@@ -196,7 +196,7 @@
 
     > This ticket dispenser is provided as a free service of the Explorer's Guild.")
 
-  (:when-use ((actor &quest ticket-please active) self target)
+  (:when-use ((actor &quest ticket-please :active) self target)
     ;; FIXME: receiveMessage "%tB rattles briefly then dispenses %ab."
     (receive actor self (list (clone-entity 'yellow-ticket)))
     (advance-quest self actor 'ticket-please)
@@ -227,7 +227,7 @@
       are carrying or an item in your surroundings. It is a general-purpose way
       to employ an item for some effect. Try it on the ticket dispenser."))
 
-  (:when-talk ((actor &quest ticket-please active) self topic)
+  (:when-talk ((actor &quest ticket-please :active) self topic)
     (tell self actor "Go ahead and `use` the dispenser. It won't bite."))
 
   (:allow-give (actor self items)
