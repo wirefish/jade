@@ -147,7 +147,6 @@ its own token, even if not delimited by whitespace."
               verb (first tokens)))
       (if-let ((command (find-command verb)))
         (with-slots (clauses body) command
-          (print (-> clauses first))
           (if (eq :raw (-> clauses first cdr))
               (funcall body avatar rest)
               (apply body avatar (parse-clauses clauses (rest tokens)))))
