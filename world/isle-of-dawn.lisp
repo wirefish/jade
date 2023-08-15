@@ -543,11 +543,11 @@
     (tell self actor "Why thank you, this tulip is lovely! Your timing is
       perfect; I have just finished selecting an outfit for you. I hope
       everything fits!")
-    (give self actor
-          (list (clone-entity 'shirt :materials '(cotton))
-                (clone-entity 'pants :materials '(cotton))
-                (clone-entity 'shoes :materials '(worn-leather))
-                (clone-entity 'small-backpack :materials '(canvas))))
+    (receive actor self
+             (list (clone-entity 'shirt :materials '(cotton))
+                   (clone-entity 'pants :materials '(cotton))
+                   (clone-entity 'shoes :materials '(worn-leather))
+                   (clone-entity 'small-backpack :materials '(canvas))))
     (maybe-show-tutorial actor 'items "The seamstress have given you several
       items; type `inventory` or `inv` to list them.
 
@@ -603,9 +603,9 @@
 
 (deflocation tulip-field-sw (tulip-field)
   (:tutorial "Some items can be picked up using the `take` command. For example,
-    type `take tulip` to take a white tulip when you see one. Picking up an item
-    places it into your inventory. Use the `inventory` command (or just `inv`
-    for short) to list the items you are carrying."
+     type `take tulip` to take a white tulip when you see one. Picking up an
+     item places it into your inventory. Use the `inventory` command (or just
+     `inv` for short) to list the items you are carrying."
    :exits ((gravel-path :west clothing-stall)
            (tulip-field-portal :east tulip-field-se :north tulip-field-nw))))
 
@@ -768,7 +768,7 @@
       plants, but vicious killers! Vinelings, I think they're called. Or maybe
       lashleaves? Whatever. The name's not important. Here, take this.")
 
-    (give self actor (list (clone-entity 'copper-dirk)))
+    (receive actor self (list (clone-entity 'copper-dirk)))
 
     (tell self actor "Go ahead, `equip` that knife and kill one of those plants.
       Strike fast and true! If you can overcome such a fearsome foe, I'll
@@ -967,7 +967,7 @@
 
   (:after-accept-quest (actor (quest &quest special-delivery) self)
     (tell self actor "Good, good. Take these.")
-    (give self actor (list (clone-entity 'bundle-of-documents)))
+    (receive actor self (list (clone-entity 'bundle-of-documents)))
     (tell self actor "I need you to deliver those documents to my man in Arwyck.
       Surly fellow near the docks. Can't miss him. He'll pay you once he has the
       documents."))
@@ -1056,4 +1056,4 @@
    :contents (sailor)
 
    :route-exits '((gangplank :west pier)
-                  (gangplank :south jade.arwyck:west-dock))))
+                  (gangplank :south jade.arwyck::west-dock))))

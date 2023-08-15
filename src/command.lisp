@@ -79,6 +79,13 @@
        (show actor many-message (format-list #'describe-brief matches "or"))
        nil))))
 
+(defun match-exactly-one (actor tokens candidates no-tokens-message none-message many-message)
+  (if tokens
+      (match-one actor tokens candidates none-message many-message)
+      (progn
+        (show actor no-tokens-message)
+        nil)))
+
 (defun match-some (actor tokens candidates none-message)
   (let ((matches (find-matches tokens candidates)))
     (or matches

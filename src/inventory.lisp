@@ -11,8 +11,8 @@ The following verbs/events interact with inventory:
 - equip: inventory -> equipment
 - take: environment -> inventory
 - put: inventory -> environment
-- give: inventory -> npc
-- receive: npc -> inventory
+- give: inventory -> sink
+- receive: source -> inventory
 - discard: inventory -> /dev/null
 
 |#
@@ -303,59 +303,69 @@ location."
                       (format-list #'describe-brief containers "or"))))))))
       (show actor "What do you want to drop?")))
 
-;;; An entity gives one or more items to another entity.
+;;; An avatar gives items to an NPC or some other sink.
 
-(defgeneric give (giver receiver items))
+(defgeneric give (avatar sink items))
 
-(defmethod give :around (giver receiver items)
-  (let* ((observers (list* giver receiver items)))
-    (when (observers-allow-p observers :allow-give giver receiver items)
-      (notify-observers observers :before-give giver receiver items)
-      (call-next-method giver receiver items)
-      (notify-observers observers :after-give giver receiver items)
-      t)))
+(defmethod give :around ((avatar avatar) sink items)
+  (if (observer-explicity-allows sink :allow-give avatar sink items)
+      (let ((observers (list* sink avatar items)))
+        (when (observers-allow-p (cdr observers) :allow-give avatar sink items)
+          (notify-observers observers :before-give avatar sink items)
+          (call-next-method)
+          (notify-observers observers :after-give avatar sink items)
+          t))
+      (show avatar "You can't give ~a to ~a."
+            (format-list #'describe-brief items)
+            (describe-brief sink :article :definite))))
 
-(defmethod give (giver (receiver avatar) items)
-  (if giver
-      (show receiver "~a gives you ~a."
-            (describe-brief giver :article :definite :capitalize t)
-            (format-list #'describe-brief items))
-      (show receiver "You receive ~a." (format-list #'describe-brief items)))
-  (update-inventory receiver
-                    (loop for item in items
-                          collect (insert-item receiver :inventory item)))
-  (check-encumbrance receiver))
+(defmethod give ((avatar avatar) sink items)
+  (show avatar "You give ~a to ~a."
+        (format-list #'describe-brief items)
+        (describe-brief sink))
+  (let (removed modified)
+    (loop for item in items do
+      (let ((stack (remove-item avatar :inventory item)))
+        (if (eq stack item)
+            (push stack removed)
+            (push stack modified))))
+    (update-inventory avatar modified removed)))
 
-;; TODO: give command.
+(defcommand give (actor "give" item "to" sink)
+  "Remove *item* from your inventory and give it to *sink*."
+  (when-let* ((item (match-exactly-one
+                     actor item (? actor :inventory)
+                     "What do you want to give?"
+                     "You aren't carrying anything that matches \"~a\"."
+                     "Do you want to give ~a?"))
+              (sink (match-exactly-one
+                         actor sink
+                         (? (location actor) :contents)
+                         "Who do you want to give something to?"
+                         "You don't see anything here that matches \"~a\"."
+                         "Do you want to give something to ~a?")))
+    (give actor sink (list item))))
 
-;;; Receive one or more newly-created items from an NPC or some other source.
+;;; An NPC or some other source gives one or more items to an avatar.
 
-(defgeneric receive (actor items source)
-  (:documentation "Called when `actor' receives `items' from `source'."))
+(defgeneric receive (avatar source items))
 
-(defmethod receive :around (actor items source)
-  (let* ((items (loop for item in items
-                      if (listp item)
-                        collect (apply #'clone-entity item)
-                      else
-                        collect item))
-         (observers (list* actor source items)))
-    (when (observers-allow-p observers :allow-receive actor items source)
-      (notify-observers observers :before-receive actor items source)
-      (call-next-method actor items source)
-      (notify-observers observers :after-receive actor items source)
-      t)))
+(defmethod receive :around ((avatar avatar) source items)
+  (process-simple-event receive (avatar source items)
+      (:observers (list* avatar source items))
+    (call-next-method)))
 
-(defmethod receive ((actor avatar) items source)
+(defmethod receive ((avatar avatar) source items)
   (if source
-      (show actor "~a gives you ~a."
+      (show avatar "~a gives you ~a."
             (describe-brief source :article :definite :capitalize t)
             (format-list #'describe-brief items))
-      (show actor "You receive ~a." (format-list #'describe-brief items)))
-  (update-inventory actor
+      (show avatar "You receive ~a."
+            (format-list #'describe-brief items)))
+  (update-inventory avatar
                     (loop for item in items
-                          collect (insert-item actor :inventory item)))
-  (check-encumbrance actor))
+                          collect (insert-item avatar :inventory item)))
+  (check-encumbrance avatar))
 
 ;;; Discard an item.
 

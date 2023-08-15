@@ -43,6 +43,7 @@
              (:file "quest")
              (:file "meditate")
              (:file "attack")
+             (:file "use")
 
              (:file "server")
              ))

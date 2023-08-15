@@ -111,7 +111,7 @@ satisfies `constraint'."
 
 (defgeneric observe-event (observer event &rest args))
 
-(defmethod observe-event ((observer null) event &rest args)
+(defmethod observe-event (observer event &rest args)
   (declare (ignore args)))
 
 (defmethod observe-event ((observer entity) event &rest args)
@@ -119,13 +119,18 @@ satisfies `constraint'."
     (loop for fn in fns do
       (let ((result (apply fn observer args)))
         (unless (eq result :call-next-handler)
-          (return-from observe-event result))))))
+          (return-from observe-event result))))
+    nil))
 
 (defun observers-allow-p (observers event &rest args)
   (dolist (observer observers)
     (when (eq (apply #'observe-event observer event args) :disallow-action)
       (return-from observers-allow-p nil)))
   t)
+
+(defun observer-explicity-allows (observer event &rest args)
+  (let ((value (apply #'observe-event observer event args)))
+    (and value (not (eq value :disallow-action)))))
 
 (defun notify-observers (observers event &rest args)
   (dolist (observer observers)
@@ -158,30 +163,10 @@ always as the first element."
 
 ;;;
 
-(defmacro defaction (name args (&key observers) &body body)
-  "Defines a generic function with an :around method and an unspecialized normal
-method with the given body to implement the machinery for processing events
-associated with an action."
-  (let* ((name-str (symbol-name name))
-         (allow-event (make-keyword (strcat "ALLOW-" name-str)))
-         (before-event (make-keyword (strcat "BEFORE-" name-str)))
-         (after-event (make-keyword (strcat "AFTER-" name-str)))
-         (observers-var (gensym)))
-    `(progn
-       (defgeneric ,name ,args)
-       (defmethod ,name :around ,args
-           (let ((,observers-var ,observers))
-             (when (observers-allow-p ,observers-var ,allow-event ,@args)
-               (notify-observers ,observers-var ,before-event ,@args)
-               (call-next-method)
-               (notify-observers ,observers-var ,after-event ,@args)
-               t)))
-       (defmethod ,name ,args
-         ,@body))))
-
 (defmacro process-simple-event (name args (&key observers force) &body body)
-  "Returns an expression that implements the common case for processing the phases
-of an event."
+  "Returns a form that implements the process of triggering the allow, before, and
+after phases for an event. The body is executed between the before and after
+phases."
   (let* ((name-str (symbol-name name))
          (allow-phase (make-keyword (strcat "ALLOW-" name-str)))
          (before-phase (make-keyword (strcat "BEFORE-" name-str)))

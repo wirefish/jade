@@ -41,7 +41,7 @@
 
            #:item
            #:defmaterial
-           #:give
+           #:receive
            #:contains-isa
 
            #:location

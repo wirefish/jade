@@ -125,7 +125,7 @@
   (round (* 10 (level-scale level :rate 20))))
 
 (defun xp-granted-by-quest (level)
-  (round (* 200 (level-scale level :rate 20))))
+  (round (* 250 (level-scale level :rate 20))))
 
 (defun gain-xp (avatar xp)
   (show avatar "You gain ~d experience." xp)

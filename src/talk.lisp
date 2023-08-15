@@ -73,6 +73,8 @@ particular topic of interest."
 
 ;;; TODO: Tell something to a specific player.
 
+;;; TODO: Say something in a chat channel.
+
 ;;; Say something without words.
 
 (defgeneric emote (actor message))
