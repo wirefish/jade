@@ -89,12 +89,12 @@
 ;;; The optional `craft-skill' attribute specifies a skill and minimum rank in
 ;;; that skill that are required in order to craft the item. If present it must
 ;;; be a two-element list containing a skill and an integer rank. In addition,
-;;; the `craft-materials' attribute is a list (count material-tag...) lists.
+;;; the `craft-parts' attribute is a list of (quantity proto-label) lists.
 
 (defmethod transform-initval ((name (eql :craft-skill)) value)
   `(list ,@value))
 
-(defmethod transform-initval ((name (eql :craft-materials)) value)
+(defmethod transform-initval ((name (eql :craft-parts)) value)
   `(quote ,value))
 
 ;;; Items can be stacked if they have the same prototype and their `stackable'
@@ -134,6 +134,12 @@ represents `count' of the same item. Returns nil if entity cannot be split."
 (defun find-item-isa (container slot proto-label &optional (quantity t))
   (find-if (lambda (e)
              (and (entity-isa e proto-label)
+                  (or (eq quantity t) (>= (? e :quantity) quantity))))
+           (? container slot)))
+
+(defun find-item (container slot item &optional (quantity t))
+  (find-if (lambda (e)
+             (and (eq e item)
                   (or (eq quantity t) (>= (? e :quantity) quantity))))
            (? container slot)))
 
