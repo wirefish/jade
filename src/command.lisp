@@ -13,7 +13,7 @@
           (mapcar #'(lambda (clause)
                       (destructuring-bind (name &rest preps) clause
                         (case preps
-                          ((nil :word :rest) (format nil "*~(~a~)*" name))
+                          ((nil :word :rest :raw) (format nil "*~(~a~)*" name))
                           (t (format nil "~a *~(~a~)*" (format-command-alts preps) name)))))
                   (command-clauses command))))
 
@@ -95,6 +95,9 @@
 
 ;;;
 
+(defun split-verb (input)
+  (cl-ppcre:split "\\s+" input :limit 2))
+
 (defun tokenize-input (input)
   "Returns a list containing the sequence of whitespace-delimited tokens in a user
 input string. Any sequence of one or more punctuation characters is considered
@@ -134,15 +137,18 @@ its own token, even if not delimited by whitespace."
 
 (defun process-input (avatar input)
   "Processes input from a player."
-  (let ((tokens (tokenize-input input)))
-    (when tokens
-      (let* ((verb (string-downcase (first tokens)))
-             (alias (gethash verb *aliases*)))
-        (when alias
-          (setf tokens alias)
-          (setf verb (first tokens)))
-        (let ((command (find-command verb)))
-          (if command
-              (log-run-time :debug verb
-                (run-command avatar command (rest tokens)))
-              (show-error avatar "Unknown command ~s. Type \"help\" for help.~%" verb)))))))
+  (when-let ((input (string-trim '(#\Space #\Tab) input)))
+    (bind (((verb &optional rest) (split-verb input))
+           (verb (string-downcase verb))
+           (tokens (cons verb (tokenize-input rest)))
+           (alias (gethash verb *aliases*)))
+      (when alias
+        (setf tokens alias
+              verb (first tokens)))
+      (if-let ((command (find-command verb)))
+        (with-slots (clauses body) command
+          (print (-> clauses first))
+          (if (eq :raw (-> clauses first cdr))
+              (funcall body avatar rest)
+              (apply body avatar (parse-clauses clauses (rest tokens)))))
+        (show-error avatar "Unknown command ~s. Type \"help\" for help." verb)))))
