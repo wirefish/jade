@@ -8,6 +8,7 @@
 
 (defentity copper-ore (ore)
   (:brief "a chunk of copper ore"
+   :materials (copper)))
 
 ;;; Ingots.
 
@@ -19,8 +20,5 @@
    :materials (copper)))
 
 (defentity silver-ingot (ingot)
-  (:brief "a copper ingot"
-   :materials (copper)))
-
-  (:brief "a ~a ingot"
-   :stackable t))
+  (:brief "a silver ingot"
+   :materials (silver)))

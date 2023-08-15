@@ -43,9 +43,6 @@ linear progression as `rate' becomes very large."
 (defmethod transform-initval ((name (eql :attacks)) value)
   `(mapcar #'symbol-value ',value))
 
-(defmethod transform-initval ((name (eql :traits)) value)
-  `(quote ,value))
-
 ;;;
 
 (defgeneric compute-combat-traits (entity)
