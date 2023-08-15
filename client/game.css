@@ -302,6 +302,7 @@ a:link {
 
 .neighbor {
     display: none;
+    position: relative;
     cursor: pointer;
     margin-top: 4px;
 }

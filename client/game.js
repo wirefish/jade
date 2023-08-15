@@ -413,10 +413,10 @@ MessageHandler.prototype.removeNeighbor = function(key) {
     item.addEventListener('animationend', function (event) {
         this.parentNode.removeChild(this);
     });
-    item.className = "";
+    item.className = "neighbor";
     window.requestAnimationFrame(function (t) {
         window.requestAnimationFrame(function (t) {
-            item.className = "do_exit";
+            item.className = "neighbor do_exit";
         });
     });
 
