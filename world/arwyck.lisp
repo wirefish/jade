@@ -325,7 +325,9 @@
   (:after-enter-world ()
     (setf (? self :lying-down) (parse-verb "lies nearby, curiously eyeing passers-by.")
           (? self :standing) (parse-verb "stands nearby and looks around.")
-          (? self :pose) (? self :standing))
+          (? self :pose) (? self :standing)))
+
+  (:after-enter-location (self location entry)
     (with-delay (3)
       (observe-event self :lay-down)))
 
@@ -348,10 +350,7 @@
                                      (when-let ((dest (symbol-value-or-nil (exit-dest e))))
                                        (entity-isa dest 'square)))
                                    (? (location self) :exits))))
-      (progn
-        (traverse-portal self (location self) (random-elt exits))
-        (with-delay (3)
-          (observe-event self :lay-down)))
+      (traverse-portal self (location self) (random-elt exits))
       (observe-event self :lay-down)))
 
   (:when-talk (actor self topic)

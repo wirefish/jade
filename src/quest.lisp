@@ -125,6 +125,8 @@ The state associated with a quest phase can take one of three forms:
 
 (defun quest-phase (avatar quest-label)
   (cond
+    ((not (typep avatar 'avatar))
+     nil)
     ((gethash quest-label (finished-quests avatar))
      :finished)
     ((quest-offered avatar quest-label)

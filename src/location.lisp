@@ -111,10 +111,13 @@
   (call-next-method)
   (dolist (entity (? location :contents))
     (enter-world entity)
-    (setf (entity-container entity) location)))
+    (setf (entity-container entity) location)
+    (observe-event entity :after-enter-location entity location nil)))
 
 (defmethod exit-world ((location location))
   (dolist (entity (? location :contents))
+    (observe-event entity :before-exit-location entity location nil)
+    (setf (entity-container entity) nil)
     (exit-world entity))
   (call-next-method))
 
