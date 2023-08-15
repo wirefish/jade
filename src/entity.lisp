@@ -61,6 +61,7 @@
       (list (if (eql (car expr) 'quote) expr `(list ,@expr)))
       (t expr))))
 
+;;; Define a named entity that can be used as a prototype for other entities.
 
 (defmacro defentity (name (&rest proto-spec) attributes &body behavior)
   (let* ((pos (position '&class proto-spec))
