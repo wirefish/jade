@@ -9,9 +9,9 @@ CPFILES = $(wildcard client/*.css) $(wildcard client/*.js) client/game.html
 
 client: config html images fonts icons config
 
-config: $(CLIENTDIR)/nginx.conf
+config: $(BUILDDIR)/nginx.conf $(BUILDDIR)/schema.sql
 
-$(CLIENTDIR)/nginx.conf: config/nginx.conf
+$(BUILDDIR)/%: config/% | $(BUILDDIR)
 	cp $< $@
 
 html: $(MDFILES:%.md=$(BUILDDIR)/%.html) $(CPFILES:%=$(BUILDDIR)/%)
