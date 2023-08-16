@@ -6,14 +6,9 @@
 
 * Fix command parsing to allow unambiguous prefixes.
 
-* Combat. Pop-in modal with you and allies on one side, enemies on the other,
-  shows health and auras, animates attacks?
-
 * Karma.
 
-* Skills.
-
-* Remove separate chat pane? Or duplicate all say/tell/yell in both?
+* Vendors.
 
 * Handle light and two-handed weapons in (un)equip.
 
