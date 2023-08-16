@@ -123,7 +123,7 @@ slots. This value is cached as the :armor trait."
            (level (if level (* 0.5 (+ actor-level level)) actor-level))
            (k (* base-damage damage-variance)))
       (* (1+ (* 0.25 (1- level)))
-         (random-range (- base-damage k) (+ base-damage k))))))
+         (random-float (- base-damage k) (+ base-damage k))))))
 
 (defun resolve-attack (actor attack target)
   "Computes the damage done by an instance of `actor' using `attack' against

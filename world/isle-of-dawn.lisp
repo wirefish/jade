@@ -945,7 +945,7 @@
     (spawn-unique-entity self 'shiny-seashell))
 
   (:after-take (actor (item shiny-seashell) self)
-    (with-delay ((random-range 200 500))
+    (with-delay ((random-integer 200 500))
       (spawn-unique-entity self 'shiny-seashell))))
 
 ;;; dockmaster-shack

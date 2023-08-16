@@ -11,7 +11,10 @@
            #:->
            #:bind
            #:with-delay
-           #:random-range
+
+           #:round-random
+           #:random-integer
+           #:random-float
 
            #:parse-noun
            #:parse-verb
