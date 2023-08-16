@@ -742,8 +742,7 @@
 (defentity copper-dirk (dagger)
   (:brief "a pitted copper dirk"
    :description "The dirk's blade is so worn that it seems likely to snap at any
-     time."
-   :materials (copper)))
+     time."))
 
 (defentity guard (humanoid)
   (:brief "a burly guard"
