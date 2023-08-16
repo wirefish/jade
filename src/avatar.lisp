@@ -127,6 +127,12 @@
 (defun xp-granted-by-quest (level)
   (* 5 (xp-granted-by-kill level)))
 
+(defun gain-level (avatar)
+  (show-notice avatar "You are now level ~d!"
+               (incf (? avatar :level)))
+  (setf (? avatar :max-health) (max-health avatar))
+  (update-avatar avatar :level :xp :max-xp))
+
 (defun gain-xp (avatar xp)
   (show avatar "You gain ~d experience." xp)
   (let ((xp (incf (? avatar :xp) xp))
@@ -134,9 +140,7 @@
     (if (>= xp xp-needed)
         (progn
           (decf (? avatar :xp) xp-needed)
-          (show-notice avatar "You are now level ~d!"
-                       (incf (? avatar :level)))
-          (update-avatar avatar :level :xp :max-xp))
+          (gain-level avatar))
         (update-avatar avatar :xp))))
 
 ;;; The `:inventory' slot is a list of items carried by the avatar.
