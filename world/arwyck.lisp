@@ -192,7 +192,7 @@
 
 (defentity ticket-dispenser ()
   (:brief "a ticket dispenser"
-   :icon 'flat_chest
+   :icon flat-chest
    :description "A plaque atop the device reads:
 
     > This ticket dispenser is provided as a free service of the Explorer's Guild.")

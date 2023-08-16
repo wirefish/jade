@@ -1,7 +1,7 @@
 (in-package :jade.lib)
 
 (defentity weapon (item)
-  (:icon 'staff
+  (:icon staff
    :speed 3
    :base-damage 2
    :damage-type :crushing
@@ -54,7 +54,7 @@
   (:brief "a ~a dagger"
    :description "The dagger has a double-edged ~a blade with a sharp point. Its ~a
      handle is wrapped with ~a."
-   :icon :knives-01
+   :icon knives-01
    :speed 2
    :damage-type :piercing
    :attack-verb "pokes"
@@ -69,7 +69,7 @@
   (:brief "a wand"
    :description "This light weapon appears to be a simple piece of polished
      wood, but it radiates a magical aura."
-   :icon :staves-01
+   :icon staves-01
    :speed 2.5
    :damage-type :arcane
    :attack-verb "zaps"
@@ -83,7 +83,7 @@
   (:brief "a mace"
    :description "This weapon has a heavy metal ball attached to a stout wooden
      handle, sized for use in one hand."
-   :icon 'bluntweapons-05
+   :icon bluntweapons-05
    :speed 3.5
    :damage-type :crushing
    :damage-variance 0.2
@@ -98,7 +98,7 @@
   (:brief "a maul"
    :description "This weapon has a heavy metal ball attached to a long wooden
      handle. It requires both hands to wield."
-   :icon 'bluntweapons-05
+   :icon bluntweapons-05
    :speed 5
    :damage-type :crushing
    :damage-variance 0.2
@@ -113,7 +113,7 @@
   (:brief "a sword"
    :description "This weapon has a long metal blade attached to a plain wooden
      hilt, sized for use in one hand."
-   :icon 'swords-01
+   :icon swords-01
    :speed 3
    :damage-type :slashing
    :damage-variance 0.3
@@ -128,7 +128,7 @@
   (:brief "a greatsword"
    :description "This weapon has a long, dual-edged blade and requires both
      hands to wield."
-   :icon 'swords-01
+   :icon swords-01
    :speed 5
    :damage-type :slashing
    :damage-variance 0.3
@@ -143,7 +143,7 @@
   (:brief "an axe"
    :description "This weapon has a curved blade attached to one end of a wooden
     shaft, sized for use in one hand."
-   :icon 'axes-01
+   :icon axes-01
    :speed 3.5
    :damage-type :slashing
    :damage-variance 0.33
@@ -158,7 +158,7 @@
   (:brief "a battle axe"
    :description "This weapon has a large blade attached to one end of a long
      wooden haft, and requires both hands to wield."
-   :icon 'axes-01
+   :icon axes-01
    :speed 5
    :damage-type :slashing
    :damage-variance 0.33
@@ -173,7 +173,7 @@
   (:brief "a polearm"
    :description "This weapon has a pointed blade attached to one end of a long
      wooden haft, and requires both hands to wield."
-   :icon 'spears-01
+   :icon spears-01
    :speed 4.5
    :damage-type :piercing
    :attack-verb "pierces"
@@ -187,7 +187,7 @@
   (:brief "a staff"
    :description "This two-handed weapon is a polished length of wood that
      radiates a strong magical aura."
-   :icon 'staves-04
+   :icon staves-04
    :speed 4
    :damage-type :arcane
    :attack-verb "zaps"

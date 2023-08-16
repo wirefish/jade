@@ -12,7 +12,7 @@
   (:brief "an item"
    :pose "is here."
    :full "The item is unremarkable."
-   :icon :pouch
+   :icon pouch
    :size +small+
    :level 1
    :item-group :miscellany

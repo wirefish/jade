@@ -7,4 +7,4 @@
 
 (defentity silver-coin (currency)
   (:brief "a silver coin"
-   :icon silver_coin))
+   :icon silver-coin))
