@@ -179,7 +179,7 @@ name and whose subsequent elements are arguments to that command."
           do (sethash (to-string (entity-id item)) arg nil))
     (send-client-command avatar "updateInventory" arg)))
 
-;;; Functions that manage the equipment pane.
+;;; Manage the equipment pane.
 
 (defun update-equipment (avatar &optional (slots *equipment-slots*))
   (when-attributes (equipment) avatar
@@ -190,6 +190,20 @@ name and whose subsequent elements are arguments to that command."
             collect (cons slot (when-let ((item (gethash slot equipment)))
                                  (list (get-icon item)
                                        (describe-brief item :article nil)))))))))
+
+;;; Manage the skills pane.
+
+(defun update-skills (avatar &rest skill-labels)
+  (let ((skill-labels (or skill-labels (hash-table-keys (skills avatar)))))
+    (send-client-command
+     avatar "updateSkills"
+     (karma avatar)
+     (loop for label in skill-labels
+           collect (let ((skill (symbol-value label))
+                         (rank (gethash label (skills avatar))))
+                     (if rank
+                         (list label rank (skill-name skill) (skill-max-rank skill))
+                         (list label nil)))))))
 
 ;;; Cast bar for a non-modal activity.
 

@@ -254,7 +254,7 @@ MessageHandler.prototype.updateSkills = function(unspent_karma, skills) {
     var skills_pane = document.getElementById('skills_pane');
 
     for (var i = 0; i < skills.length; ++i) {
-        var [key, name, rank, max_rank] = skills[i];
+        var [key, rank, name, max_rank] = skills[i];
         var div_id = 'skill_' + key;
         var div = document.getElementById(div_id);
         if (rank == null) {

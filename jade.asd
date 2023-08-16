@@ -38,6 +38,7 @@
              (:file "offer")
              (:file "inspect")
              (:file "inventory")
+             (:file "skill")
              (:file "move")
              (:file "talk")
              (:file "quest")

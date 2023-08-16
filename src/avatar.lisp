@@ -20,6 +20,8 @@
    (finished-quests :initform (make-hash-table) :accessor finished-quests)
    (dirty-quests :initform nil :accessor dirty-quests)
    (pending-offer :initform nil :accessor pending-offer)
+   (karma :initform 0 :accessor karma)
+   (skills :initform (make-hash-table) :accessor skills)
    (client-state :initform (make-hash-table) :accessor client-state)))
 
 (defentity avatar (combatant &class avatar)
@@ -44,7 +46,13 @@
 ;;; Encoding and decoding for avatar slots and attributes.
 
 (defmethod encoded-slots ((entity avatar))
-  '(tutorials-on active-quests))
+  '(tutorials-on active-quests karma skills))
+
+(defmethod encode-value ((entity avatar) (name (eql 'skills)) value)
+  (hash-table-plist value))
+
+(defmethod decode-value ((entity avatar) (name (eql 'skills)) value)
+  (plist-hash-table value))
 
 (defmethod encode-value ((entity avatar) (name (eql :race)) value)
   (and value (entity-label value)))
@@ -68,15 +76,6 @@
     (loop for (slot item-data) on data by #'cddr do
       (sethash slot equipment (decode-entity item-data)))
     equipment))
-
-(defmethod encode-value ((entity avatar) (name (eql :skills)) value)
-  (loop
-    for skill being the hash-keys in value using (hash-value rank)
-    nconc (list (skill-id skill) rank)))
-
-(defmethod decode-value ((entity avatar) (name (eql :skills)) data)
-  ;; TODO:
-  nil)
 
 ;;;
 
