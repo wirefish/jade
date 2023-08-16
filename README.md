@@ -4,18 +4,16 @@ Jade is a framework for creating text-based multiplayer role-playing games. You
 could say it is an updated take on a MUD. Jade is designed to be played in a
 modern browser and includes an integrated HTML5 client.
 
-## Installation (or, Getting Started with Common Lisp)
+## Getting Started with Common Lisp
 
 Jade is written in [Common Lisp](https://common-lisp.net), which is perhaps not
 the most widely-used language these days. As such, this section details the
-process of setting up a functional Common Lisp development environment in
-addition to describing the specific requirements for running Jade itself.
+process of setting up a functional Common Lisp development environment. Skip to
+the next section of you're already a Lisp hacker!
 
-For a more general introduction, see e.g.
+The steps outlined below are specific to macOS. For a more general introduction
+to setting things up, see
 [lisp-lang.org](https://lisp-lang.org/learn/getting-started/).
-
-The steps below are specific to macOS. They will differ for other OSes but the
-general outline is the same.
 
 * Install [homebrew](https://brew.sh).
 
@@ -48,7 +46,12 @@ general outline is the same.
 (ql:add-to-init-file)
 ```
 
-The following steps are specific to dependencies required by Jade:
+By the way, if you're interested in learning the Lisp language I can highly
+recommend the book [Practical Common Lisp](https://gigamonkeys.com/book/).
+
+## Installing Dependencies
+
+The following steps install dependencies required by Jade:
 
 * Install [NGINX](https://www.nginx.com/): `brew install nginx`.
 
@@ -58,6 +61,8 @@ The following steps are specific to dependencies required by Jade:
 
 + Install [Pandoc](https://pandoc.org): `brew install pandoc`. Pandoc is used to
   build client web pages and documentation from markdown.
+
+## Setup Quicklisp
 
 * So that Quicklisp can find the Jade project, create a symlink inside the
   `$HOME/quicklisp/local-projects` directory that points to the directory
@@ -71,35 +76,34 @@ ln -s ~/Projects/jade
 * Load the Jade project, including its dependencies. From within the REPL,
   type `(ql:quickload "jade")`.
 
-That's a lot of steps! But you only have to do them once.
-
-## Usage
+## Running Jade
 
 In this section, `$JADE` is assumed to refer to the root directory on your
 machine of the Jade source code, i.e. the directory that contains "jade.asd".
 
-### Create the Data Directory
+### Build the Client Data
 
-Jade uses `/usr/local/var/jade` as a root directory for data used by the
-running server, and as a place to put server logs. Start by creating this
-directory and linking it to the client resources:
+In the `$JADE` directory, type `make`. This will create a `build` directory,
+which itself contains a few subdirectories. The `client` subdirectory contains
+everything that will be served to the user's browser via nginx. The `data`
+subdirectory contains files consumed by the game server.
 
-```
-mkdir /usr/local/var/jade
-cd /usr/local/var/jade
-ln -s $JADE/genfiles/client/
-ln -s $JADE/data/
-```
+### Link to the Client Directory
+
+The file `$JADE/src/config.lisp` configures the game server. One of the settings
+is `root-directory`, which is the path of the directory containing client files.
+During development, you can change this setting to refer to your `build`
+directory.
 
 ### Start NGINX
 
 Jade uses NGINX as a webserver that sits in front of the game server to serve
 static content and provide TLS functionality.
 
-After installing NGINX, you can start it as follows:
+After installing NGINX and building Jade, you can start it as follows:
 
 ```
-nginx -c $JADE/config/nginx.conf
+nginx -c $JADE/build/nginx.conf
 ```
 
 ### Create the Database
@@ -108,7 +112,7 @@ Before running the server, create the database used to store account
 information, player avatars, etc.
 
 ```
-sqlite3 /usr/local/var/jade/jade.db < $JADE/config/schema.sql
+sqlite3 $JADE/build/jade.db < $JADE/build/schema.sql
 ```
 
 ### Run the Server
@@ -123,7 +127,10 @@ M-x slime ; starts the REPL
 (run-server) ; starts the game server
 ```
 
-### Connect as a Client
+### Connect to the Game
 
-Connect to `http://localhost/`. Follow the instructions to create a new account
-and you'll be dropped into the game.
+Connect to `http://localhost:8080/` (unless you've change the port in
+`config.lisp`). Follow the instructions to create a new account and you'll be
+dropped into the game.
+
+Enjoy!
