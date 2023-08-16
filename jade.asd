@@ -39,6 +39,7 @@
              (:file "inspect")
              (:file "inventory")
              (:file "skill")
+             (:file "gather")
              (:file "move")
              (:file "talk")
              (:file "quest")
