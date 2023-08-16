@@ -1,28 +1,5 @@
 (in-package :jade)
 
-;;;
-
-(defun level-scale (level &key (rate 20))
-  "Returns a multiplier that scales a value based on `level'. A `rate' of 1 causes
-a geometric progression, i.e. the return value is (* level level). A higher
-value for `rate' will cause the scale value to grow more slowly, approaching a
-linear progression as `rate' becomes very large."
-  (float (/ (* level (+ rate (1- level))) rate)))
-
-(defun attack-level (actor attack)
-  (let ((actor-level (or (? actor :level) 1))
-        (attack-level (? attack :level)))
-    (if (null attack-level)
-        actor-level
-        (/ (+ actor-level attack-level) 2))))
-
-(defun attack-damage (actor attack target)
-  ;; FIXME: take target's level and defense into account.
-  (declare (ignore target))
-  (round-random
-   (* (level-scale (attack-level actor attack))
-      (apply #'random-range (? attack :damage-range)))))
-
 ;;; A combatant represents an entity that can enter combat.
 
 (defclass combatant (entity)
@@ -30,8 +7,8 @@ linear progression as `rate' becomes very large."
    (current-target :initform nil :accessor current-target)
    (current-attack :initform nil :accessor current-attack)
    (attack-timer :initform nil :accessor attack-timer)
-   (regen-interval :initform nil)
-   (combat-traits :initform nil :accessor combat-traits)))
+   (regen-interval :initform nil :accessor regen-interval)
+   (cached-traits :initform (make-hash-table) :accessor cached-traits)))
 
 (defentity combatant (&class combatant)
   (:level 1
@@ -41,23 +18,150 @@ linear progression as `rate' becomes very large."
    :attitude :neutral))  ; or :friendly, :hostile
 
 (defmethod transform-initval ((name (eql :attacks)) value)
+  "The `:attacks' attribute is a list of weapons/attacks which the combatant can
+select during combat."
   `(mapcar #'symbol-value ',value))
+
+;;; Types of damage.
+
+(defparameter *damage-types*
+  (plist-hash-table
+   (list
+    ;; Physical
+    :crushing '("crushing" "crushes" :crushing-resistance)
+    :slashing '("slashing" "slashes" :slashing-resistance))))  ;; TODO: add more
+
+(defun resistance-name (damage-type)
+  (format nil "~a resistance" (car (gethash damage-type *damage-types*))))
+
+;;; Combat traits.
+
+;; In addition to those described below, damage types and their resistances are
+;; also combat traits. Each point in a damage type (or "affinity") increases
+;; effective attack level for related attacks by one percent. Similarly, Each
+;; point in a resistance increases effective defense level for related attacks
+;; by one percent.
+
+(defparameter *combat-traits*
+  (plist-hash-table
+   (list
+    ;; Each point of vitality increases maximum health by one percent.
+    :vitality '("vitality")
+    ;; Each point of precision increases the chance of scoring a critical hit by
+    ;; 0.1 percent.
+    :precision '("precision")
+    ;; Each point of ferocity increases the effect of a critical hit by
+    ;; 0.1 percent.
+    :ferocity '("ferocity")))) ; TODO: add more
+
+;;; Weights for equipment slots that contribute to the armor trait.
+
+(defparameter *armor-slots*
+  (plist-hash-table
+   (list
+    :head 0
+    :torso 0
+    :back 0
+    :hands 0
+    :waist 0
+    :legs 0
+    :feet)))
+
+(defun armor-defense (avatar)
+  "Returns the total defense provided to `avatar' by all items worn in armor
+slots. This value is cached as the :armor trait."
+  (apply #'+
+         (maphash (lambda (slot weight)
+                    (if-let ((item (? avatar :equipment slot)))
+                      (* weight (? item :level) (or (? item :armor-modifier) 0))
+                      0))
+                  *armor-slots*)))
 
 ;;;
 
-(defgeneric compute-combat-traits (entity)
-  (:method (entity)))
+(defun attack-affinity (actor attack)
+  (let ((damage-type (? attack :damage-type)))
+    (gethash damage-type (cached-traits actor) 0)))
 
-(defmethod compute-combat-traits ((entity combatant))
-  (plist-hash-table (? entity :traits)))
+(defun attack-level (actor attack)
+  (let* ((actor-level (? actor :level))
+         (attack-level (or (? attack :level) actor-level))
+         (affinity (attack-affinity actor attack)))
+    (+ actor-level
+       (* (1+ (* affinity 0.01)) attack-level))))
 
-(defgeneric base-health (entity)
-  (:method ((entity combatant))
-    (+ (? entity :base-health)
-       (gethash :vitality (combat-traits entity) 0))))
+;;; Defense. Note that the defense trait describes natural defense, and the
+;;; armor trait describes defense gained from wearing armor.
+
+(defun attack-resistance (target attack)
+  (let ((damage-type (? attack :damage-type)))
+    (gethash damage-type (cached-traits target) 0)))
+
+(defun defense-level (target attack)
+  (with-slots (cached-traits) target
+    (let ((target-level (? target :level))
+          (armor (gethash :armor cached-traits 0))
+          (defense (gethash :defense cached-traits 0))
+          (resistance (attack-resistance target attack)))
+      (+ target-level
+         (* (1+ (* resistance 0.01)) (+ armor defense))))))
+
+;;;
+
+(defun smoothstep (x &optional (from 0.0) (to 1.0))
+  (let ((x (max 0.0 (min 1.0 (/ (- x from) (- to from))))))
+    (* x x (- 3.0 (* x 2.0)))))
+
+(defun attack-effectiveness (att def)
+  (* 2.0 (smoothstep (- att def) -20 20)))
+
+;;;
+
+(defun roll-damage (actor attack)
+  (with-attributes (level base-damage damage-variance) attack
+    (let* ((actor-level (? actor :level))
+           (level (if level (* 0.5 (+ actor-level level)) actor-level))
+           (k (* base-damage damage-variance)))
+      (* (1+ (* 0.25 (1- level)))
+         (random-range (- base-damage k) (+ base-damage k))))))
+
+(defun resolve-attack (actor attack target)
+  "Computes the damage done by an instance of `actor' using `attack' against
+`target'. The secondary return value is true if the attack was a critical hit."
+  (with-slots (cached-traits) actor
+    (let* ((att (attack-level actor attack))
+           (def (defense-level target attack))
+           (eff (attack-effectiveness att def))
+           (damage (* eff (roll-damage actor attack)))
+           (crit-chance (+ 0.05 (* 0.001 (gethash :precision cached-traits 0)))))
+      (if (< (random 1.0) crit-chance)
+          (values (round-random (* damage
+                                   (+ 1.5 (* 0.01 (gethash :ferocity cached-traits 0)))))
+                  t)
+          (values (round-random damage) nil)))))
+
+;;;
+
+(defun base-health (combatant)
+  (or (? combatant :race :base-health) (? combatant :base-health) 1))
 
 (defun max-health (combatant)
-  (round (* (base-health combatant) (level-scale (? combatant :level)))))
+  (floor (* (1+ (* 0.25 (1- (? combatant :level))))
+            (base-health combatant)
+            (1+ (* 0.01 (gethash :vitality (cached-traits combatant) 0))))))
+
+;;; Update cached traits for a combatant.
+
+(defgeneric merge-traits (entity cache))
+
+(defmethod merge-traits ((entity entity) cache)
+  (loop for (trait value) on (? entity :traits) by #'cddr do
+    (incf (gethash trait cache 0) value)))
+
+(defun update-cached-traits (combatant)
+  (with-slots (cached-traits) combatant
+    (clrhash cached-traits)
+    (merge-traits combatant cached-traits)))
 
 ;;; Regeneration.
 
@@ -71,26 +175,23 @@ linear progression as `rate' becomes very large."
         (:observers (cons (location actor) (? (location actor) :contents)))
       (call-next-method))))
 
-(defun health-regen-per-tick (combatant)
-  (round (level-scale (? combatant :level) :rate 100)))
-
 (defmethod regenerate ((actor combatant))
   (setf (? actor :health)
         (min (? actor :max-health)
-             (+ (? actor :health) (health-regen-per-tick actor)))))
+             (+ (? actor :health) (base-health actor)))))
 
 ;;;
 
 (defmethod enter-world ((actor combatant))
   (call-next-method)
-  (with-slots (combat-traits regen-interval) actor
-    (setf combat-traits (compute-combat-traits actor))
-    (let ((max-health (max-health actor)))
-      (setf (? actor :max-health) max-health
-            (? actor :health) max-health))
-    (setf regen-interval
-          (cl-async:with-interval (*regen-tick-seconds*)
-            (regenerate actor)))))
+  (update-cached-traits actor)
+  (let ((max-health (max-health actor))
+        (health (? actor :health)))
+    (setf (? actor :max-health) max-health
+          (? actor :health) (min (or health max-health) max-health)))
+  (setf (regen-interval actor)
+        (cl-async:with-interval (*regen-tick-seconds*)
+          (regenerate actor))))
 
 (defmethod exit-world ((actor combatant))
   (call-next-method)
@@ -99,7 +200,7 @@ linear progression as `rate' becomes very large."
     (setf regen-interval nil)))
 
 ;;; An attack is any entity that defines the following attributes: level, speed,
-;;; damage-type, damage-range, and attack-verb.
+;;; base-damage, damage-type, damage-variance, and attack-verb.
 
 (defmethod transform-initval ((name (eql :attack-verb)) value)
   `(parse-verb ,value))
@@ -163,7 +264,8 @@ linear progression as `rate' becomes very large."
 
 (defmethod attack ((actor combatant) (target combatant))
   (with-slots (attack-timer current-attack) actor
-    (let ((damage (attack-damage actor current-attack target)))
+    (bind ((damage crit (resolve-attack actor current-attack target)))
+      (declare (ignore crit)) ; FIXME: handle crits
       (when (> (? target :health) 0)
         (when (<= (decf (? target :health) damage) 0)
           ;; The target dies but not until after this event has been fully

@@ -9,8 +9,10 @@
 * Combat. Pop-in modal with you and allies on one side, enemies on the other,
   shows health and auras, animates attacks?
 
+* Karma.
+
 * Skills.
 
 * Remove separate chat pane? Or duplicate all say/tell/yell in both?
 
-* Init health, energy, etc. with max-health, etc are present.
+* Handle light and two-handed weapons in (un)equip.

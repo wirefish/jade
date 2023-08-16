@@ -3,13 +3,14 @@
 (defentity weapon (item)
   (:icon 'staff
    :speed 3
+   :base-damage 2
    :damage-type :crushing
-   :damage-range (1 4)
+   :damage-variance 0.25
    :attack-verb "hits"
    :item-group :weapons))
 
-m;;; A natural weapon inherits its user's level. A nil brief can be used to avoid
-;;; messages like "Ann kicks Bob with a foot".
+;;; A natural weapon inherits its user's level. A value of nil for :brief can be
+;;; used to avoid messages like "Ann kicks Bob with a foot".
 
 (defentity natural-weapon (weapon)
   (:level nil))
@@ -32,43 +33,30 @@ m;;; A natural weapon inherits its user's level. A nil brief can be used to avoi
    :damage-type :piercing
    :attack-verb "bites"))
 
-;;; For the various types of melee weapons, the intent is to keep average damage
-;;; per second the same. Slower weapons do more damage per hit than faster
-;;; weapons. Different weapon types can have different damage variances, even if
-;;; the average damage per second is the same.
-;;;
-;;; The target damage per second depends on how the weapon can be equipped:
-;;;
-;;; light-weapon:      3
-;;; one-handed-weapon: 5
-;;; two-handed-weapon: 8
-
-(defun weapon-dps (weapon)
-  "Returns the base damage-per-second for `weapon'. Provided as a helper to check
-dps when designing weapons."
-  (with-attributes (speed damage-range) weapon
-    (/ (apply #'+ damage-range)
-       (* 2 speed))))
+;;; Equippable weapons fall into one of three categories: light, one-handed, or
+;;; two-handed.
 
 (defentity light-weapon (weapon)
-  (:equippable-slot :either-hand))
+  (:base-damage 3
+   :equippable-slot :either-hand))
 
 (defentity one-handed-weapon (weapon)
-  (:equippable-slot :main-hand))
+  (:base-damage 4
+   :equippable-slot :main-hand))
 
 (defentity two-handed-weapon (weapon)
-  (:equippable-slot :both-hands))
+  (:base-damage 7
+   :equippable-slot :both-hands))
 
 ;;; Daggers are light piercing weapons.
 
-(defentity dagger (light-weapon)
+(defentity dagger (one-handed-weapon) ; FIXME: light-weapon
   (:brief "a ~a dagger"
    :description "The dagger has a double-edged ~a blade with a sharp point. Its ~a
      handle is wrapped with ~a."
    :icon :knives-01
    :speed 2
    :damage-type :piercing
-   :damage-range (2 10)
    :attack-verb "pokes"
    :proficiency 'dagger-proficiency
    :mastery 'dagger-mastery
@@ -84,7 +72,6 @@ dps when designing weapons."
    :icon :staves-01
    :speed 2.5
    :damage-type :arcane
-   :damage-range (4 11)
    :attack-verb "zaps"
    :proficiency 'wand-proficiency
    :mastery 'dagger-mastery
@@ -99,7 +86,7 @@ dps when designing weapons."
    :icon 'bluntweapons-05
    :speed 3.5
    :damage-type :crushing
-   :damage-range (10 25)
+   :damage-variance 0.2
    :attack-verb "smashes"
    :proficiency 'mace-proficiency
    :mastery 'mace-mastery
@@ -114,7 +101,7 @@ dps when designing weapons."
    :icon 'bluntweapons-05
    :speed 5
    :damage-type :crushing
-   :damage-range (30 50)
+   :damage-variance 0.2
    :attack-verb "smashes"
    :proficiency 'maul-proficiency
    :master 'maul-mastery
@@ -129,7 +116,7 @@ dps when designing weapons."
    :icon 'swords-01
    :speed 3
    :damage-type :slashing
-   :damage-range (10 20)
+   :damage-variance 0.3
    :attack-verb "slashes"
    :proficiency 'sword-proficiency
    :mastery 'sword-mastery
@@ -144,7 +131,7 @@ dps when designing weapons."
    :icon 'swords-01
    :speed 5
    :damage-type :slashing
-   :damage-range (20 60)
+   :damage-variance 0.3
    :attack-verb "slashes"
    :proficiency 'greatsword-proficiency
    :mastery 'greatsword-mastery
@@ -159,7 +146,7 @@ dps when designing weapons."
    :icon 'axes-01
    :speed 3.5
    :damage-type :slashing
-   :damage-range (8 27)
+   :damage-variance 0.33
    :attack-verb "slashes"
    :proficiency 'axe-proficiency
    :mastery 'axe-mastery
@@ -174,7 +161,7 @@ dps when designing weapons."
    :icon 'axes-01
    :speed 5
    :damage-type :slashing
-   :damage-range (30 50)
+   :damage-variance 0.33
    :attack-verb "slashes"
    :proficiency 'battle-axe-proficiency
    :mastery 'battle-axe-mastery
@@ -189,7 +176,6 @@ dps when designing weapons."
    :icon 'spears-01
    :speed 4.5
    :damage-type :piercing
-   :damage-range (24 48)
    :attack-verb "pierces"
    :proficiency 'polearm-proficiency
    :mastery 'polearm-mastery
@@ -204,7 +190,6 @@ dps when designing weapons."
    :icon 'staves-04
    :speed 4
    :damage-type :arcane
-   :damage-range (22 42)
    :attack-verb "zaps"
    :proficiency 'staff-proficiency
    :mastery 'staff-mastery

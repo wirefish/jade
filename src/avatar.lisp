@@ -119,13 +119,13 @@
 ;;; Experience.
 
 (defun xp-required-for-level (level)
-  (round (* 1000 (level-scale (1- level) :rate 5))))
+  (/ (* 1000 level (1- level)) 2))
 
 (defun xp-granted-by-kill (level)
-  (round (* 10 (level-scale level :rate 20))))
+  (ceiling (/ (xp-required-for-level (1+ level)) 20 level)))
 
 (defun xp-granted-by-quest (level)
-  (round (* 250 (level-scale level :rate 20))))
+  (* 5 (xp-granted-by-kill level)))
 
 (defun gain-xp (avatar xp)
   (show avatar "You gain ~d experience." xp)
@@ -211,7 +211,15 @@
         (sethash key client-state value)
         value)))
 
-;;;
+;;; Avatar-specific implementations of combat-related generic functions.
+
+(defmethod merge-traits ((avatar avatar) cache)
+  (maphash-values (lambda (item)
+                    (merge-traits item cache))
+                  (? avatar :equipment))
+  (when-let ((race (? avatar :race)))
+    (merge-traits race cache))
+  (call-next-method))
 
 (defmethod select-attack ((actor avatar) target)
   (or (? actor :equipment :main-hand)
