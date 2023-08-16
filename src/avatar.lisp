@@ -38,7 +38,7 @@
     (setf (? clone :equipment) (make-hash-table :test #'eq))
     clone))
 
-(defmethod transform-initval ((name (eql :race)) value)
+(defmethod transform-initval (class (name (eql :race)) value)
   `(symbol-value ',value))
 
 ;;; Encoding and decoding for avatar slots and attributes.

@@ -75,7 +75,7 @@ The state associated with a quest phase can take one of three forms:
                     'quest
                     :label ',label
                     ,@(loop for (key value) on attributes by #'cddr
-                            nconc (list key (transform-initval key value)))
+                            nconc (list key (transform-initval 'quest key value)))
                     :phases
                     (list
                      ,@(loop for (label . attributes) in phases
@@ -84,15 +84,16 @@ The state associated with a quest phase can take one of three forms:
                                        :label ',label
                                        ,@(loop for (key value) on attributes by #'cddr
                                                nconc (list key
-                                                           (transform-initval key value)))))))))
+                                                           (transform-initval 'quest
+                                                                              key value)))))))))
        (set ',label ,quest)
        (export ',label)
        ,quest)))
 
-(defmethod transform-initval ((name (eql :required-quests)) value)
+(defmethod transform-initval (class (name (eql :required-quests)) value)
   `(quote ,value))
 
-(defmethod transform-initval ((name (eql :offers-quests)) value)
+(defmethod transform-initval (class (name (eql :offers-quests)) value)
   `(quote ,value))
 
 ;;;

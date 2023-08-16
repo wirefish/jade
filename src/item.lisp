@@ -17,14 +17,13 @@
    :level 1
    :item-group :miscellany
    :quantity 1
-   :material nil
    :stackable nil))
 
 ;;; If the item is made of something in particular, the `:material' attribute is
 ;;; a noun describing that something.
 
-(defmethod transform-initval ((name (eql :material)) value)
-  `(when ,value (parse-noun ,value)))
+(defmethod transform-initval (class (name (eql :material)) value)
+  `(parse-noun ,value))
 
 ;;; The material can be substituted into the brief description of an entity. The
 ;;; brief is used as the control-string for format, with the indefinite article
@@ -40,7 +39,7 @@
 ;;; If the item is associated with a quest, the `:quest' attribute is the label
 ;;; of the quest.
 
-(defmethod transform-initval ((name (eql :quest)) value)
+(defmethod transform-initval (class (name (eql :quest)) value)
   `(quote ,value))
 
 ;;; If the item is equippable, the `:equippable-slot' attribute describes where

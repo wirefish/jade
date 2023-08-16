@@ -55,9 +55,10 @@
 ;;; A mechanism for transforming initializer forms in `defentity' and similar
 ;;; macros.
 
-(defgeneric transform-initval (name expr)
-  (:method (name expr)
+(defgeneric transform-initval (class name expr)
+  (:method (class name expr)
     (typecase expr
+      (null nil)
       (list (if (eql (car expr) 'quote) expr `(list ,@expr)))
       (t expr))))
 
@@ -72,7 +73,7 @@
                        ',name ',proto ',class
                        ,@(loop for (key value) on attributes by #'cddr
                                nconc (list key
-                                           (transform-initval key value))))))
+                                           (transform-initval class key value))))))
          ,@(when behavior `((defbehavior ,entity ,@behavior)))
          ,entity))))
 
@@ -175,18 +176,20 @@ all attributes."
 ;; The `:brief' attribute is a noun phrase used to describe the entity when it
 ;; does not have a proper name. It is also used when matching against user
 ;; input.
-(defmethod transform-initval ((name (eql :brief)) value)
-  `(when ,value (parse-noun ,value)))
+(defmethod transform-initval (class (name (eql :brief)) (value (eql nil)))
+  nil)
+(defmethod transform-initval (class (name (eql :brief)) value)
+  `(parse-noun ,value))
 
 ;; The `:pose' attribute is a verb phrase that describes how observers see the
 ;; entity, e.g. "is standing against the wall." Note the trailing punctuation is
 ;; included.
-(defmethod transform-initval ((name (eql :pose)) value)
+(defmethod transform-initval (class (name (eql :pose)) value)
   `(parse-verb ,value))
 
 ;; The `:alts' attribute is an optional list of additional noun phrases which
 ;; can be used when matching the entity against user input.
-(defmethod transform-initval ((name (eql :alts)) value)
+(defmethod transform-initval (class (name (eql :alts)) value)
   `(list ,@(mapcar (lambda (x) `(parse-noun ,x)) value)))
 
 ;; Possible values of the `:size' attribute, with examples of how they apply to

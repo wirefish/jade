@@ -17,7 +17,7 @@
    :traits nil
    :attitude :neutral))  ; or :friendly, :hostile
 
-(defmethod transform-initval ((name (eql :attacks)) value)
+(defmethod transform-initval (class (name (eql :attacks)) value)
   "The `:attacks' attribute is a list of weapons/attacks which the combatant can
 select during combat."
   `(mapcar #'symbol-value ',value))
@@ -202,7 +202,7 @@ slots. This value is cached as the :armor trait."
 ;;; An attack is any entity that defines the following attributes: level, speed,
 ;;; base-damage, damage-type, damage-variance, and attack-verb.
 
-(defmethod transform-initval ((name (eql :attack-verb)) value)
+(defmethod transform-initval (class (name (eql :attack-verb)) value)
   `(parse-verb ,value))
 
 ;;; A battle represents a fight pitting all :friendly combatants against all
