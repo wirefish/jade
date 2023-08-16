@@ -62,7 +62,7 @@ The following steps install dependencies required by Jade:
 + Install [Pandoc](https://pandoc.org): `brew install pandoc`. Pandoc is used to
   build client web pages and documentation from markdown.
 
-## Setup Quicklisp
+## Seting Up Quicklisp
 
 * So that Quicklisp can find the Jade project, create a symlink inside the
   `$HOME/quicklisp/local-projects` directory that points to the directory
