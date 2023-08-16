@@ -44,7 +44,6 @@
              (:file "meditate")
              (:file "attack")
              (:file "use")
-             (:file "craft")
 
              (:file "server")
              ))
@@ -52,7 +51,6 @@
    (:module "world" :components
             ((:module "lib" :components
                       ((:file "creatures")
-                       (:file "materials")
                        (:file "clothing")
                        (:file "weapons")
                        (:file "currency")

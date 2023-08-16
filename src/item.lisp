@@ -3,34 +3,6 @@
 
 (in-package :jade)
 
-;;; A material is an entity that represents a substance that goes into the
-;;; construction of an item. It is an uncountable noun, such as "wood" or
-;;; "metal".
-
-;; FIXME: make a material class that inherits from some new base class for
-;; entity that only has label and attributes -- named-object?
-
-(defentity material ()
-  (:name "something"
-   :adjective nil
-   :level 1
-   :tags nil
-   :traits nil
-   :durability 1.0))
-
-(defmacro defmaterial (label (&optional proto) attributes &body behaviors)
-  `(defentity ,label (,(or proto 'material)) ,attributes ,@behaviors))
-
-(defmethod transform-initval ((name (eql :tags)) value)
-  `(quote ,value))
-
-(defmethod transform-initval ((name (eql :traits)) value)
-  `(quote ,value))
-
-(defun material-has-tag (material tag)
-  (with-slots (label tags) material
-      (or (eq tag label) (position tag tags))))
-
 ;;; A prototype for items that defines generally-required attributes. Optional
 ;;; attributes that influence item behavior are described below.
 
@@ -45,57 +17,39 @@
    :level 1
    :item-group :miscellany
    :quantity 1
+   :material nil
    :stackable nil))
 
-;;; The optional `:materials' attribute describes the composition of an item.
-;;; If present it must be a list of symbols bound to `material' structs.
+;;; If the item is made of something in particular, the `:material' attribute is
+;;; a noun describing that something.
 
-(defmethod transform-initval ((name (eql :materials)) value)
-  `(quote ,value))
+(defmethod transform-initval ((name (eql :material)) value)
+  `(when ,value (parse-noun ,value)))
+
+;;; The material can be substituted into the brief description of an entity. The
+;;; brief is used as the control-string for format, with the indefinite article
+;;; and singular of the material passed as arguments.
 
 (defmethod describe-brief ((item item) &key quantity (article :indefinite) capitalize)
   (declare (ignore quantity article capitalize))
-  (apply #'format nil (call-next-method)
-         (mapcar (lambda (symbol)
-                   (let ((material (symbol-value symbol)))
-                     (or (? material :adjective) (? material :name))))
-                 (? item :materials))))
+  (let ((brief (call-next-method)))
+    (if-let ((material (? item :material)))
+      (format nil brief (noun-article material) (noun-singular material))
+      brief)))
 
-;;; If the item is associated with a quest, the `quest' attribute is the label
+;;; If the item is associated with a quest, the `:quest' attribute is the label
 ;;; of the quest.
 
 (defmethod transform-initval ((name (eql :quest)) value)
   `(quote ,value))
 
-(defmethod encode-value ((entity item) (name (eql :quest)) value)
-  (quest-label value))
-
-(defmethod decode-value ((entity item) (name (eql :quest)) value)
-  (symbol-value value))
-
-;;; If the item is equippable, the `equippable-slot' attribute describes where
+;;; If the item is equippable, the `:equippable-slot' attribute describes where
 ;;; it can be equipped.
 
 (defparameter *equippable-slots*
   '(:main-hand :off-hand :either-hand :both-hands :tool
     :head :torso :back :hands :waist :legs :feet :ears :neck :either-wrist :either-finger
-    :backpack :belt-pouch)
-  "Descriptions of how an item may be equipped.")
-
-;;; The optional `required-skill' attribute specifies a skill and minimum rank
-;;; in that skill that are required in order to use the item. If present it must
-;;; be a two-element list containing a skill and an integer rank.
-
-;;; The optional `craft-skill' attribute specifies a skill and minimum rank in
-;;; that skill that are required in order to craft the item. If present it must
-;;; be a two-element list containing a skill and an integer rank. In addition,
-;;; the `craft-parts' attribute is a list of (quantity proto-label) lists.
-
-(defmethod transform-initval ((name (eql :craft-skill)) value)
-  `(list ,@value))
-
-(defmethod transform-initval ((name (eql :craft-parts)) value)
-  `(quote ,value))
+    :backpack :belt-pouch))
 
 ;;; Items can be stacked if they have the same prototype and their `stackable'
 ;;; attribute is not null. If `stackable' is t, there is no limit on how many
@@ -144,7 +98,7 @@ represents `count' of the same item. Returns nil if entity cannot be split."
            (? container slot)))
 
 (defun remove-item-isa (container slot proto-label &optional (quantity t))
-  (when-let ((item (find-item-with-proto container slot proto-label quantity)))
+  (when-let ((item (find-item-isa container slot proto-label quantity)))
     (remove-item container slot item quantity)))
 
 (defun stackable-p (item stack)

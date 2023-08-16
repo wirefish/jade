@@ -16,3 +16,5 @@
 * Remove separate chat pane? Or duplicate all say/tell/yell in both?
 
 * Handle light and two-handed weapons in (un)equip.
+
+* Add more combat traits.

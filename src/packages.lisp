@@ -45,7 +45,6 @@
            #:&dir
 
            #:item
-           #:defmaterial
            #:receive
            #:contains-isa
            #:find-item-isa

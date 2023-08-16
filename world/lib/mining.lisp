@@ -3,22 +3,28 @@
 ;;; Ore.
 
 (defentity ore (item)
-  (:brief "chunk of ~a ore"
+  (:brief "a chunk of ~*~a ore"
+   :material "unknown"
    :stackable t))
 
 (defentity copper-ore (ore)
-  (:brief "a chunk of copper ore"
-   :materials (copper)))
+  (:material "copper"))
 
-;;; Ingots.
+(defentity tin-ore (ore)
+  (:material "tin"))
 
-(defentity ingot (item)
-  (:stackable t))
+(defentity zinc-ore (ore)
+  (:material "zinc"))
 
-(defentity copper-ingot (ingot)
-  (:brief "a copper ingot"
-   :materials (copper)))
+(defentity silver-ore (ore)
+  (:material "silver"))
 
-(defentity silver-ingot (ingot)
-  (:brief "a silver ingot"
-   :materials (silver)))
+(defentity gold-ore (ore)
+  (:material "gold"))
+
+(defentity iron-ore (ore)
+  (:material "iron"))
+
+;;; TODO: Other mineable things.
+
+;;; TODO: Ore deposits.
