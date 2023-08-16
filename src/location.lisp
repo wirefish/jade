@@ -143,10 +143,10 @@ starting and stopping simulation.")
        ,loc)))
 
 (defmethod transform-initval (clss (name (eql :contents)) value)
-  `(list ,@(loop for spec in value
-                 collect (let ((proto (if (listp spec) (first spec) spec))
-                               (args (when (listp spec) (rest spec))))
-                           `(clone-entity ',proto ,@args)))))
+  (loop for spec in value
+        collect (let ((proto (if (listp spec) (first spec) spec))
+                      (args (when (listp spec) (rest spec))))
+                  (apply #'clone-entity proto args))))
 
 (defmethod transform-initval (class (name (eql :exits)) value)
   (labels ((transform-exit-group (group)
@@ -154,9 +154,9 @@ starting and stopping simulation.")
                     (portal-name (if (listp portal-spec) (first portal-spec) portal-spec))
                     (portal-args (when (listp portal-spec) (rest portal-spec))))
                (loop for (dir dest) on dirs-dests by #'cddr
-                     collect `(register-exit ,dir ',dest ',portal-name ,@portal-args)))))
-    `(list ,@(loop for group in value
-                   nconc (transform-exit-group group)))))
+                     collect (apply #'register-exit dir dest portal-name portal-args)))))
+    (loop for group in value
+          nconc (transform-exit-group group))))
 
 ;;;
 

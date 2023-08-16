@@ -20,7 +20,7 @@
 (defmethod transform-initval (class (name (eql :attacks)) value)
   "The `:attacks' attribute is a list of weapons/attacks which the combatant can
 select during combat."
-  `(mapcar #'symbol-value ',value))
+  (mapcar #'symbol-value value))
 
 ;;; Types of damage.
 
@@ -203,7 +203,7 @@ slots. This value is cached as the :armor trait."
 ;;; base-damage, damage-type, damage-variance, and attack-verb.
 
 (defmethod transform-initval (class (name (eql :attack-verb)) value)
-  `(parse-verb ,value))
+  (parse-verb value))
 
 ;;; A battle represents a fight pitting all :friendly combatants against all
 ;;; :neutral or :hostile combatants.

@@ -39,7 +39,7 @@
     clone))
 
 (defmethod transform-initval (class (name (eql :race)) value)
-  `(symbol-value ',value))
+  (symbol-value value))
 
 ;;; Encoding and decoding for avatar slots and attributes.
 

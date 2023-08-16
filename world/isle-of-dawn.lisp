@@ -511,6 +511,23 @@
   (:done
       :summary "Give the white tulip to Dhalia."))
 
+(defentity simple-shirt (shirt)
+  (:brief "a simple cotton shirt"
+   :description "The shirt is well-made and comfortable."))
+
+(defentity simple-pants (pants)
+  (:brief "a pair of simple cotton pants"
+   :description "The pants are made of thick brown cloth."))
+
+(defentity leather-shoes (shoes)
+  (:brief "a pair of leather shoes"
+   :description "These low shoes have a sturdy sole, suitable for walking long
+     distances."))
+
+(defentity canvas-backpack (small-backpack)
+  (:brief "a small canvas backpack"
+   :description "The backpack has wide leather straps and a drawstring closure."))
+
 (defentity seamstress (humanoid)
   (:name "Dhalia"
    :pose "stands in the stall, organizing her wares."
@@ -544,10 +561,10 @@
       perfect; I have just finished selecting an outfit for you. I hope
       everything fits!")
     (receive actor self
-             (list (clone-entity 'shirt :materials '(cotton))
-                   (clone-entity 'pants :materials '(cotton))
-                   (clone-entity 'shoes :materials '(worn-leather))
-                   (clone-entity 'small-backpack :materials '(canvas))))
+             (list (clone-entity 'simple-shirt)
+                   (clone-entity 'simple-pants)
+                   (clone-entity 'leather-shoes)
+                   (clone-entity 'canvas-backpack)))
     (maybe-show-tutorial actor 'items "Dhalia has given you several items; type
       `inventory` or `inv` to list them.
 
@@ -1054,5 +1071,5 @@
    :icon 'boat
    :contents (sailor)
 
-   :route-exits '((gangplank :west pier)
-                  (gangplank :south jade.arwyck::west-dock))))
+   :route-exits ((gangplank :west pier)
+                 (gangplank :south jade.arwyck::west-dock))))

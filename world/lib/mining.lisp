@@ -3,8 +3,7 @@
 ;;; Ore.
 
 (defentity ore (item)
-  (:brief "a chunk of ~*~a ore"
-   :material "unknown"
+  (:brief "a chunk[s] of ~*~a ore"
    :stackable t))
 
 (defentity copper-ore (ore)

@@ -20,10 +20,30 @@
    :stackable nil))
 
 ;;; If the item is made of something in particular, the `:material' attribute is
-;;; a noun describing that something.
+;;; a noun describing that something. To facilitate this, defer parsing `:brief'
+;;; until after the item has been created.
 
 (defmethod transform-initval (class (name (eql :material)) value)
-  `(parse-noun ,value))
+  (when value (parse-noun value)))
+
+(defmethod transform-initval ((class (eql 'item)) (name (eql :brief)) value)
+  (when value
+    (if (find #\~ value)
+        value
+        (parse-noun value))))
+
+(defmethod create-named-entity (label proto (class (eql 'item)) &rest attributes)
+  (declare (ignore attributes))
+  (let ((item (call-next-method)))
+    (with-slots (attributes) item
+      (when-let ((material (gethash :material attributes)))
+        (let ((brief (? item :brief)))
+          (if (stringp brief)
+              (sethash :brief attributes
+                       (parse-noun (format nil brief
+                                           (noun-article material)
+                                           (noun-singular material))))))))
+    item))
 
 ;;; The material can be substituted into the brief description of an entity. The
 ;;; brief is used as the control-string for format, with the indefinite article
@@ -40,7 +60,7 @@
 ;;; of the quest.
 
 (defmethod transform-initval (class (name (eql :quest)) value)
-  `(quote ,value))
+  value)
 
 ;;; If the item is equippable, the `:equippable-slot' attribute describes where
 ;;; it can be equipped.
