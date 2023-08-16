@@ -6,4 +6,5 @@
    :item-group :currency))
 
 (defentity silver-coin (currency)
-  (:brief "a silver coin"))
+  (:brief "a silver coin"
+   :icon silver_coin))
