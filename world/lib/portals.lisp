@@ -2,6 +2,9 @@
 
 ;;;; Standard portals.
 
+(defentity doorway ()
+  (:brief "a doorway"))
+
 (defentity entry-doorway ()
   (:brief "a doorway"))
 

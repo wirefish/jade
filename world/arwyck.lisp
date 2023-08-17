@@ -440,10 +440,10 @@
   (:contents (crone)
    :exits ((square-portal :west square-s :north square-e))))
 
-;; sword shop
+;;; sword shop
 
 (defentity sword-vendor (vendor)
-  (:brief "Bryndan O'Donnel"
+  (:name "Bryndan O'Donnel"
    :pose "cleans a longsword with an oiled rag."
    :description "Bryndan is a lanky man with freckled skin and gray eyes. His
      auburn hair hangs down to his shoulders."
@@ -477,282 +477,231 @@
    :contents (sword-vendor)
    :exits ((exit-doorway :east square-nw))))
 
+;;; axe shop
+
+(defentity axe-vendor (vendor)
+  (:name "Durg Bighands"
+   :pose "sits atop a chair that is clearly too small for him."
+   :description "Durg is an ogre. Although he is very small for his kind, he is
+     still far too large for the typical furniture found in Arwyck."
+   :sells (copper-axe bronze-axe copper-battle-axe bronze-battle-axe))
+
+  (:when-talk (actor self topic)
+    (show actor "Durg stretches his shoulders.")
+    (tell self actor "Do you happen to need an axe? Maybe two? Type `buy` to see
+      my wares.")))
+
+(deflocation axe-shop ()
+  (:name "Durg's Slicery"
+   :description "The walls are lined with inexpensive but servicable axes."
+   :domain :indoor
+   :surface :wood
+   :contents (axe-vendor)
+   :exits ((exit-doorway :south square-ne))))
+
+;;; inn
+
+(defentity inn-room (location)
+  (:domain  :indoor
+   :surface :wood
+   :subregion "Golden Gryphon"))
+
+(defentity rye-loaf (item) ; FIXME: (food)
+  (:brief "a loa[f|ves] of rye bread"
+   :description "The loaf of rye bread looks rather delicious."
+   :icon bread
+   :cost (silver-coin 2)))
+
+(defentity fish-soup (item) ; FIXME: (food)
+  (:brief "a bowl[s] of fish soup"
+   :description "Warning: Fish content not guaranteed."
+   :cost (silver-coin 3)))
+
+(defentity sienna (vendor)
+  (:name "Sienna"
+   :pose "is working behind the bar."
+   :description "Sienna is a tall woman with short yellow hair and light brown
+     eyes. She keeps a close watch over her patrons."
+   :sells (rye-loaf fish-soup))
+
+  (:when-talk (actor self topic)
+    (tell self actor "Welcome to the Golden Gryphon! I sell food and drink. I'd
+      say it's the best in town but my mam told me never to lie, so I won't. If
+      you're learning to cook, I can sell you a few recipes as well. Type `buy`
+      to see what I have for sale.")))
+
+(deflocation inn-common-room (inn-room)
+  (:name "Common Room"
+   :description "The common room of the Golden Gryphon is a cheerful place. A
+     crackling fire burns in the stone hearth. Numerous tables and chairs give
+     the space a crowded feel, even when few customers are present. A long oak
+     bar lines one wall."
+   :contents (sienna)
+   :exits ((exit-doorway :west square-ne)
+           (doorway :north inn-kitchen)
+           (stairway :up inn-upstairs-hall))))
+
+(defentity dully (humanoid) ; FIXME: (cooking-trainer)
+  (:brief "Dully the Cook"
+   :pose "is stirring a pot of...something."
+   :description "Dully is a portly dwarven male with a scraggly beard. He wears a
+     grease-stained apron and a strange, poofy hat. He wields a huge wooden spoon
+    as if it were a weapon."
+   :teaches nil) ; FIXME: from cooking-trainer
+
+  (:after-enter-location (actor location entry)
+    (tell self actor "Aye, it's a good day for a stew, ain't it?"))
+
+  (:when-talk (actor self topic)
+    (tell self actor "Aye, if ye be lookin' ta learn ta cook, I be yer dwarf.
+      Type `learn` ta see wha I can teach ya, or `help skills` ta learn more
+      about skills an' such.")))
+
+(deflocation inn-kitchen (inn-room)
+  (:name "Kitchen"
+   :description "This large and somewhat disorganized kitchen smells faintly of
+     ale and grease."
+   :contents (dully)
+   :exits ((doorway :south inn-common-room))))
+
+(deflocation inn-upstairs-hall (inn-room)
+  (:name "Upstairs Hall"
+   :description "This dark, windowless hall leads to the Golden Gryphon's guest
+     rooms."
+   :exits ((stairway :down inn-common-room)
+           (doorway :west small-guest-room :east large-guest-room))))
+
+(deflocation small-guest-room (inn-room)
+  (:name "Small Guest Room"
+   :description "This cramped room holds a small bed and an iron-bound chest.
+     The window overlooks the village square."
+   :exits ((doorway :east inn-upstairs-hall))))
+
+(deflocation large-guest-room (inn-room)
+  (:name "Large Guest Room"
+   :description "This room is tastefully furnished. The wide feather bed is
+     lumpy but comfortable. An oak wardrobe features carvings of trees and
+     forest creatures. The window provides a view of nearby rooftops and the
+     rolling hills east of the village."
+   :exits ((doorway :west inn-upstairs-hall))))
+
+;;; armory
+
+(defentity andalya (humanoid) ; FIXME: (warrior-trainer)
+  (:name "Andalya"
+   :pose "is in the center of the room, idly swinging a slender longsword."
+   :description "Andalya is a lean, graying woman who wears loose clothing
+     befitting one who teaches the martial arts.")
+
+  (:when-talk (actor self topic)
+    (tell self actor "Welcome, stranger. I am Andalya. It is my privilege to be
+      the local representative of the Company of the Blade. We are a band
+      dedicated to the practice of the martial arts. It is my job to train those
+      who are interested in learning to defend themselves with good steel.
+
+      Type `guild info` to learn more about my guild. If you want to join, type
+      `guild join`.")))
+
+(deflocation armory-training-hall ()
+  (:name "Training Hall"
+   :description "This long hall has stone walls and an arched ceiling. The soft
+     wooden floor is clean but marred from the many training matches that have
+     been fought here."
+   :domain :indoor
+   :surface :wood
+   :contents (andalya)
+   :exits ((exit-doorway :south square-nw))))
+
+;;; explorers' lodge
+
+(defentity lodge-room (location)
+  (:domain :indoor
+   :surface :wood
+   :subregion "Explorers' Lodge"))
+
+(defentity quartermaster (vendor)
+  (:brief "the quartermaster"
+   :pose "stands nearby."
+   :description "The quartermaster is a slender man with graying hair and
+     elegant mustaches. His clothing, although impeccably clean, seems a little
+     too big for him."
+   :sells nil) ; FIXME:
+
+  (:when-talk (actor self topic)
+    (tell self actor "Good day to you, traveler.")))
+
+(deflocation lodge-foyer (lodge-room)
+  (:name "Foyer"
+   :description "This airy room has wood-paneled walls and a thick carpet on the
+     floor."
+   :contents (quartermaster)
+   :exits ((exit-doorway :north square-sw)
+           (doorway :south lodge-trophy-room :west lodge-study))))
+
+(defentity stuffed-gorilla ()
+  (:brief "a stuffed gorilla"
+   :pose "stands at the end of the room."
+   :icon gorilla
+   :description "This intimidating creature stands over eight feet tall. Even in
+     death its expression is fierce. A plaque mounted on the wall reads:
+
+     > Although it slew several dogs and gravely wounded a scout, our party
+     defeated this beast as we traversed the jungles of Phaa, CY 549."))
+
+(deflocation lodge-trophy-room (lodge-room)
+  (:name "Trophy Room"
+   :description "The walls of this long room are lined with hunting prizes of
+     all kinds: antlers, horns, mounted heads, and more."
+   :contents (stuffed-gorilla)
+   :exits ((doorway :north lodge-foyer :west lodge-workshop))))
+
+(defentity lord-olmquist (humanoid)
+  (:brief "Lord Olmquist"
+   :pose "sits in a chair, smoking a pipe."
+   :description "Olmquist is a rather stout, red-cheeked fellow with a bushy
+     white beard and bald pate. Horn-rimmed spectacles perch upon his
+     substantial nose. He wears a velvet smoking jacket, an open-necked white
+     shirt, and dark silk trousers.")
+
+  (:when-talk (actor self topic)
+    (tell self actor "Why yes, be a dear and fetch me a bourbon, won't you?")
+    (with-delay (1)
+      (show actor "You look around, but there's no bourbon in sight."))))
+
+(deflocation lodge-study (lodge-room)
+  (:name "Study"
+   :description "Two walls of this room are lined with shelves full of books. A
+     number of comfortable armchairs and small tables fill the remainder of the
+     space."
+   :contents (lord-olmquist)
+   :exits ((doorway :east lodge-foyer :south lodge-workshop))))
+
+(defentity naman (humanoid) ; FIXME: (explorer-trainer)
+  (:name "Naman Artani"
+   :pose "is hunched over a strange device on the table."
+   :description "Naman is a wiry young man who wears a scarred leather apron
+     over his practical attire. His curly auburn hair floats in a wild cloud
+     around his head."
+   :teaches nil) ; FIXME: from explorer-trainer. swimming, climbing, ...?
+
+  (:when-talk (actor self topic)
+    (tell self actor "Welcome to the Explorer's Lodge. Members of our guild
+      travel across Atalea in search of rarities: strange creatures, lost
+      treasures, and ancient knowledge. As you might imagine, survival skills
+      come in quite handy in this vocation!
+
+      I am happy to teach you some of those skills. Type `learn` to see what I
+      can teach you.")))
+
+(deflocation lodge-workshop (lodge-room)
+  (:name "Workshop"
+   :description "A long table fills the center of this room; various implements
+     are strewn across its surface. Shelves along the walls hold all manner of
+     tools and contraptions."
+   :contents (naman)
+   :exits ((doorway :north lodge-study :east lodge-trophy-room :south wall-street-1))))
+
 #|
-// axe shop
-
-(defentity axeVendor: npc
-  brief "Durg Bighands"
-  pose "sits atop a chair that is clearly too small for him."
-  description |
-    Durg is an ogre. Although he is very small for his kind, he is still far
-    too large for the typical furniture found in Arwyck.
-  sells [] // FIXME: [copperAxe, bronzeAxe, copperBattleaxe, bronzeBattleaxe]
-
-  when talk(actor, self, topic)
-    show(actor) "Durg stretches his shoulders."
-    tell(self, actor) |
-      Do you happen to need an axe? Maybe two? Type `buy` to see my wares.
-  )
-)
-
-deflocation axeShop: location
-  name "Durg's Slicery"
-  description "The walls are lined with inexpensive but servicable axes."
-  domain 'indoor
-  surface 'wood
-  contents [axeVendor]
-  exits [lib.exitDoorway -> 'south to squareNe]
-)
-
-// inn
-
-(defentity innRoom: location
-  domain  'indoor
-  surface 'wood
-  subregion "Golden Gryphon"
-)
-
-(defentity ryeLoaf: food
-  brief "a loa[f|ves] of rye bread"
-  description "The loaf of rye bread looks rather delicious."
-  icon 'bread
-  price 2 of silverCoin
-)
-
-(defentity fishSoup: food
-  brief "a bowl[s] of fish soup"
-  description "Warning: Fish content not guaranteed."
-  price 3 of silverCoin
-)
-
-(defentity sienna: npc
-  brief "Sienna"
-  pose "is working behind the bar."
-  description |
-    Sienna is a tall woman with short yellow hair and light brown eyes. She
-    keeps a close eye on her patrons.
-  sells [ryeLoaf, fishSoup]
-
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      Welcome to the Golden Gryphon! I sell food and drink. I'd say it's
-      the best in town but my mam told me never to lie, so I won't. If
-      you're learning to cook, I can sell you a few recipes as well. Type
-      `buy` to see what I have for sale.
-  )
-)
-
-deflocation innCommonRoom: innRoom
-  name "Common Room"
-  description |
-    The common room of the Golden Gryphon is a cheerful place. A crackling
-    fire burns in the stone hearth. Numerous tables and chairs give the
-    space a crowded feel, even when few customers are present. A long oak
-    bar lines one wall.
-  contents [sienna]
-  exits [lib.exitDoorway -> 'west to squareNe,
-       doorway -> 'north to innKitchen,
-       stairway -> 'up to innUpstairsHall]
-)
-
-(defentity cookingTrainer: npc
-  brief "Dully the Cook"
-  pose "is stirring a pot of...something."
-  description |
-    Dully is a portly dwarven male with a scraggly beard. He wears a
-    grease-stained apron and a strange, poofy hat. He wields a huge wooden spoon
-    as if it were a weapon.
-  teaches [] // FIXME:
-
-  after enterLocation(actor, location, entry)
-    tell(self, actor) "Aye, it's a good day for a stew, ain't it?"
-  )
-
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      Aye, if ye be lookin' ta learn ta cook, I be yer dwarf. Type `learn`
-      ta see wha I can teach ya, or `help skills` ta learn more about
-      skills an' such.
-  )
-)
-
-deflocation innKitchen: innRoom
-  name "Kitchen"
-  description |
-    This large and somewhat disorganized kitchen smells faintly of ale and
-    grease.
-  contents [cookingTrainer]
-  exits [lib.doorway -> 'south to innCommonRoom]
-)
-
-deflocation innUpstairsHall: innRoom
-  name "Upstairs Hall"
-  description |
-    This dark, windowless hall leads to the Golden Gryphon's guest rooms.
-  exits [lib.stairway -> 'down to innCommonRoom,
-       doorway -> 'west to smallGuestRoom,
-       doorway -> 'east to largeGuestRoom]
-)
-
-deflocation smallGuestRoom: innRoom
-  name "Small Guest Room"
-  description |
-    This cramped room holds a small bed and an iron-bound chest. The window
-    overlooks the village square.
-  exits [lib.doorway -> 'east to innUpstairsHall]
-)
-
-deflocation largeGuestRoom: innRoom
-  name "Large Guest Room"
-  description |
-    This room is tastefully furnished. The wide feather bed is lumpy but
-    comfortable. An oak wardrobe features carvings of trees and forest
-    creatures. The window provides a view of nearby rooftops and the rolling
-    hills east of the village.
-  exits [lib.doorway -> 'west to innUpstairsHall]
-)
-
-// armory
-
-(defentity warriorTrainer: npc  // FIXME: warriorTrainer
-  brief "Andalya"
-  pose "is in the center of the room, idly swinging a slender longsword."
-  description |
-    Andalya is a lean, graying woman who wears loose clothing befitting
-    one who teaches the martial arts.
-
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      Welcome, stranger. I am Andalya. It is my privilege to be the local
-      representative of the Company of the Blade. We are a band dedicated
-      to the practice of the martial arts. It is my job to train those who
-      are interested in learning to defend themselves with good steel.
-
-      Type `guild info` to learn more about my guild. If you want to join,
-      type `guild join`.
-  )
-)
-
-deflocation armoryTrainingHall: location
-  name "Training Hall"
-  description |
-    This long hall has stone walls and an arched ceiling. The soft wooden
-    floor is clean but marred from the many training matches that have been
-    fought here.
-  domain 'indoor
-  surface 'wood
-  contents [warriorTrainer]
-  exits [lib.exitDoorway -> 'south to squareNw]
-)
-
-// explorers' lodge
-
-(defentity lodgeRoom: location
-  domain 'indoor
-  surface 'wood
-  subregion "Explorers' Lodge"
-)
-
-(defentity quartermaster: npc
-  brief "the quartermaster"
-  pose "stands nearby."
-  description |
-    The quartermaster is a slender man with graying hair and elegant
-    mustaches. His clothing, although impeccably clean, seems a little too big
-    for him.
-  sells [] // FIXME:
-
-  when talk(actor, self, topic)
-    tell(self, actor) "Good day to you, traveler."
-  )
-)
-
-deflocation lodgeFoyer: lodgeRoom
-  name "Foyer"
-  description |
-    This airy room has wood-paneled walls and a thick carpet on the floor.
-  contents [quartermaster]
-  exits [lib.exitDoorway -> 'north to squareSw,
-       doorway -> 'south to lodgeTrophyRoom,
-       doorway -> 'west to lodgeStudy]
-)
-
-(defentity stuffedGorilla: fixture
-  brief "a stuffed gorilla"
-  pose "stands at the end of the room."
-  icon 'gorilla
-  description |
-    This intimidating creature stands over eight feet tall. Even in death
-    its expression is fierce. A plaque mounted on the wall reads:
-
-    > Although it slew several dogs and gravely wounded a scout, our party
-    defeated this beast as we traversed the jungles of Phaa, CY 549.
-)
-
-deflocation lodgeTrophyRoom: lodgeRoom
-  name "Trophy Room"
-  description |
-    The walls of this long room are lined with hunting prizes of all kinds:
-    antlers, horns, mounted heads, and more.
-  contents [stuffedGorilla]
-  exits [lib.doorway -> 'north to lodgeFoyer, doorway -> 'west to lodgeWorkshop]
-)
-
-(defentity lordOlmquist: npc
-  brief "Lord Olmquist"
-  pose "sits in a chair, smoking a pipe."
-  description |
-    Olmquist is a rather stout, red-cheeked fellow with a bushy white beard
-    and bald pate. Horn-rimmed spectacles perch upon his substantial nose.
-    He wears a velvet smoking jacket, an open-necked white shirt, and dark
-    silk trousers.
-
-  when talk(actor, self, topic)
-    tell(self, actor) "Why yes, be a dear and fetch me a bourbon, won't you?"
-  )
-)
-
-deflocation lodgeStudy: lodgeRoom
-  name "Study"
-  description |
-    Two walls of this room are lined with shelves full of books. A number of
-    comfortable armchairs and small tables fill the remainder of the space.
-  contents [lordOlmquist]
-  exits [lib.doorway -> 'east to lodgeFoyer, doorway -> 'south to lodgeWorkshop]
-)
-
-(defentity explorerTrainer: npc
-  brief "Naman Artani"
-  pose "is hunched over a strange device on the table."
-  description |
-    Naman is a wiry young man who wears a scarred leather apron over his
-    practical attire. His curly auburn hair floats in a wild cloud around
-    his head.
-  teaches [] // FIXME: swimming, climbing, ...?
-
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      Welcome to the Explorer's Lodge. Members of our guild travel across
-      Atalea in search of rarities: strange creatures, lost treasures, and
-      ancient knowledge. As you might imagine, survival skills come in
-      quite handy in this vocation!
-
-      I am happy to teach you some of those skills. Type `learn` to see
-      what I can teach you.
-  )
-)
-
-deflocation lodgeWorkshop: lodgeRoom
-  name  "Workshop"
-  description |
-    A long table fills the center of this room; various implements are
-    strewn across its surface. Shelves along the walls hold all manner of
-    tools and contraptions.
-  contents [explorerTrainer]
-  exits [lib.doorway -> 'north to lodgeStudy, doorway -> 'east to lodgeTrophyRoom,
-       exitDoorway -> 'south to wallStreet1]
-)
-
 // mages' tower
 
 (defentity towerRoom: location
