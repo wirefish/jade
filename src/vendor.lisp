@@ -16,7 +16,6 @@
     (setf (? clone :sells)
           (loop for info in (? clone :sells)
                 collect (bind (((label &optional (quantity t)) (ensure-list info)))
-                          (print (list label quantity))
                           (clone-entity label :quantity quantity))))
     clone))
 
