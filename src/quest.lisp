@@ -128,7 +128,7 @@ The state associated with a quest phase can take one of three forms:
     ((quest-offered avatar quest-label)
      :offered)
     (t
-     (let ((quest (symbol-value-as 'quest quest-label)))
+     (when-let ((quest (symbol-value-or-nil quest-label)))
        (if-let ((state (active-quest-state avatar quest-label)))
          (let ((phase (first state)))
            (if (numberp phase)
