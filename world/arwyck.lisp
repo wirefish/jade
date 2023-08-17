@@ -701,182 +701,136 @@
    :contents (naman)
    :exits ((doorway :north lodge-study :east lodge-trophy-room :south wall-street-1))))
 
-#|
-// mages' tower
+;;; mages' tower
 
-(defentity towerRoom: location
-  domain 'indoor
-  surface 'stone
-  subregion "Mages' Tower"
-)
+(defentity tower-room (location)
+  (:domain :indoor
+   :surface :stone
+   :subregion "Mages' Tower"))
 
-deflocation towerLibrary: towerRoom
-  name "Library"
-  description |
-    This large, circular room encompasses the entire ground floor of a
-    squat, stone tower. The walls are lined with shelves full of
-    leather-bound books.
-  exits [lib.exitDoorway -> 'east to squareW,
-       stairway -> 'down to towerBasement,
-       stairway -> 'up to towerStudy]
-)
+(deflocation tower-library (tower-room)
+  (:name "Library"
+   :description "This large, circular room encompasses the entire ground floor
+     of a squat, stone tower. The walls are lined with shelves full of
+     leather-bound books."
+   :exits ((exit-doorway :east square-w)
+           (stairway :down tower-basement :up tower-study))))
 
-(defentity wandVendor: npc
-  brief "Giglox Tiglox"
-  pose "excitedly awaits your attention."
-  description |
-    Giglox is a tiny, long-eared creature. His toothy smile is both
-    infectious and somewhat frightening.
-  sells [] // FIXME: [pineWand, oakWand]
+(defentity giglox (vendor)
+  (:name "Giglox Tiglox"
+   :pose "excitedly awaits your attention."
+   :description "Giglox is a tiny, long-eared creature. His toothy smile is both
+     infectious and somewhat frightening."
+   :sells (pine-wand oak-wand))
 
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      You look like you need a wand. And who doesn't? Type `buy` to see
-      what I have available.
-  )
-)
+  (:when-talk (actor self topic)
+    (tell self actor "You look like you need a wand. And who doesn't? Type `buy`
+       to see what I have available.")))
 
-deflocation towerBasement: towerRoom
-  name "Basement"
-  description |
-    The basement of the library is full of books, scrolls, and other
-    scholarly items. Everything is neatly stacked and organized, if a little
-    dusty.
-  contents [wandVendor]
-  exits [lib.stairway -> 'up to towerLibrary]
-)
+(deflocation tower-basement (tower-room)
+  (:name "Basement"
+   :description "The basement of the library is full of books, scrolls, and
+     other scholarly items. Everything is neatly stacked and organized, if a
+     little dusty."
+   :contents (giglox)
+   :exits ((stairway :up tower-library))))
 
-(defentity mageTrainer: npc
-  brief "Milena Landeris"
-  pose "sits at a nearby desk, perusing a scroll."
-  description |
-    Milena is pleasant-looking young woman. Her clothing is casual and
-    practical. Her long black hair is carefully plaited. She seems somewhat
-    bored with the scroll in her hands and her eyes often wander to the
-    nearest window.
-  teaches [] // FIXME:
+(defentity milena (humanoid) ; FIXME: (mage-trainer)
+  (:name "Milena Landeris"
+   :pose "sits at a nearby desk, perusing a scroll."
+   :description "Milena is pleasant-looking young woman. Her clothing is casual
+     and practical. Her long black hair is carefully plaited. She seems somewhat
+     bored with the scroll in her hands and her eyes often wander to the nearest
+     window."
+   :teaches nil) ; FIXME: from mage-trainer
 
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      Hello! I'm glad for the interruption. I am supposed to be studying
-      this scroll, but the mating rituals of the southern blue-tailed
+  (:when-talk (actor self topic)
+    (tell self actor "Hello! I'm glad for the interruption. I am supposed to be
+      studying this scroll, but the mating rituals of the southern blue-tailed
       cockatrice are really not my cup of tea.
 
-      I am the local representative of the College of Arcanists, a guild
-      for those who wish to study magic. I am just an apprentice myself,
-      but I can teach you some basic skills; type `learn` to see what I
-      can teach. If you are new in town, you might want to type `help
-      skills` to learn more about skills in general.
-  )
-)
+      I am the local representative of the College of Arcanists, a guild for
+      those who wish to study magic. I am just an apprentice myself, but I can
+      teach you some basic skills; type `learn` to see what I can teach. If you
+      are new in town, you might want to type `help skills` to learn more about
+      skills in general.")))
 
-deflocation towerStudy: towerRoom
-  name "Study"
-  description |
-    This circular room commands an excellent view of Arwyck through a number
-    of large, glass-paned windows. A desk and padded leather chair have been
-    placed beneath each window.
-  contents [mageTrainer]
-  exits [lib.stairway -> 'down to towerLibrary]
-)
+(deflocation tower-study (tower-room)
+  (:name "Study"
+   :description "This circular room commands an excellent view of Arwyck through
+     a number of large, glass-paned windows. A desk and padded leather chair
+     have been placed beneath each window."
+   :contents (milena)
+   :exits ((stairway :down tower-library))))
 
-// east road
+;;; east road
 
-(defentity eastRoad: location
-  name "East Road"
-  description |
-    This broad dirt road connects the center of Arwyck to the village's
-    eastern gate.
-  domain 'outdoor
-  surface 'dirt
-)
+(defentity east-road (location)
+  (:name "East Road"
+   :description "This broad dirt road connects the center of Arwyck to the
+     village's eastern gate."
+   :domain :outdoor
+   :surface :dirt))
 
-deflocation eastRoad1: eastRoad
-  exits [dirtRoad -> 'west to squareE, dirtRoad -> 'east to eastRoad2,
-       entryDoorway -> 'south to maceShop]
-)
+(deflocation east-road-1 (east-road)
+  (:exits ((dirt-road :west square-e :east east-road-2)
+           (entry-doorway :south mace-shop))))
 
-defquest iNeedBread
-  name "Feed the Poor"
-  summary "Purchase a loaf of rye bread and give it to the hungry street urchin."
-  level 1
+(defquest i-need-bread
+  (:name "Feed the Poor"
+   :level 1
+   :summary "Purchase a loaf of rye bread and give it to the hungry street
+     urchin.")
 
-  phase active
-    summary "Purchase a loaf of rye bread at the inn."
-  )
+  (:active
+      :summary "Give a loaf of rye bread to the street urchin."))
 
-  phase done
-    summary "Give the rye bread to the street urchin."
-  )
-)
+(defentity urchin (humanoid)
+  (:brief "a street urchin"
+   :pose "sits alongside the road."
+   :description "The urchin is a young girl, perhaps eight years old. Her
+     clothes are little more than dirty rags."
+   :offers-quests (i-need-bread))
 
-// FIXME: This quest is kind of a mess.
-(defentity urchin: npc
-  brief "a street urchin"
-  pose "sits alongside the road."
-  description |
-    The urchin is a young girl, perhaps eight years old. Her clothes are
-    little more than dirty rags.
-  offersQuests [iNeedBread]
+  (:when-talk ((actor &quest i-need-bread :available) self topic)
+    (tell self actor "You seem like you have many important things to do, so I
+      hate to bother you. But could you spare a loaf of bread? My family is
+      desperate for food, you see, and I wasn't able to beg for enough coin to
+      buy any.")
+    (offer-quest self 'i-need-bread actor))
 
-  when talk(actor: .quest(iNeedBread, available), self, topic)
-    tell(self, actor) |
-      You seem like you have many important things to do, so I hate to
-      bother you. But could you spare a loaf of bread? My family is
-      desperate for food, you see, and I wasn't able to beg for enough
-      coin to buy any.
-    offerQuest(self, iNeedBread, actor)
-  )
+  (:after-accept-quest (actor (quest &quest i-need-bread) self)
+    (tell self actor "Oh, thank you! If you go to the inn, the innkeeper sells a
+      very nice loaf of rye. I'd really appreciate if you could `give` me
+      one."))
 
-  after acceptQuest(actor, quest: iNeedBread, npc)
-    tell(self, actor) |
-      Oh, thank you! If you go to the inn, the innkeeper sells a very nice
-      loaf of rye. I'd really appreciate if you could `give` me one.
-  )
+  (:when-talk ((actor &quest i-need-bread :active) self topic)
+    (show actor "The urchin looks at you with a hint of expectation.")
+    (tell self actor "Were you able to find the inn?"))
 
-  when talk(actor: .quest(iNeedBread, active), self, topic)
-    show(actor) |
-      The urchin looks at you with a hint of expectation.
-    tell(self, actor) |
-      Were you able to find the inn?
-  )
+  (:allow-give (actor self items)
+    (every (lambda (e) (entity-isa e 'rye-loaf)) items))
 
-  when talk(actor: .quest(iNeedBread, done), self, topic)
-    tell(npc, avatar) |
-      I truly appreciate your offer to help my family. If you have a spare
-      loaf of rye, I'd be happy if you could `give` it to me.
-  )
+  (:after-give ((actor &quest i-need-bread :active) self items)
+    (show actor "The urchin grins from ear to ear.")
+    (tell self actor "Thank you so much! You've truly done my family a great
+      service today. May the gods' blessings return to us all!")
+    (advance-quest self actor 'i-need-bread))
 
-  allow giveItem(actor, item: ryeLoaf, self)
-    return true
-  )
+  (:after-give (actor self items)
+    (tell self actor "Bread is always appreciated! Thanks so much for your
+      kindness!")))
 
-  after giveItem(actor: .quest(iNeedBread, done), item: ryeLoaf, self)
-    show(actor) "The urchin grins from ear to ear."
+(deflocation east-road-2 (east-road)
+  (:contents (urchin)
+   :exits ((dirt-road :west east-road-1 :east east-road-3)
+           (alley :south muggers-alley-1))))
 
-    tell(self, actor) |
-      Thank you so much! You've truly done my family a great service
-      today. May the gods' blessings return to us all!
+(deflocation east-road-3 (east-road)
+  (:exits ((dirt-road :west east-road-2 :east east-gate)
+           (entry-doorway :north temple-sanctuary))))
 
-    completeQuest(actor, iNeedBread)
-  )
-
-  after giveItem(actor, item: ryeLoaf, self)
-    tell(self, actor) "Thank you for your kindness!"
-  )
-)
-
-deflocation eastRoad2: eastRoad
-  contents [urchin]
-  exits [dirtRoad -> 'west to eastRoad1, dirtRoad -> 'east to eastRoad3,
-       alley -> 'south to muggersAlley1]
-)
-
-deflocation eastRoad3: eastRoad
-  exits [dirtRoad -> 'west to eastRoad2, dirtRoad -> 'east to eastGate,
-       entryDoorway -> 'north to templeSanctuary]
-)
-
+#|
 // mace shop
 
 (defentity maceVendor: npc

@@ -97,9 +97,9 @@
    :nonproficiency-penalty 0.25))
 
 (defweapons wand
-  (1 "copper" (silver-coin 15))
-  (5 "bronze" (silver-coin 30))
-  (10 "iron" (silver-coin 60)))
+  (1 "pine" (silver-coin 15))
+  (5 "oak" (silver-coin 30))
+  (10 "maple" (silver-coin 60)))
 
 ;;; Maces are one-handed crushing weapons.
 
@@ -266,6 +266,6 @@
    :nonproficiency-penalty 0.25))
 
 (defweapons staff
-  (1 "copper" (silver-coin 35))
-  (5 "bronze" (silver-coin 70))
-  (10 "iron" (silver-coin 140)))
+  (1 "pine" (silver-coin 35))
+  (5 "oak" (silver-coin 70))
+  (10 "maple" (silver-coin 140)))
