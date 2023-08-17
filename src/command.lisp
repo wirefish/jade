@@ -63,10 +63,40 @@
 (defun make-alias (alias command)
   (setf (gethash alias *aliases*) (tokenize-input command)))
 
-;;;
+;;; Functions that may be helpful when implementing commands.
 
 (defun join-tokens (tokens)
   (format nil "~{~a~^ ~}" tokens))
+
+(defun show-match-result (actor obj &optional arg)
+  (typecase obj
+    (string (show actor obj arg))
+    (function (if arg (funcall obj arg) (funcall obj)))))
+
+(defun match-exactly-one (actor tokens subjects
+                          &key no-tokens no-subjects no-match multi-match)
+  (if subjects
+      (bind ((matches quality (if tokens
+                                  (find-matches tokens subjects)
+                                  (and (eq no-tokens t) subjects))))
+        (case (length matches)
+          (0
+           (if tokens
+               (when no-match
+                 (show-match-result actor no-match (join-tokens tokens)))
+               (when no-tokens
+                 (show-match-result actor no-tokens)))
+           nil)
+          (1
+           (values (first matches) quality))
+          (t
+           (when multi-match
+             (show-match-result actor multi-match
+                                (format-list #'describe-brief matches "or")))
+           nil)))
+      (when no-subjects
+        (show-match-result actor no-subjects)
+        nil)))
 
 (defun match-one (actor tokens candidates none-message many-message)
   (let ((matches (find-matches tokens candidates)))
@@ -79,12 +109,6 @@
        (show actor many-message (format-list #'describe-brief matches "or"))
        nil))))
 
-(defun match-exactly-one (actor tokens candidates no-tokens-message none-message many-message)
-  (if tokens
-      (match-one actor tokens candidates none-message many-message)
-      (progn
-        (show actor no-tokens-message)
-        nil)))
 
 (defun match-some (actor tokens candidates none-message)
   (let ((matches (find-matches tokens candidates)))
