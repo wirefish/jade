@@ -37,16 +37,19 @@
           (show avatar "You cannot pay for that.")
           nil))))
 
-(defun pay-for-item (buyer item)
-  (let (removed modified)
+(defun pay-for-item (buyer vendor item)
+  (let (removed modified paid)
     (loop for currency in (? item :cost) do
-      (let ((stack (find-item-isa buyer :inventory (entity-type currency))))
-        (if (eq (remove-item buyer :inventory
-                             stack
-                             (* (? item :quantity) (? currency :quantity)))
-                stack)
+      (let* ((stack (find-item-isa buyer :inventory (entity-type currency)))
+             (obj (remove-item buyer :inventory stack
+                               (* (? item :quantity) (? currency :quantity)))))
+        (push obj paid)
+        (if (eq obj paid)
             (push stack removed)
             (push stack modified))))
+    (show buyer "You give ~a ~a."
+          (describe-brief vendor)
+          (format-list #'describe-brief paid))
     (update-inventory buyer modified removed)))
 
 (defun reduce-vendor-stock (vendor item)
@@ -57,7 +60,7 @@
 
 (defmethod receive ((avatar avatar) (vendor vendor) items)
   (let ((item (first items)))
-    (pay-for-item avatar item)
+    (pay-for-item avatar vendor item)
     (reduce-vendor-stock vendor item)
     (call-next-method)))
 
