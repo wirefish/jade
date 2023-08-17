@@ -251,10 +251,11 @@ MessageHandler.prototype.updateEquipment = function(equipment) {
 MessageHandler.prototype.updateSkills = function(unspent_karma, skills) {
     document.getElementById('unspent_karma').innerHTML = unspent_karma.toString();
 
-    var skills_pane = document.getElementById('skills_pane');
+    if (!skills)
+        return;
 
-    for (var i = 0; i < skills.length; ++i) {
-        var [key, rank, name, max_rank] = skills[i];
+    var skills_pane = document.getElementById('skills_pane');
+    for ([key, rank, name, max_rank] of skills) {
         var div_id = 'skill_' + key;
         var div = document.getElementById(div_id);
         if (rank == null) {

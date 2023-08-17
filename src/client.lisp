@@ -194,7 +194,9 @@ name and whose subsequent elements are arguments to that command."
 ;;; Manage the skills pane.
 
 (defun update-skills (avatar &rest skill-labels)
-  (let ((skill-labels (or skill-labels (hash-table-keys (skills avatar)))))
+  (let ((skill-labels (if (eq (first skill-labels) t)
+                          (hash-table-keys (skills avatar))
+                          skill-labels)))
     (send-client-command
      avatar "updateSkills"
      (karma avatar)
@@ -241,6 +243,7 @@ location are updated only if `for-location' is true."
   (update-avatar avatar)
   (update-equipment avatar)
   (update-inventory avatar (? avatar :inventory))
+  (update-skills avatar t)
   (when for-location
     (show-location avatar)
     (show-map avatar)
