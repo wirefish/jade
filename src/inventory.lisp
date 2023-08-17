@@ -335,17 +335,16 @@ location."
 
 (defcommand give (actor "give" item "to" sink)
   "Remove *item* from your inventory and give it to *sink*."
-  (when-let* ((item (match-exactly-one
-                     actor item (? actor :inventory)
-                     "What do you want to give?"
-                     "You aren't carrying anything that matches \"~a\"."
-                     "Do you want to give ~a?"))
-              (sink (match-exactly-one
-                         actor sink
-                         (? (location actor) :contents)
-                         "Who do you want to give something to?"
-                         "You don't see anything here that matches \"~a\"."
-                         "Do you want to give something to ~a?")))
+  (when-let* ((item (match actor item :exactly-one (? actor :inventory)
+                      :no-tokens "What do you want to give?"
+                      :no-subjects "You aren't carrying anything."
+                      :no-match "You aren't carrying anything that matches ~s."
+                      :multi-match "Do you want to give ~a?"))
+              (sink (match actor sink :exactly-one (? (location actor) :contents)
+                      :no-tokens "Who do you want to give something to?"
+                      :no-subjects "There is nobody here you can give items to."
+                      :no-match "You don't see anything here that matches ~s."
+                      :multi-match "Do you want to give something to ~a?")))
     (give actor sink (list item))))
 
 ;;; An NPC or some other source gives one or more items to an avatar.

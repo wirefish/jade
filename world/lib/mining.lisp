@@ -26,4 +26,21 @@
 
 ;;; TODO: Other mineable things.
 
+;;; Tools.
+
+(defentity pickaxe (item)
+  (:brief "a pickaxe"
+   :icon pickaxe
+   :equippable-slot :tool))
+
+(defentity copper-pickaxe (pickaxe)
+  (:brief "a copper pickaxe"
+   :level 1
+   :cost (silver-coin 5)))
+
+(defentity bronze-pickaxe (pickaxe)
+  (:brief "a bronze pickaxe"
+   :level 5
+   :cost (silver-coin 10)))
+
 ;;; TODO: Ore deposits.

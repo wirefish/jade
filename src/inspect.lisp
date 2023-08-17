@@ -18,8 +18,10 @@
   (show-location actor subject))
 
 (defmethod inspect ((actor avatar) subject tool)
-  ;; TODO: use tool
-  (show actor (describe-full subject)))
+  ;; TODO: if when-inspect is handled, use that instead.
+  (show actor (describe-full subject))
+  (show actor "Using ~a does not reveal anything special."
+        (describe-brief tool :quantity 1)))
 
 (defcommand look (actor "look" "at" subject ("in" "on") container ("with" "using") tool)
   "Look at something in your environment. By just typing `look`, you will see a
@@ -33,42 +35,48 @@ desk`. Finally, add *tool* to use a specific item in your inventory to aid your
 inspection. For example, `look at jewel with magnifying glass`.
 
 To look at items in your inventory or equipment, use the `inventory` command."
-  (let ((tool (when tool
-                (or (match-one actor tool (? actor :inventory)
-                               "You aren't carrying anything that matches \"~a\"."
-                               "Do you want to use ~a?")
-                    (return-from look))))
+  (bind ((location (location actor))
+         (tool (when tool
+                 (or (match actor tool :exactly-one (? actor :inventory)
+                       :no-match "You aren't carrying anything that matches ~s."
+                       :multi-match "Do you want to use ~a?")
+                   (return-from look))))
         (container (when container
-                     (or (match-one actor container (? (location actor) :contents)
-                                    "There is no container here that matches \"~a\"."
-                                    "Do you want to look in ~a?")
+                     (or (match actor container :exactly-one (? location :contents)
+                           :no-match "There is no container here that matches \"~a\"."
+                           :multi-match "Do you want to look in ~a?")
                          (return-from look)))))
     (cond
       ;; Look at the actor's location.
       ((and (null subject) (null container))
-       (inspect actor (location actor) tool))
+       (inspect actor location tool))
       ;; Look at the actor.
       ((and (equalp subject '("self")) (null container))
        (inspect actor actor tool))
-      ;; Look at specific things.
-      (subject
-       (if-let ((matches (find-matches subject
-                                       (? (or container (location actor)) :contents)
-                                       (unless container (? (location actor) :exits)))))
-         (loop for match in matches do
-           (show actor (describe-full match)))
-         (if container
-             (show actor "There is nothing in the ~a that matches \"~a\"."
-                   (describe-brief container :article :nil)
-                   (join-tokens subject))
-             (show actor "There is nothing here that matches \"~a\"."
-                   (join-tokens subject)))))
-      ;; Look at everything in a container.
+      ;; Look at things in a container.
+      (container
+       (if (has-attributes container :contents)
+           (when-let ((matches
+                       (match actor subject :at-least-one (? container :contents)
+                         :no-tokens t
+                         :no-subjects (format nil "There is nothing in ~a."
+                                              (describe-brief container :article :definite))
+                         :no-match (format nil "There is nothing in ~a that matches ~~s."
+                                           (describe-brief container :article :definite)))))
+             (if subject
+                 (dolist (item matches)
+                   (inspect actor item tool))
+                 (show actor "~a contains ~a."
+                       (describe-brief container :article :definite :capitalize t)
+                       (format-list #'describe-brief matches))))
+           (show actor "You cannot look inside ~a."
+                 (describe-brief container))))
+      ;; Look at specific things nearby.
       (t
-       (if-let ((matches (? container :contents)))
-         (show actor "The ~a contains ~a."
-               (describe-brief  container :article nil)
-               (format-list #'describe-brief matches)))))))
+       (when-let ((matches (match actor subject :at-least-one (? location :contents)
+                             :no-match "There is nothing here that matches ~s.")))
+         (dolist (entity matches)
+           (inspect actor entity tool)))))))
 
 ;;;
 

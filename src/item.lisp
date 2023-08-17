@@ -17,6 +17,7 @@
    :level 1
    :item-group :miscellany
    :quantity 1
+   :cost nil
    :stackable nil))
 
 ;;; If the item is made of something in particular, the `:material' attribute is
@@ -70,6 +71,13 @@
     :head :torso :back :hands :waist :legs :feet :ears :neck :either-wrist :either-finger
     :backpack :belt-pouch))
 
+;;; If the item can be purcased, its `:cost' attribute is defined by plist of
+;;; labels and quantities describing the items required for payment.
+
+(defmethod transform-initval ((class (eql 'item)) (name (eql :cost)) value)
+  (loop for (label quantity) on value by #'cddr
+        collect (clone-entity label :quantity quantity)))
+
 ;;; Items can be stacked if they have the same prototype and their `stackable'
 ;;; attribute is not null. If `stackable' is t, there is no limit on how many
 ;;; items can be stacked together; if it is a number, then only that many can be
@@ -106,6 +114,7 @@ represents `count' of the same item. Returns nil if entity cannot be split."
 
 (defun find-item-isa (container slot proto-label &optional (quantity t))
   (find-if (lambda (e)
+             (print (list e proto-label (entity-isa e proto-label)))
              (and (entity-isa e proto-label)
                   (or (eq quantity t) (>= (? e :quantity) quantity))))
            (? container slot)))

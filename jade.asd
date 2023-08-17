@@ -38,6 +38,7 @@
              (:file "offer")
              (:file "inspect")
              (:file "inventory")
+             (:file "vendor")
              (:file "skill")
              (:file "gather")
              (:file "move")

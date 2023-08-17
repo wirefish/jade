@@ -281,19 +281,20 @@
       If you decide mining's for you, Hermetch over there sells the tools
       you'll need to begin your mining career.")))
 
-(defentity hermetch (humanoid) ; FIXME: (vendor)
+(defentity hermetch (vendor)
   (:name "Hermetch the Bald"
    :pose "stands in front of the tool rack, whistling idly."
    :description "Hermetch lives up to his apellation; his head shines almost as
      brightly as the polished blades of the pickaxes on the rack behind him."
-   :sells ()) ; FIXME: copper-pickaxe, bronze-pickaxe
+   :sells (copper-pickaxe t bronze-pickaxe t))
 
   (:when-talk (actor self topic)
     (tell self actor "I sell the finest tools in the land! The absolute finest!")
     (with-delay (1)
       (show actor "Marigold rolls her eyes.")
       (with-delay (1)
-        (show actor "Pay her no mind. Type `buy` to see what's available.")))))
+        (tell self actor "Pay her no mind. Type `buy` to see what's
+          available.")))))
 
 (deflocation miners-guildhall ()
   (:name "Miners' Guildhall"
@@ -328,21 +329,21 @@
           (? self :pose) (? self :standing)))
 
   (:after-enter-location (self location entry)
-    (with-delay (5)
+    (with-delay (10)
       (observe-event self :lay-down)))
 
   (:lay-down ()
     (show-observers (? (location self) :contents)
                     "The shaggy dog lays down in a comfortable spot.")
     (setf (? self :pose) (? self :lying-down))
-    (with-delay (20)
+    (with-delay ((random-integer 60 120))
       (observe-event self :stand-up)))
 
   (:stand-up ()
     (show-observers (? (location self) :contents)
                     "The shaggy dog stands up and stretches.")
     (setf (? self :pose) (? self :standing))
-    (with-delay (5)
+    (with-delay (10)
       (observe-event self :move-on)))
 
   (:move-on ()

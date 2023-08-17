@@ -13,3 +13,5 @@
 * Handle light and two-handed weapons in (un)equip.
 
 * Add more combat traits.
+
+* Quest/vendor/trainer state on map.

@@ -24,6 +24,9 @@
     (with-slots (id label proto) obj
       (write (or label (list (entity-label proto) id)) :stream stream))))
 
+(defun entity-type (entity)
+  (first (entity-ancestry entity)))
+
 (defun entity-isa (entity label)
   (numberp (position label (slot-value entity 'ancestry))))
 

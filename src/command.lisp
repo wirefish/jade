@@ -68,54 +68,80 @@
 (defun join-tokens (tokens)
   (format nil "~{~a~^ ~}" tokens))
 
-(defun show-match-result (actor obj &optional arg)
+(defun match-action (actor obj &optional arg)
   (typecase obj
     (string (show actor obj arg))
     (function (if arg (funcall obj arg) (funcall obj)))))
 
-(defun match-exactly-one (actor tokens subjects
-                          &key no-tokens no-subjects no-match multi-match)
-  (if subjects
-      (bind ((matches quality (if tokens
-                                  (find-matches tokens subjects)
-                                  (and (eq no-tokens t) subjects))))
-        (case (length matches)
-          (0
-           (if tokens
-               (when no-match
-                 (show-match-result actor no-match (join-tokens tokens)))
-               (when no-tokens
-                 (show-match-result actor no-tokens)))
-           nil)
-          (1
-           (values (first matches) quality))
-          (t
-           (when multi-match
-             (show-match-result actor multi-match
-                                (format-list #'describe-brief matches "or")))
-           nil)))
-      (when no-subjects
-        (show-match-result actor no-subjects)
-        nil)))
+(defun match (actor tokens policy subjects
+              &key no-tokens no-subjects no-match multi-match)
+  "Match `tokens` against `subjects' and return results subject to `policy'. The
+keyword arguments specify actions to take if the match attempt fails.
 
-(defun match-one (actor tokens candidates none-message many-message)
-  (let ((matches (find-matches tokens candidates)))
-    (case (length matches)
-      (0
-       (show actor none-message (join-tokens tokens))
-       nil)
-      (1 (first matches))
-      (t
-       (show actor many-message (format-list #'describe-brief matches "or"))
-       nil))))
+If `subjects' is null, then the match always fails. If `tokens' is present, then
+the `no-match' action applies; otherwise, the `no-subjects' action applies.
 
+If `tokens' is null, then if `no-tokens` is t, all subjects are considered to
+match. Otherwise the match fails with `no-match'.
 
-(defun match-some (actor tokens candidates none-message)
-  (let ((matches (find-matches tokens candidates)))
-    (or matches
-        (progn
-          (show actor none-message (join-tokens tokens))
-          nil))))
+If both `tokens' and `subject' are provided, the match succeeds or fails based
+on `policy' and the number of matches. If `policy' is :exactly-one and there are
+multiple matches, the match fails with `multi-match'. Otherwise, the match
+succeeds. The primary return value is the single match (for :exactly-one) or the
+list of matches (for :at-least-one). The secondary value is the match quality,
+which can be nil if `tokens' is null.
+
+The failure actions can either be strings or functions. If they are strings,
+they are shown to `actor' after being formatted with one argument in the following cases:
+
+- no-match: the argument is a string representing `tokens'.
+
+- multi-match: the argument is a string representing the description of the
+  matches.
+
+If the `no-subjects' action applies but is nil, the the `no-match' action is
+used instead. This can be useful when `tokens' is known to be present.
+
+If an action is a function, it is called with at most one argument, as described
+above."
+  (cond
+    (subjects
+     (bind ((matches quality (if tokens
+                                 (find-matches tokens subjects)
+                                 (and (eq no-tokens t) subjects))))
+       (case (length matches)
+         (0
+          (if tokens
+              (when no-match
+                (match-action actor no-match (join-tokens tokens)))
+              (when no-tokens
+                (match-action actor no-tokens)))
+          nil)
+         (1
+          (values (if (eq policy :exactly-one) (first matches) matches) quality))
+         (t
+          (if (eq policy :at-least-one)
+              (values matches quality)
+              (prog1 nil
+                (when multi-match
+                  (match-action actor multi-match
+                                (format-list #'describe-brief matches "or")))))))))
+    (t
+     (cond
+       ((or tokens (null no-subjects))
+        (when no-match
+          (match-action actor no-match (join-tokens tokens)))
+        nil)
+       (t
+        (match-action actor no-subjects)
+        nil)))))
+
+(defun match-quantity (actor tokens subjects &rest match-keyword-args)
+  (bind ((tokens quantity (split-quantity tokens))
+         (match (apply #'match actor tokens :exactly-one subjects
+                       match-keyword-args)))
+    (when match
+        (values match quantity))))
 
 ;;;
 
