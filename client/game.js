@@ -210,7 +210,7 @@ MessageHandler.prototype.updateInventory = function(items) {
             // Add or update item.
             const [icon, brief] = item;
             if (div) {
-                div.innerHTML = brief;
+                div.children[1].innerHTML = brief;
             } else {
                 div = document.createElement('div');
                 div.id = 'inv_' + id;
