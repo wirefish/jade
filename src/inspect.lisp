@@ -20,8 +20,9 @@
 (defmethod inspect ((actor avatar) subject tool)
   ;; TODO: if when-inspect is handled, use that instead.
   (show actor (describe-full subject))
-  (show actor "Using ~a does not reveal anything special."
-        (describe-brief tool :quantity 1)))
+  (when tool
+    (show actor "Using ~a does not reveal anything special."
+          (describe-brief tool :quantity 1))))
 
 (defcommand look (actor "look" "at" subject ("in" "on") container ("with" "using") tool)
   "Look at something in your environment. By just typing `look`, you will see a
