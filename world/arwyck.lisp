@@ -286,7 +286,7 @@
    :pose "stands in front of the tool rack, whistling idly."
    :description "Hermetch lives up to his apellation; his head shines almost as
      brightly as the polished blades of the pickaxes on the rack behind him."
-   :sells (copper-pickaxe t bronze-pickaxe t))
+   :sells (copper-pickaxe bronze-pickaxe))
 
   (:when-talk (actor self topic)
     (tell self actor "I sell the finest tools in the land! The absolute finest!")
@@ -440,53 +440,44 @@
   (:contents (crone)
    :exits ((square-portal :west square-s :north square-e))))
 
+;; sword shop
+
+(defentity sword-vendor (vendor)
+  (:brief "Bryndan O'Donnel"
+   :pose "cleans a longsword with an oiled rag."
+   :description "Bryndan is a lanky man with freckled skin and gray eyes. His
+     auburn hair hangs down to his shoulders."
+   :sells (copper-shortsword bronze-shortsword)) ; FIXME: add more
+
+  (:when-talk ((actor &quest talking-shop active) self topic)
+    (tell self actor "Ah, yes, I heard about Mirabel. Those bastards stole a few
+      blades from me, perhaps a week past.
+
+      If you've not heard of the Gray Hand, well, that's a good thing. But every
+      merchant in town knows 'em. They want a piece of the pie, and say they'll
+      protect us. Little good they did this time. My contact there swears they
+      had nothing to do with any of these recent thefts. But what good is the
+      word of a thief?
+
+      That being said, I've never had particular problems with the Hand before.
+      So maybe this is something different.")
+    ;; FIXME: (advance-quest self actor 'talking-shop 'sword-vendor)
+    )
+
+  (:when-talk (actor self topic)
+    (tell self actor "Welcome to my shop! I have a variety of swords for sale.
+      Type `buy` to see what I have available.")))
+
+(deflocation sword-shop ()
+  (:name "Bryndan's House of Blades"
+   :description "A variety of bladed weapons are displayed in racks that fill
+     this small shop."
+   :domain :indoor
+   :surface :wood
+   :contents (sword-vendor)
+   :exits ((exit-doorway :east square-nw))))
+
 #|
-
-// sword shop
-
-(defentity swordVendor: npc
-  brief "Bryndan O'Donnel"
-  pose "cleans a longsword with an oiled rag."
-  description |
-    Bryndan is a lanky man with freckled skin and gray eyes. His auburn hair
-    hangs down to his shoulders.
-  sells [] // FIXME: [copperSword, bronzeSword, copperGreatsword, bronzeGreatsword]
-
-  when talk(actor: .quest(talkingShop, active), self, topic)
-    tell(self, actor) |
-      Ah, yes, I heard about Mirabel. Those bastards stole a few blades
-      from me, perhaps a week past.
-
-      If you've not heard of the Gray Hand, well, that's a good thing. But
-      every merchant in town knows 'em. They want a piece of the pie, and
-      say they'll protect us. Little good they did this time. My contact
-      there swears they had nothing to do with any of these recent thefts.
-      But what good is the word of a thief?
-
-      That being said, I've never had particular problems with the Hand
-      before. So maybe this is something different.
-
-    advanceQuest(actor, talkingShop, 'swordVendor)
-  )
-
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      Welcome to my shop! I have a variety of swords for sale.
-      Type `buy` to see what I have available.
-  )
-)
-
-deflocation swordShop: location
-  name "Bryndan's House of Blades"
-  description |
-    A variety of bladed weapons are displayed in racks that fill this small
-    shop.
-  domain 'indoor
-  surface 'wood
-  contents [swordVendor]
-  exits [lib.exitDoorway -> 'east to squareNw]
-)
-
 // axe shop
 
 (defentity axeVendor: npc

@@ -36,14 +36,12 @@
 (defmethod create-named-entity (label proto (class (eql 'item)) &rest attributes)
   (declare (ignore attributes))
   (let ((item (call-next-method)))
-    (with-slots (attributes) item
-      (when-let ((material (gethash :material attributes)))
-        (let ((brief (? item :brief)))
-          (if (stringp brief)
-              (sethash :brief attributes
-                       (parse-noun (format nil brief
-                                           (noun-article material)
-                                           (noun-singular material))))))))
+    (with-attributes (brief material) item
+      (when (and material (stringp brief))
+        (setf (? item :brief)
+              (parse-noun (format nil brief
+                                  (noun-article material)
+                                  (noun-singular material))))))
     item))
 
 ;;; The material can be substituted into the brief description of an entity. The

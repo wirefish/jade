@@ -1,7 +1,8 @@
 (in-package :jade)
 
-;;; A vendor is an entity with a `:sells' attribute, which is a list of item
-;;; labels and quantities, where the quantity can be t for an unlimited supply.
+;;; A vendor is an entity with a `:sells' attribute, which is a list describing
+;;; items that are for sale. Each list element can be a label, indicating an
+;;; item available in unlimited quantity, or a list (label quantity).
 
 (defclass vendor (entity) ())
 
@@ -13,8 +14,10 @@
   (declare (ignore attributes))
   (let ((clone (call-next-method)))
     (setf (? clone :sells)
-          (loop for (label quantity) on (? clone :sells) by #'cddr
-                collect (clone-entity label :quantity quantity)))
+          (loop for info in (? clone :sells)
+                collect (bind (((label &optional (quantity t)) (ensure-list info)))
+                          (print (list label quantity))
+                          (clone-entity label :quantity quantity))))
     clone))
 
 (defun vendors-in-location (location)

@@ -107,7 +107,7 @@
    :master 'maul-mastery
    :nonproficiency-penalty 0.25))
 
-;;; Swords are one-handed slashing (or piercing) weapons.
+;;; Swords (including shortswords) are one-handed slashing (or piercing) weapons.
 
 (defentity sword (one-handed-weapon)
   (:brief "a sword"
@@ -121,6 +121,22 @@
    :proficiency 'sword-proficiency
    :mastery 'sword-mastery
    :nonproficiency-penalty 0.25))
+
+(defentity shortsword (sword)
+  (:brief "~a ~a shortsword"
+   :description "This weapon was a wide but relatively short blade."
+   :icon swords-01
+   :speed 2.5))
+
+(defentity copper-shortsword (shortsword)
+  (:material "copper"
+   :level 1
+   :cost (silver-coin 10)))
+
+(defentity bronze-shortsword (shortsword)
+  (:material "bronze"
+   :level 5
+   :cost (silver-coin 20)))
 
 ;;; Greatswords are two-handed slashing weapons.
 
