@@ -142,11 +142,9 @@ starting and stopping simulation.")
        (sethash ',name *locations* ,loc)
        ,loc)))
 
-(defmethod transform-initval (clss (name (eql :contents)) value)
+(defmethod transform-initval (class (name (eql :contents)) value)
   (loop for spec in value
-        collect (let ((proto (if (listp spec) (first spec) spec))
-                      (args (when (listp spec) (rest spec))))
-                  (apply #'clone-entity proto args))))
+        collect (apply #'clone-entity (ensure-list spec))))
 
 (defmethod transform-initval (class (name (eql :exits)) value)
   (labels ((transform-exit-group (group)
