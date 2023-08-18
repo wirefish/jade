@@ -236,6 +236,25 @@ name and whose subsequent elements are arguments to that command."
                          (list label rank (skill-name skill) (skill-max-rank skill))
                          (list label nil)))))))
 
+;;;
+
+(defun update-quests (avatar &rest labels)
+  (let ((entries (if labels
+                     (loop for label in labels
+                           collect (or (assoc label (active-quests avatar))
+                                       (list label)))
+                     (active-quests avatar))))
+    (apply #'send-client-command
+     avatar "updateQuests"
+     (loop for (label phase state) in entries
+           collect (if phase
+                       (let ((quest (symbol-value label)))
+                         (list label
+                               (quest-name quest)
+                               (quest-level quest)
+                               (quest-phase-summary (elt (quest-phases quest) phase))))
+                       (list label))))))
+
 ;;; Cast bar for a non-modal activity.
 
 (defun start-casting (avatar duration)
@@ -273,6 +292,7 @@ location are updated only if `for-location' is true."
   (update-equipment avatar)
   (update-inventory avatar (? avatar :inventory))
   (update-skills avatar t)
+  (update-quests avatar)
   (when for-location
     (show-location avatar)
     (show-map avatar)

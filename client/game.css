@@ -380,10 +380,6 @@ a:link {
     grid-area: selector;
 }
 
-#chat {
-    background-image: url('icons/discussion.png');
-}
-
 #inventory {
     background-image: url('icons/knapsack.png');
 }
@@ -398,6 +394,14 @@ a:link {
 
 #skills {
     background-image: url('icons/skills.png');
+}
+
+#quests {
+    background-image: url('icons/quests.png');
+}
+
+#chat {
+    background-image: url('icons/discussion.png');
 }
 
 #local_map {
@@ -610,6 +614,26 @@ a:link {
     display: inline-block;
     width: 40%;
     text-align: right;
+}
+
+/* The quests pane lists active quests. */
+
+#quests_pane {
+    display: none;
+}
+
+#quests_pane > div {
+    margin-top: 5px;
+}
+
+#quests_pane > div > div:nth-child(1) {
+    color: #ffd898;
+    cursor: pointer;
+}
+
+#quests_pane > div > div:nth-child(2) {
+    margin-top: 5px;
+    margin-left: 20px;
 }
 
 /* The left buttonbox contains "system" buttons. */

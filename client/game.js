@@ -59,7 +59,7 @@ function appendBlock(block, containerId = 'main_text') {
 }
 
 // Panes in left-to-right order.
-var panes = ["inventory", "equipment", "combat", "skills", "chat"];
+var panes = ["inventory", "equipment", "combat", "skills", "quests", "chat"];
 
 // An object that encapsulates functions callable based on messages from the
 // server.
@@ -277,6 +277,41 @@ MessageHandler.prototype.updateSkills = function(unspent_karma, skills) {
                 div.appendChild(rank_div);
             }
             document.getElementById('skills_pane').insertBefore(div, next_div);
+        }
+    }
+}
+
+MessageHandler.prototype.updateQuests = function(...quests) {
+    if (!quests)
+        return;
+
+    var quests_pane = document.getElementById('quests_pane');
+    for (const [key, name, level, summary] of quests) {
+        const div_id = 'quest_' + key;
+        var div = document.getElementById(div_id);
+
+        if (name === undefined) {
+            // Remove the entry.
+            if (div)
+                div.parentNode.removeChild(div);
+        } else if (div) {
+            // Update an existing entry.
+            div.children[1].innerHTML = summary;
+        } else {
+            // Create a new entry.
+            div = document.createElement('div');
+            div.id = div_id;
+
+            var name_div = document.createElement('div');
+            name_div.innerHTML = `${name} (level ${level})`;
+            name_div.onclick = function () { sendInput(`quest info ${name}`); };
+            div.appendChild(name_div);
+
+            var summary_div = document.createElement('div');
+            summary_div.innerHTML = summary;
+            div.appendChild(summary_div);
+
+            quests_pane.insertBefore(div, quests_pane.firstChild);
         }
     }
 }

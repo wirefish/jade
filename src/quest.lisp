@@ -17,13 +17,10 @@ requirements, in the following order:
 
 - :finished when the avatar has completed the quest.
 
-An avatar's active-quests slot contains a list of (quest-label phase state)
-lists, with the most-recently-accepted quest first. In the :offered phase, the
-avatar stores (quest-label :offered nil) in the list. In active phases, the
-avatar stores (quest-label phase-index state) in the list. The phase and state
-are updated as the avatar progresses through the quest. The entry is removed
-when the avatar rejects an offered quest, cancels an active quest, or finishes a
-quest.
+An avatar's active-quests slot contains a list of (quest-label phase-index
+state) lists, with the most-recently-accepted quest first. The phase index and
+state are updated as the avatar progresses through the quest. The entry is
+removed when the avatar cancels or finishes a quest.
 
 In the :finished phase, the time of completion is stored in the avatar's
 finished-quests table.
@@ -98,7 +95,8 @@ The state associated with a quest phase can take one of three forms:
   (with-slots (active-quests) avatar
     (setf active-quests
           (delete-if (lambda (q) (eq (first q) quest-label))
-                     active-quests))))
+                     active-quests)))
+  (update-quests avatar quest-label))
 
 (defun active-quest-state (avatar quest-label)
   "Returns (phase state) if the quest is active, or nil otherwise."
@@ -146,7 +144,8 @@ The state associated with a quest phase can take one of three forms:
   (with-slots (label phases) quest
     (let ((state (quest-phase-initial-state (first phases))))
       (push (list label 0 (if (listp state) (copy-list state) state))
-            (active-quests avatar)))))
+            (active-quests avatar)))
+    (update-quests avatar label)))
 
 (defun remove-quest-items (avatar label &key npc (message "~a is destroyed."))
   "Removes all items associated with the quest named by `label' from the inventory
@@ -191,6 +190,7 @@ complete, advances to the next phase. Returns the index of the new phase, or
                                             (if (listp state) (copy-list state) state))
                     (show-notice avatar "You have progressed in the quest ~s!"
                                  (quest-name quest))
+                    (update-quests avatar label)
                     next-phase)
                   (progn
                     (remove-quest-items avatar label :npc actor)
@@ -305,8 +305,7 @@ subcommands:
            (show actor "You are not on any quests.")
            (show actor "You are currently on the following quests:~%~%~{- ~a~%~%~}"
                  (loop for (label phase state) in active-quests
-                       unless (eq phase :offered)
-                         collect (summarize-active-quest label phase state)))))
+                       collect (summarize-active-quest label phase state)))))
       ((string-equal subcommand "info")
        (if quest-name
            (if-let ((quests (match-active-quests quest-name active-quests)))
