@@ -66,20 +66,17 @@
       </div>
 
       <div class="selector buttonbox">
-        <div class="button toggle_on" id="chat" onclick="handler.showPane('chat');"></div>
-        <div class="button toggle_off" id="inventory" onclick="handler.showPane('inventory');"></div>
+        <div class="button toggle_on" id="inventory" onclick="handler.showPane('inventory');"></div>
         <div class="button toggle_off" id="equipment" onclick="handler.showPane('equipment');"></div>
         <div class="button toggle_off" id="combat" onclick="handler.showPane('combat');"></div>
         <div class="button toggle_off" id="skills" onclick="handler.showPane('skills');"></div>
+        <div class="button toggle_off" id="chat" onclick="handler.showPane('chat');"></div>
         <div class="spacer"></div>
         <div class="button toggle_on" id="local_map"></div>
         <div class="button toggle_off" id="world_map"></div>
       </div>
 
       <div class="rightbar box scroll">
-        <div id="chat_pane" class="textbox">
-        </div>
-
         <div id="inventory_pane">
           <div id="inventory_contents">
           </div>
@@ -175,6 +172,9 @@
 
         <div id="skills_pane">
           <div class="karma"><div>Unspent karma:</div><div id="unspent_karma">0</div></div>
+        </div>
+
+        <div id="chat_pane" class="textbox">
         </div>
       </div>
 

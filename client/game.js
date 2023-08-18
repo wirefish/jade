@@ -59,7 +59,7 @@ function appendBlock(block, containerId = 'main_text') {
 }
 
 // Panes in left-to-right order.
-var panes = ["chat", "inventory", "equipment", "combat", "skills"];
+var panes = ["inventory", "equipment", "combat", "skills", "chat"];
 
 // An object that encapsulates functions callable based on messages from the
 // server.
@@ -79,8 +79,8 @@ function MessageHandler() {
     // True to show paths, etc. for debugging.
     this.debug = true;
 
-    // Select the social chat pane by default.
-    this.currentPane = 'chat';
+    // Select the inventory pane by default.
+    this.currentPane = 'inventory';
 }
 
 MessageHandler.prototype.showPane = function(button_id) {
