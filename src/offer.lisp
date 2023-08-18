@@ -30,7 +30,8 @@ replaced by a newer offer."
         (show actor "You have not been offered anything."))))
 
 (defcommand reject (actor "reject")
-  "Reject the most recent offer made to you."
+  "Reject the most recent offer made to you. An offer is automatically rejected
+when you move or when it is replaced by a newer offer."
   (with-slots (pending-offer) actor
     (if pending-offer
         (reject-pending-offer actor)
