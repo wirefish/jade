@@ -685,6 +685,8 @@ const keyCommands = {
     "a": "go west",
     "s": "go south",
     "d": "go east",
+    "r": "go up",
+    "f": "go down",
 };
 
 window.onkeydown = function (e) {
