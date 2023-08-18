@@ -45,7 +45,7 @@
                             (* (? item :quantity) (? price :quantity)))))
     (show buyer "You give ~a ~a."
           (describe-brief vendor)
-          (format-list #'describe-brief paid))
+          (describe-brief paid))
     (if (eq paid stack)
         (update-inventory buyer nil (list stack))
         (update-inventory buyer (list stack) nil))))
@@ -112,6 +112,30 @@
                (format-list #'describe-brief items "or"))
          nil))))
 
+(defclass buy-offer ()
+  ((item :initarg :item)
+   (vendor :initarg :vendor)))
+
+(defmethod extend-offer (avatar (offer buy-offer))
+  (with-slots (item vendor) offer
+    (let* ((currency (? item :price))
+           (total-price (* (? item :quantity) (? currency :quantity))))
+      (show-notice
+       avatar
+       "~a has offered to sell you ~a for ~a. Type `accept` to complete the purchase."
+       (describe-brief vendor :article :definite :capitalize t)
+       (describe-brief item)
+       (describe-brief currency :quantity total-price)))))
+
+(defmethod accept-offer (actor (offer buy-offer))
+  (with-slots (item vendor) offer
+    (receive actor vendor (list item))))
+
+(defmethod reject-offer (actor (offer buy-offer))
+  (with-slots (item) offer
+    (show-notice actor "You have rejected the offer to purchase ~a."
+                 (describe-brief item))))
+
 (defcommand buy (actor "buy" item "from" vendor)
   "Purchase items from a vendor. For example, `buy 3 apples from fruitseller`. If
 *item* is omitted, you will see a list of the items sold by *vendor* and the
@@ -120,15 +144,19 @@ price of each."
     (if item
         (bind ((item quantity (match-vendor-item actor item vendor)))
           (when item
-            (receive actor vendor
-                     (list (clone-entity (entity-proto item) :quantity quantity)))))
-        (let ((items (remove-if (lambda (item) (eql (? item :quantity) 0))
-                                (? vendor :sells))))
-          (if items
-              (show-vendor-items
-               actor
-               (format nil "~a is selling the following items:"
-                       (describe-brief vendor :article :definite :capitalize t))
-               vendor "buy" items)
-              (show actor "~a doesn't have anything for sale at the moment."
-                    (describe-brief vendor :article :definite :capitalize t)))))))
+            (if (or (? item :stackable) (eql quantity 1))
+                (extend-offer actor (make-instance
+                                     'buy-offer
+                                     :item (clone-entity (entity-proto item) :quantity quantity)
+                                     :vendor vendor))
+                (show actor "You can only buy one ~a at a time."
+                      (describe-brief item :article nil :quantity 1)))))
+        (if-let ((items (remove-if (lambda (item) (eql (? item :quantity) 0))
+                                   (? vendor :sells))))
+          (show-vendor-items
+           actor
+           (format nil "~a is selling the following items:"
+                   (describe-brief vendor :article :definite :capitalize t))
+           vendor "buy" items)
+          (show actor "~a doesn't have anything for sale at the moment."
+                (describe-brief vendor :article :definite :capitalize t))))))

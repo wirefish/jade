@@ -230,6 +230,14 @@ complete, advances to the next phase. Returns the index of the new phase, or
   ((quest :initarg :quest)
    (npc :initarg :npc)))
 
+(defmethod extend-offer (actor (offer quest-offer))
+  (with-slots (quest npc) offer
+    (show-notice actor
+                 "~a has offered you the level ~d quest ~s. Type `accept` to accept it."
+                 (describe-brief npc :capitalize t :article :definite)
+                 (quest-level quest)
+                 (quest-name quest))))
+
 (defmethod accept-offer (actor (offer quest-offer))
   (with-slots (quest npc) offer
     (accept-quest actor quest npc)))
@@ -237,6 +245,8 @@ complete, advances to the next phase. Returns the index of the new phase, or
 (defmethod reject-offer (actor (offer quest-offer))
   (with-slots (quest) offer
     (show-notice actor "You have rejected the quest ~s." (quest-name quest))))
+
+;;;
 
 (defgeneric offer-quest (npc quest avatar)
   (:documentation "Called when `npc' offers `quest' to `avatar'."))
@@ -249,12 +259,7 @@ complete, advances to the next phase. Returns the index of the new phase, or
     (notify-observers observers :after-offer-quest avatar quest npc)))
 
 (defmethod offer-quest (npc quest avatar)
-  (extend-offer avatar (make-instance 'quest-offer :quest quest :npc npc))
-  (show-notice avatar
-               "~a has offered you the level ~d quest ~s. Type `accept` to accept it."
-               (describe-brief npc :capitalize t :article :definite)
-               (quest-level quest)
-               (quest-name quest)))
+  (extend-offer avatar (make-instance 'quest-offer :quest quest :npc npc)))
 
 ;;;
 

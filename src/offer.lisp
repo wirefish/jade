@@ -4,11 +4,16 @@
 
 (defgeneric reject-offer (avatar offer))
 
-(defun extend-offer (avatar offer)
+(defgeneric extend-offer (avatar offer))
+
+(defmethod extend-offer :around (avatar offer)
   "Sets the pending offer for `avatar'. Any existing offer will be rejected."
   (with-slots (pending-offer) avatar
     (when pending-offer (reject-offer avatar pending-offer))
-    (setf pending-offer offer)))
+    (setf pending-offer offer)
+    (call-next-method)))
+
+(defmethod extend-offer (avatar offer))
 
 (defun reject-pending-offer (avatar)
   "Rejects the pending offer for `avatar', if any."
