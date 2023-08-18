@@ -131,7 +131,8 @@
                (incf (? avatar :level)))
   (setf (? avatar :max-health) (max-health avatar))
   (incf (karma avatar) 10)
-  (update-avatar avatar :level :xp :max-xp))
+  (update-avatar avatar :level :xp :max-xp :max-health)
+  (update-skills avatar))
 
 (defun gain-xp (avatar xp)
   (show avatar "You gain ~d experience." xp)
