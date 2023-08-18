@@ -6,15 +6,7 @@
 
 * Selling to vendors.
 
-* Have buying make an offer that shows total price, you can accept it.
-
-* Rename cost -> price. Make it one currency. make it (quantity label).
-
-* Skills can have a :karma attribute that is the karma cost in addition to any
-  other price.
-
-* Trainers. Try to reuse some of the vendor code? Trainer has a level that
-  limits which skills he can teach from an inherited list.
+* Learn and unlearn skills.
 
 * Handle light and two-handed weapons in (un)equip.
 
