@@ -190,11 +190,12 @@ name and whose subsequent elements are arguments to that command."
    avatar "showTrainerSkills" header
    (describe-brief trainer)
    (loop for skill in skills
-         collect (with-slots (name summary price karma) skill
+         collect (with-slots (label name summary price karma) skill
                    (list name
                          summary
                          (when price (describe-brief price))
-                         karma)))))
+                         karma
+                         (gethash label (skills avatar)))))))
 
 ;;;
 

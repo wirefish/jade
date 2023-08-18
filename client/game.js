@@ -240,7 +240,7 @@ MessageHandler.prototype.updateSkills = function(karma, ...skills) {
         return;
 
     var skills_pane = document.getElementById('skills_pane');
-    for ([key, name, rank, max_rank] of skills) {
+    for (const [key, name, rank, max_rank] of skills) {
         var div_id = 'skill_' + key;
         var div = document.getElementById(div_id);
 
@@ -553,21 +553,22 @@ MessageHandler.prototype.showTrainerSkills = function(heading, trainer, skills) 
     var header = makeTextElement('div', heading);
 
     var entries = [];
-    for (const [name, summary, price, karma] of skills) {
-        const learn_link = link(name, 'learn', 'learn $ from {0}'.format(trainer));
-        var div;
-        if (price === null && karma == 0) {
-            div = makeTextElement('li', '{0} --- {1}'.format(learn_link, summary));
-        } else if (price === null) {
-            div = makeTextElement('li', '{0} --- {1} Costs {2} karma.'.format(
-                learn_link, summary, karma));
-        } else if (karma == 0) {
-            div = makeTextElement('li', '{0} --- {1} Costs {2}.'.format(
-                learn_link, summary, price));
-        } else {
-            div = makeTextElement('li', '{0} --- {1} Costs {2} karma and {3}.'.format(
-                learn_link, summary, karma, price));
-        }
+    for (const [name, summary, price, karma, known] of skills) {
+        const learn_link = link(name, 'learn', 'learn $'.format(trainer));
+
+        var s = `${learn_link} --- ${summary}`;
+
+        if (price !== null && (karma > 0))
+            s = s.concat(` Costs ${karma} karma and ${price}.`);
+        else if (price !== null)
+            s = s.concat(` Costs ${price}.`);
+        else if (karma > 0)
+            s = s.concat(` Costs ${karma} karma.`);
+
+        if (known)
+            s = s.concat(' (already known)');
+
+        var div = makeTextElement('li', s);
         entries.push(div);
     }
     var ul = wrapElements('ul', entries);

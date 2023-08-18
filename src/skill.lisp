@@ -112,13 +112,13 @@ gathering skill, etc."
 
 (defmethod learn-skill (avatar skill trainer)
   ;; FIXME: deduct karma and price.
-  (update-skills avatar (skill-label skill))
   (setf (gethash (skill-label skill) (skills avatar)) 1)
+  (update-skills avatar (skill-label skill))
   (if trainer
-      (show-notice avatar "~a teaches you the skill ~s."
+      (show-notice avatar "~a teaches you ~a."
                    (describe-brief trainer :article :definite :capitalize t)
                    (skill-name skill))
-      (show-notice avatar "You learn the skill ~s." (skill-name skill))))
+      (show-notice avatar "You learn ~a." (skill-name skill))))
 
 ;;;
 
@@ -134,7 +134,7 @@ gathering skill, etc."
 best match `tokens'."
   (apply #'find-matches tokens
          (loop for trainer in trainers
-               collect (mapcar #'(lambda (x) (cons trainer (symbol-value x)))
+               collect (mapcar #'(lambda (skill) (cons trainer skill))
                                (teachable-skills trainer)))))
 
 (defcommand learn (actor "learn" skill-name)
@@ -153,10 +153,10 @@ Otherwise, try to learn the specified skill."
              (destructuring-bind (trainer . skill) (first matches)
                (cond
                  ((gethash (skill-label skill) (skills actor))
-                  (show actor "You had already learned ~s."
+                  (show actor "You have already learned ~a."
                         (skill-name skill)))
                  ((< (? actor :level) (skill-level skill))
-                  (show actor "You must reach at least level ~d before learning ~s."
+                  (show actor "You must reach at least level ~d before learning ~a."
                         (skill-level skill)
                         (skill-name skill)))
                  ((and (skill-required-race skill)
@@ -192,48 +192,46 @@ Otherwise, try to learn the specified skill."
 
 (defmethod unlearn-skill (avatar skill trainer)
   ;; FIXME: refund karma cost.
-  (update-skills avatar (skill-label skill))
   (remhash (skill-label skill) (skills avatar))
-  (show-notice avatar "You unlearn the skill ~s." (skill-name skill)))
+  (update-skills avatar (skill-label skill))
+  (show-notice avatar "You unlearn ~a." (skill-name skill)))
 
 ;;;
+
+(defun match-known-skill (avatar tokens)
+  (match avatar tokens :exactly-one (mapcar #'symbol-value (hash-table-keys (skills avatar)))
+   :no-tokens "Which skill do you want to unlearn?"
+   :no-subjects "You haven't learned any skills."
+   :no-match "You haven't learn any skill matching ~s."
+   :multi-match "Do you want to unlearn ~a?"))
 
 (defcommand unlearn (actor "unlearn" skill-name)
   "Unlearn a skill you previously learned. This can only be done at a trainer who
 teaches the skill. Unlearning a skill refunds any karma spent on the skill, but
 other costs are not refunded."
-  (if skill-name
-      (let ((matches (find-matches skill-name
-                                   (maphash-keys #'symbol-value (skills actor)))))
-        (case (length matches)
-          (0
-           (show actor "You don't know any skills that match ~s."
-                 (join-tokens skill-name)))
-          (1
-           (let ((skill (first matches)))
-             (if-let ((trainer (some #'(lambda (x)
-                                         (when (find (skill-label skill) (? x :teaches)) x))
-                                     (? (location actor) :contents))))
-               (unlearn-skill actor skill trainer)
-               (show actor
-                     "There is no trainer nearby who can help you unlearn that skill."))))
-          (t
-           (show actor "Do you want to unlearn ~a?"
-                 (format-list #'skill-name matches "or")))))
-      (show actor "Which skill do you want to unlearn?")))
+  (when-let ((skill (match-known-skill actor skill-name)))
+    (let ((trainers (remove-if-not (lambda (x) (typep x 'trainer))
+                                   (? (location actor) :contents))))
+      (if-let ((trainer (some #'(lambda (x) (find skill (teachable-skills x)))
+                              trainers)))
+        (unlearn-skill actor skill trainer)
+        (show actor
+              "There is no trainer nearby who can help you unlearn ~a."
+              (skill-name skill))))))
 
 ;;;
 
 (defcommand skills (actor ("skills" "skill" "sk") skill-name)
   "View information about skills you've learned. If *skill-name* is specified,
-view details for matching skills. Otherwise, view a list of all the skills you
-have learned.
+view details for matching skills. Otherwise, view the names of all the skills
+you have learned.
 
 For more information see `help:learn` and `help:unlearn`."
   (if skill-name
       ;; Show details for matching skills.
       (if-let ((matches (find-matches skill-name
-                                      (maphash-keys #'symbol-value (skills actor)))))
+                                      (mapcar #'symbol-value
+                                              (hash-table-keys (skills actor))))))
         (dolist (skill matches)
           (let ((rank (gethash (skill-label skill) (skills actor))))
             (show actor "- ~a~a: ~a"
@@ -247,8 +245,8 @@ For more information see `help:learn` and `help:unlearn`."
       ;; List all skills.
       (with-slots (skills) actor
         (if (> (hash-table-count skills) 0)
-            (show-links actor "You have learned the following skills:" "skills"
-                        (sort (maphash-keys #'(lambda (x) (skill-name (symbol-value x)))
-                                            skills)
-                              #'string<))
+            (let ((names (mapcar (compose #'skill-name #'symbol-value)
+                                 (hash-table-keys skills))))
+              (show-links actor "You have learned the following skills:" "skills"
+                          (sort names #'string<)))
             (show actor "You haven't learned any skills yet.")))))
