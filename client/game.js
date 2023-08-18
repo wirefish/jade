@@ -233,24 +233,25 @@ MessageHandler.prototype.updateEquipment = function(equipment) {
     }
 }
 
-MessageHandler.prototype.updateSkills = function(unspent_karma, skills) {
-    document.getElementById('unspent_karma').innerHTML = unspent_karma.toString();
+MessageHandler.prototype.updateSkills = function(karma, ...skills) {
+    document.getElementById('unspent_karma').innerHTML = `Unspent karma: ${karma}`;
 
     if (!skills)
         return;
 
     var skills_pane = document.getElementById('skills_pane');
-    for ([key, rank, name, max_rank] of skills) {
+    for ([key, name, rank, max_rank] of skills) {
         var div_id = 'skill_' + key;
         var div = document.getElementById(div_id);
-        if (rank == null) {
-            // Remove the skill entry.
+
+        if (name === undefined) {
+            // Remove the entry.
             if (div)
                 div.parentNode.removeChild(div);
         } else if (div) {
-            // Update the skill entry.
+            // Update an existing entry.
             if (max_rank > 0)
-                div.children[1].innerHTML = '{0} / {1}'.format(rank, max_rank);
+                div.children(1).innerHTML = `${rank} / ${max_rank}`;
         } else {
             // Find the existing skill entry before which to insert the new one,
             // based on ordering by skill name. Ignore the first child, which is
@@ -264,18 +265,20 @@ MessageHandler.prototype.updateSkills = function(unspent_karma, skills) {
                 }
             }
 
-            // Add a new skill entry.
+            // Create a new entry.
             div = document.createElement('div');
             div.id = div_id;
-            div.className = 'skill_rank';
+
             var name_div = document.createElement('div');
             name_div.innerHTML = name;
+            name_div.onclick = function () { sendInput(`skill ${name}`); };
             div.appendChild(name_div);
-            if (max_rank > 0) {
-                var rank_div = document.createElement('div');
-                rank_div.innerHTML = '{0} / {1}'.format(rank, max_rank);
-                div.appendChild(rank_div);
-            }
+
+            var rank_div = document.createElement('div');
+            if (max_rank > 0)
+                rank_div.innerHTML = `${rank} / ${max_rank}`;
+            div.appendChild(rank_div);
+
             document.getElementById('skills_pane').insertBefore(div, next_div);
         }
     }
@@ -301,10 +304,10 @@ MessageHandler.prototype.updateQuests = function(...quests) {
             // Create a new entry.
             div = document.createElement('div');
             div.id = div_id;
+            div.onclick = function () { sendInput(`quest info ${name}`); };
 
             var name_div = document.createElement('div');
             name_div.innerHTML = `${name} (level ${level})`;
-            name_div.onclick = function () { sendInput(`quest info ${name}`); };
             div.appendChild(name_div);
 
             var summary_div = document.createElement('div');

@@ -581,38 +581,31 @@ a:link {
 #skills_pane > div {
 }
 
-#skills_pane .karma {
-    font-size: 12pt;
+#unspent_karma {
+    text-align: center;
+    margin-top: 5pt;
     margin-bottom: 10px;
-}
-
-#skills_pane .karma > div:nth-child(1) {
-    display: inline-block;
-}
-
-#skills_pane .karma > div:nth-child(2) {
-    display: inline-block;
-    margin-left: 1em;
 }
 
 #skills_pane > div:nth-child(even) {
     background-color: #353538;
 }
 
-.skill_rank {
-    line-height: 1.5;
-    padding: 0 5px;
+#skills_pane > div:nth-child(n + 1) {
+    margin-top: 4px;
+    padding: 4px;
+    cursor: pointer;
 }
 
-.skill_rank > div:nth-child(1) {
+#skills_pane > div:nth-child(n + 1) > div:nth-child(1) {
     display: inline-block;
-    width: 60%;
+    width: 70%;
     text-align: left;
 }
 
-.skill_rank > div:nth-child(2) {
+#skills_pane > div:nth-child(n + 1) > div:nth-child(2) {
     display: inline-block;
-    width: 40%;
+    width: 30%;
     text-align: right;
 }
 
@@ -623,16 +616,21 @@ a:link {
 }
 
 #quests_pane > div {
-    margin-top: 5px;
+    margin-top: 4px;
+    padding: 4px;
+    cursor: pointer;
+}
+
+#quests_pane > div:nth-child(even) {
+    background-color: #353538;
 }
 
 #quests_pane > div > div:nth-child(1) {
     color: #ffd898;
-    cursor: pointer;
 }
 
 #quests_pane > div > div:nth-child(2) {
-    margin-top: 5px;
+    margin-top: 4px;
     margin-left: 20px;
 }
 
