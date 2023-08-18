@@ -97,4 +97,6 @@
 
 (jade/defregionpackages
   :jade.isle-of-dawn
-  :jade.arwyck)
+  :jade.arwyck
+  :jade.silverwood
+  :jade.mistmarsh)

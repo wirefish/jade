@@ -17,7 +17,7 @@
    :climate :temperate
    :level-range '(1 10)))
 
-;;; portals
+;;; common prototypes
 
 (defentity rutted-path ()
   (:brief "a rutted path"))
@@ -33,6 +33,12 @@
 
 (defentity cobbled-road ()
   (:brief "a cobbled road"))
+
+(defentity guard (humanoid)
+  (:brief "a guard"
+   :description "The guard wears a chainmail hauberk and, over that, a tabard
+     displaying the coat-of-arms of Arwyck: a golden sheave of wheat on a dark
+     green field."))
 
 ;;; docks
 
@@ -830,457 +836,366 @@
   (:exits ((dirt-road :west east-road-2 :east east-gate)
            (entry-doorway :north temple-sanctuary))))
 
-#|
-// mace shop
+;;; mace shop
 
-(defentity maceVendor: npc
-  brief "Maury na Munigan"
-  pose "stands behind the counter, arms crossed."
-  description |
-    Maury is a burly man with a full beard and little hair left atop his
-    head. He looks strong enough to crack a few skulls without the aid of
-    the weapons he sells.
-  sells [lib.copperMace, bronzeMace, copperMaul, bronzeMaul]
+(defentity maury (vendor)
+  (:name "Maury na Munigan"
+   :pose "stands behind the counter, arms crossed."
+   :description "Maury is a burly man with a full beard and little hair left
+     atop his head. He looks strong enough to crack a few skulls without the aid
+     of the weapons he sells."
+   :sells (copper-mace bronze-mace copper-maul bronze-maul))
 
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      Welcome to my shop, actor). You'll find my wares to be of better
-      quality than most, I think.
-  )
-)
+  (:when-talk (actor self topic)
+    (tell self actor "Welcome to my shop, friend. You'll find my wares to be of
+      better quality than most, I think.")))
 
-deflocation maceShop: location
-  name "Maury's Maces"
-  description |
-    This shop sells a variety of weapons ideal for cracking skulls.
-  domain 'indoor
-  surface 'wood
-  contents [maceVendor]
-  exits [lib.exitDoorway -> 'north to eastRoad1]
-)
+(deflocation mace-shop ()
+  (:name "Maury's Maces"
+   :description "This shop sells a variety of weapons ideal for cracking
+     skulls."
+   :domain :indoor
+   :surface :wood
+   :contents (maury)
+   :exits ((exit-doorway :north east-road-1))))
 
-// temple
+;;; temple
 
-(defentity oldPriest: npc
-  brief "an aged priest"
-  pose "kneels before the altar."
-  description |
-    The priest is unkempt and dirty. His robes are in desperate need of
-    repair and his scraggly beard is in dire need of a trim. You can see
-    intelligence and compassion in his striking blue eyes, but also a touch
-    of madness.
+(defentity old-priest (humanoid)
+  (:brief "an aged priest"
+   :pose "kneels before the altar."
+   :description "The priest is unkempt and dirty. His robes are in desperate
+     need of repair and his scraggly beard is in dire need of a trim. You can
+     see intelligence and compassion in his striking blue eyes, but also a touch
+     of madness.")
 
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      Be welcome in this temple, friend.
+  (:when-talk (actor self topic)
+    (tell self actor "Be welcome in this temple, friend.
 
-      My flock is few in number these days. As the gods abandoned the
-      people, so too did the people abandon the gods. I do not blame them.
-      As for myself, I cannot turn my back on a lifetime of belief. Not
-      yet.
+      My flock is few in number these days. As the gods abandoned the people, so
+      too did the people abandon the gods. I do not blame them. As for myself, I
+      cannot turn my back on a lifetime of belief. Not yet.")
 
-    await sleep(1)
-    show(actor) "The priest pauses for a moment, collecting his thoughts."
-    await sleep(1)
+    (with-delay (1)
+      (show actor "The priest pauses for a moment, collecting his thoughts.")
 
-    tell(self, actor) |
-      It began slowly at first, nearly a century ago. The gods had always
-      lent their power to their faithful servants. Members of the
-      priesthood wielded magic as powerful as that of any mage.
+      (with-delay (3)
+        (tell self actor "It began slowly at first, nearly half a century ago.
+          The gods had always lent their power to their faithful servants.
+          Members of the priesthood wielded magic as powerful as that of any
+          mage.
 
-      But then our powers began to fail. One by one, the gods stopped
-      granting us their blessings. Did they lose interest in us? Did they
-      go elsewhere? Perhaps they simply ceased to exist?
+          But then our powers began to fail. One by one, the gods stopped
+          granting us their blessings. Did they lose interest in us? Did they go
+          elsewhere? Perhaps they simply ceased to exist?
 
-      It is heresy to think such things. But now it has been thirty years
-      since the last of them disappeared. My order no longer wields any
-      power and we can do little to help the people we once protected.
-      Perhaps we no longer deserve the gods' aid and guidance? I do not
-      know, but I will continue my search for answers.
+          It is heresy to think such things. But now it has been twenty years
+          since the last of them disappeared. My order no longer wields any
+          power and we can do little to help the people we once protected.
+          Perhaps we no longer deserve the gods' aid and guidance? I do not
+          know, but I will continue my search for answers.
 
-      The absence of the gods leaves a great void. My only hope is that
-      evil and darkness do not fill it.
-  )
-)
+          The absence of the gods leaves a great void. My only hope is that evil
+          and darkness do not fill it.")))))
 
-deflocation templeSanctuary: location
-  name "Sanctuary"
-  description |
-    This large room was once a place where people gathered to worship the
-    gods, but it has clearly not been used in many years. A large altar
-    stands near one end of the room and various statues reside in niches
-    along the walls. Dust and grime cover every surface; puddles on the
-    floor mark the spots where the wooden roof has begun to fail. The
-    tapestries that once lined the walls have fallen into ruin.
-  domain 'indoor
-  surface 'stone
-  contents [oldPriest]
-  exits [lib.exitDoorway -> 'south to eastRoad3]
-)
+(deflocation temple-sanctuary ()
+  (:name "Sanctuary"
+   :description "This large room was once a place where people gathered to
+     worship the gods, but it has clearly not been used in many years. A large
+     altar stands near one end of the room and various statues reside in niches
+     along the walls. Dust and grime cover every surface; puddles on the floor
+     mark the spots where the wooden roof has begun to fail. The tapestries that
+     once lined the walls have fallen into ruin."
+   :domain :indoor
+   :surface :stone
+   :contents (old-priest)
+   :exits ((exit-doorway :south east-road-3))))
 
-// east gate
+;;; east gate
 
-(defentity eastGuard: npc
-  brief "the gate guard"
-  pose "leans against the wall of the gatehouse."
+(defentity east-guard (guard)
+  (:pose "leans against the wall of the gatehouse.")
 
-  when talk(actor: .quest(atTheGates, active), self, topic)
-    tell(self, actor) |
-      Mirabel's boy? Yes, he passed through in the dead of night, maybe
-      three weeks past. As shady as ever, that one. He was with two others
-      who looked even worse.
-    // advanceQuest(actor, atTheGates, 'nextPhase)
-  )
+  (:when-talk ((actor &quest at-the-gates :actor) self topic)
+    (tell self actor "Mirabel's boy? Yes, he passed through in the dead of
+      night, maybe three weeks past. As shady as ever, that one. He was with two
+      others who looked even worse.")
+    (advance-quest self actor 'at-the-gates 'guard)) ; FIXME:
 
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      East of here is Mistmarsh. It's a dangerous area. Don't fall in a
-      sinkhole...I'm not comin' to drag you out!
-  )
-)
+  (:when-talk (actor self topic)
+    (tell self actor "East of here is Mistmarsh. It's a dangerous area. Don't
+      fall in a sinkhole...I'm not comin' to drag you out!")))
 
-deflocation eastGate: location
-  name "East Gate"
-  description |
-    A squat stone gatehouse stands at the village's entrance. To the east, a
-    road winds through marshes that stretch along the coast of Emerald Bay.
-  domain 'outdoor
-  surface 'stone
-  contents [eastGuard]
-  exits [dirtRoad -> 'west to eastRoad3, dirtRoad -> 'east to mistmarsh.muddyPathA12]
-)
+(deflocation east-gate ()
+  (:name "East Gate"
+   :description "A squat stone gatehouse stands at the village's entrance. To
+     the east, a road winds through marshes that stretch along the coast of
+     Emerald Bay."
+   :domain :outdoor
+   :surface :stone
+   :contents (east-guard)
+   :exits ((dirt-road :west east-road-3 :east jade.mistmarsh::muddy-path-a12))))
 
-// muggers' alley
+;;; muggers' alley
 
-(defentity muggersAlley: location
-  name "Muggers' Alley"
-  description |
-    This narrow, muddy lane cuts through the least savory section of Arwyck.
-  domain 'outdoor
-  surface 'dirt
-)
+(defentity muggers-alley (location)
+  (:name "Muggers' Alley"
+   :description "This narrow, muddy lane cuts through the least savory section
+     of Arwyck."
+   :domain :outdoor
+   :surface :dirt))
 
-deflocation muggersAlley1: muggersAlley
-  exits [alley -> 'north to eastRoad2, alley -> 'south to muggersAlley2,
-       entryDoorway -> 'east to potionShop]
-)
+(deflocation muggers-alley-1 (muggers-alley)
+  (:exits ((alley :north east-road-2 :south muggers-alley-2)
+           (entry-doorway :east potion-shop))))
 
-deflocation muggersAlley2: muggersAlley
-  exits [alley -> 'north to muggersAlley1, alley -> 'south to muggersAlley3,
-       entryDoorway -> 'west to daggerShop]
-)
+(deflocation muggers-alley-2 (muggers-alley)
+  (:exits ((alley :north muggers-alley-1 :south muggers-alley-3)
+           (entry-doorway :west dagger-shop))))
 
-deflocation muggersAlley3: muggersAlley
-  exits [alley -> 'north to muggersAlley2, alley -> 'south to wallStreet6,
-       entryDoorway -> 'east to warehouseAnteroom,
-       entryDoorway -> 'west to crowBar]
-)
+(deflocation muggers-alley-3 (muggers-alley)
+  (:exits ((alley :north muggers-alley-2 :south wall-street-6)
+           (entry-doorway :east warehouse-anteroom :west crow-bar))))
 
-// potion shop
+;;; potion shop
 
-(defentity potionVendor: npc
-  brief "Gemma"
-  pose "cleans a clay jar with a greasy cloth."
-  description |
-    The alchemist's daughter is a pudgy young woman who looks extremely
-    bored with her work.
-  sells [] // FIXME:
+(defentity gemma (vendor)
+  (:name "Gemma"
+   :pose "cleans a clay jar with a greasy cloth."
+   :description "Gemma --- the alchemist's daughter --- is a pudgy young woman
+     who looks extremely bored with her work."
+   :sells nil) ; FIXME:
 
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      Hello there. What brings you in? Supplies have been rather hard to
-      come by lately, but I have a few potions to sell. Type `buy` to see
-      what's in stock.
-  )
-)
+  (:when-talk (actor self topic)
+    (tell self actor "Hello there. What brings you in? Supplies have been rather
+      hard to come by lately, but I have a few potions to sell. Type `buy` to
+      see what's in stock.")))
 
-deflocation potionShop: location
-  name "Dilwar's Elixiry"
-  description |
-    The north wall is lined with shelves, but they hold only a few lonely
-    jars and bottles.
-  domain 'indoor
-  surface 'wood
-  contents [potionVendor]
-  exits [lib.exitDoorway -> 'west to muggersAlley1,
-       doorway -> 'east to alchemyWorkshop]
-)
+(deflocation potion-shop ()
+  (:name "Dilwar's Elixiry"
+   :description "The north wall is lined with shelves, but they hold only a few
+     lonely jars and bottles."
+   :domain :indoor
+   :surface :wood
+   :contents (gemma)
+   :exits ((exit-doorway :west muggers-alley-1)
+           (doorway :east alchemy-workshop))))
 
-(defentity venomExtractor: item
-  brief "a venom extractor"
-  description |
-    This contraption can be used to extract a vial of venom from fresh
-    corpses of certain creatures.
-  quest getSomeVenom
+(defquest get-some-venom
+  (:name "It's Centipedal"
+   :summary "Kill giant centipedes in the Mistmarsh and return their venom to
+     Dilwar."
+   :level 2)
 
-  allow use(actor, self, target: mistmarsh.giantCentipedeCorpse)
-    return true
-  )
+  (:active
+      :summary "Obtain three units of venom from the corpses of giant
+        centipedes.")
 
-  when use(actor, self, target: mistmarsh.giantCentipedeCorpse)
-    show(actor) |
-      You stick the needle of the venom extractor into the corpse and pull
-      the trigger. The device sucks a small amount of venom into an
-      internal chamber.
-    advanceQuest(actor, getSomeVenom, 1)
-  )
-)
+  (:done
+      :summary "Talk to Dilwar."))
 
-defquest getSomeVenom
-  name "It's Centipedal"
-  summary "Kill giant centipedes in the Mistmarsh and return their venom to Dilwar."
-  level 2
+(defentity venom-extractor (item)
+  (:brief "a venom extractor"
+   :description "This contraption can be used to extract a vial of venom from fresh
+     corpses of certain creatures."
+   :quest get-some-venom)
 
-  phase active
-    summary "Obtain venom from the corpses of giant centipedes."
-    initialState 3
-  )
+  (:allow-use (actor self (target jade.mistmarsh::giant-centipede-corpse))
+    t)
 
-  phase done
-    summary "Return the venom to Dilwar."
-  )
-)
+  (:when-use (actor self (target jade.mistmarsh::giant-centipede-corpse))
+    (show actor "You stick the needle of the venom extractor into the corpse and
+      pull the trigger. The device sucks a small amount of venom into an
+      internal chamber.")
+    (advance-quest self actor 'get-some-venom 1/3)))
 
-(defentity alchemist: npc
-  brief "Dilwar"
-  pose "stares at the smoking remains of a shattered bowl, lost in thought."
-  description |
-    The alchemist is a rotund, red-faced man with wisps of white hair that
-    float over his head like smoke.
+(defentity dilwar (humanoid)
+  (:brief "Dilwar"
+   :pose "stares at the smoking remains of a shattered bowl, lost in thought."
+   :description "The alchemist is a rotund, red-faced man with wisps of white
+     hair that float over his head like smoke."
+   :offers-quests (jade.silverwood::moss-results get-some-venom))
 
-  offersQuests [silverwood.mossResults, getSomeVenom]
-  // FIXME: endsQuests [@getSomeVenom, @silverwood/analyzeThis]
+  (:when-talk ((actor &quest get-some-venom :available) self topic)
+    (tell self actor "Can't you see I'm busy here?")
+    (with-delay (1)
+      (show actor "The alchemist scratches his chin.")
+      (tell self actor "On second thought, you might be of use...unless you're
+        scared of bugs. Big bugs. Very, very big bugs.")
+      (offer-quest self 'get-some-venom actor)))
 
-  when talk(actor: .quest(getSomeVenom, available), self, topic)
-    tell(self, actor) "Can't you see I'm busy here?"
-    await sleep(1)
-    show(actor) "The alchemist scratches his chin."
-    tell(self, actor) |
-      On second thought, you might be of use...unless you're scared of
-      bugs. Big bugs. Very, very big bugs.
-  )
+  (:after-accept-quest (actor (quest &quest get-some-venom) self)
+    (tell self actor "As you might have noticed, our inventory is rather
+      depleted. I was mixing up some new love potions, but I seem to have blown
+      them up. Faulty equipment, I'm sure.
 
-  after acceptQuest(actor, quest: getSomeVenom, self)
-    tell(self, actor) |
-      As you might have noticed, our inventory is rather depleted. I was
-      mixing up some new love potions, but I seem to have blown them up.
-      Faulty equipment, I'm sure.
+      Sadly, that was the last of my centipede venom. I'll pay you well if you
+      can bring me some. Here, take this ... you'll need it.")
 
-      Sadly, that was the last of my centipede venom. I'll pay you well if
-      you can bring me some. Here, take this, you'll need it.
+    (receive actor self (list (clone-entity 'venom-extractor)))
 
-    receiveItems(actor, [venomExtractor], self)
+    (tell self actor "Use the device on three centipede corpses and you'll get
+      plenty of venom. You can find centipedes in the Mistmarch, east of
+      town."))
 
-    tell(self, actor) |
-      Use the device on three centipede corpses and you'll get plenty of
-      venom. You can find centipedes in the Mistmarch, east of town.
-  )
+  (:when-talk ((actor &quest get-some-venom :active) self topic)
+    (tell self actor "Please stop wasting my time. I need that venom."))
 
-  when talk(actor: .quest(getSomeVenom, active), self, topic)
-    tell(self, actor) "Please stop wasting my time. I need that venom."
-  )
+  (:when-talk ((actor &quest get-some-venom :done) self topic)
+    (tell self actor "Yes, this will do quite nicely. A job well done. You've
+      earned your reward.")
+    (receive actor self (list (clone-entity 'silver-coin :quantity 20)))
+    (advance-quest self actor 'get-some-venom)))
 
-  when talk(actor: .quest(getSomVenom, done), self, topic)
-    tell(self, actor) |
-      Yes, this will do quite nicely. A job well done. You've earned your
-      reward.
-    receiveItems(actor, [20 of silverCoin], self)
-  )
-)
+(deflocation alchemy-workshop ()
+  (:name "Dilwar's Workshop"
+   :description "This small room is packed with glassware, tubes, and esoteric
+     materials stored in haphazardly-arranged bins and jars."
+   :domain :indoor
+   :surface :wood
+   :contents (dilwar)
+   :exits ((doorway :west potion-shop))))
 
-deflocation alchemyWorkshop: location
-  name "Dilwar's Workshop"
-  description |
-    This small room is packed with glassware, tubes, and esoteric materials
-    stored in haphazardly-arranged bins and jars.
-  domain 'indoor
-  surface 'wood
-  contents [alchemist]
-  exits [lib.doorway -> 'west to potionShop]
-)
+;;; dagger shop
 
-// dagger shop
+(defentity jimmy (vendor)
+  (:name "Jimmy the Hare"
+   :pose "cleans his fingernails with a tiny silver knife."
+   :description "Jimmy is a greasy-haired young man whose eyes dart around
+     nervously, as if he expects someone to leap from the shadows at any
+     moment."
+   :sells (copper-dagger bronze-dagger))
 
-(defentity daggerVendor: npc
-  brief "Jimmy the Hare"
-  pose "cleans his fingernails with a silver knife."
-  description |
-    Jimmy is a greasy-haired young man whose eyes dart around nervously, as
-    if he expects someone to leap from the shadows at any moment.
-  sells [lib.copperDagger, bronzeDagger]
-
-  when talk(actor: .quest(talkingShop, active), self, topic)
-    tell(self, actor) |
-      Mirabel? It's a bleedin' shame, it is. Now, the Gray Hand is bad
-      enough, but they've got honor after a fashion. Pay their price, you
-      see, and they leave you alone. In a small town like this, the price
-      is not unbearable for a prosperous business. Or so I hear.
+  (:when-talk ((actor &quest talking-shop :active) self topic)
+    (tell self actor "Mirabel? It's a bleedin' shame, it is. Now, the Gray Hand
+      is bad enough, but they've got honor after a fashion. Pay their price, you
+      see, and they leave you alone. In a small town like this, the price is not
+      unbearable for a prosperous business. Or so I hear.
 
       This job ain't the Hand's style. Someone else must be workin' town.
-      I pity them if the Hand gets its, uh, hands on them...
+      I pity them if the Hand gets its, uh, hands on them...")
+    (advance-quest self actor 'talking-shop 'dagger-vendor))
 
-    advanceQuest(actor, talkingShop, 'daggerVendor)
+  (:when-talk (actor self topic)
+    (tell self actor "Hey stranger, keep yer distance. If ya be needin' a
+      dagger, yer in the right place. Pick one ya like an' leave yer silver on
+      the table on yer way out.")))
+
+(deflocation dagger-shop ()
+  (:name "Shivs n' Such"
+   :description "This shop sells all manner of knives and daggers."
+   :domain :indoor
+   :surface :wood
+   :contents (jimmy)
+   :exits ((exit-doorway :east muggers-alley-2))))
+
+;;; crow bar
+
+(defentity barkeep (vendor)
+  (:brief "a barkeep"
+   :pose "stands behind the counter."
+   :sells nil)) ; FIXME:
+
+(defentity scarecrow (humanoid)
+  (:brief "the scarecrow"
+   :pose "sits alone at a table."
+   :description "The scarecrow is a gaunt young man with a nest of straw-colored
+     hair. His clothes are dirty and ill-fitting.")
+
+  (:allow-use ((actor &quest scare-the-scarecrow :scare)
+               (item jade.mistmarsh::giant-centipede-head) self)
+    t)
+
+  (:when-use ((actor &quest scare-the-scarecrow :scare)
+              (item jade.mistmarsh::giant-centipede-head) self)
+    (show actor "The scarecrow recoils in horror.")
+    (tell self actor "Gah! Get that thing away from me and I'll tell you
+      anything!")
+    (with-delay (1)
+      (show actor "You ask the scarecrow about Evend.")
+      (with-delay (1)
+        (tell self actor "Evend? Yeah, he's back. He brought two goons with him.
+          They're holed up in a shack along the road that leads toward the
+          forest, west of here. He's changed...he was always a little dark, but
+          now he honestly scares me a little.")
+        (advance-quest self actor 'scare-the-scarecrow)))))
+
+(deflocation crow-bar ()
+  (:name "The Crow Bar"
+   :description "This shadowy, smoke-filled room contains a handful of
+     mismatched tables and chairs. A stained wooden counter runs along the west
+     wall."
+   :domain :indoor
+   :surface :wood
+   :contents (barkeep scarecrow)
+   :exits ((exit-doorway :east muggers-alley-3)))
+
+  (:after-enter-location ((actor &quest scare-the-scarecrow :scare) location entry)
+    (maybe-show-tutorial
+     actor 'scare
+     "To scare the scarecrow, just `use` a giant centipede head on him.")))
+
+;;; warehouse
+
+(defentity warehouse (location)
+  (:domain :indoor
+   :surface :wood
+   :subregion "Warehouse"))
+
+(deflocation warehouse-anteroom (warehouse)
+  (:name "Anteroom"
+   :description "This cramped room has stained walls and an uneven wooden floor.
+     The air is heavy with smoke."
+   :exits ((exit-doorway :west muggers-alley-3)
+           (doorway :east warehouse-storeroom)
+           (stairway :up warehouse-office))))
+
+(defentity shady-roger (humanoid) ; FIXME: (vagabond-trainer)
+  (:brief "Shady Roger"
+   :pose "sits in a chair with his feet on the desk."
+   :description "Roger is a scrawny man with three days' stubble. His gaze is
+     constantly scanning the room, as if he expects an enemy to appear at any
+     moment. He wears well-worn leather garments and a bandolier of knives
+     across his chest.")
+
+  (:when-talk (actor self topic)
+    (tell self actor "I see you found our secret lair. Well, not so secret,
+      really; if it were we'd have no recruits!
+
+      I am a representative of the Gray Hand. My brothers and sisters work to
+      achieve our goals through subtlety, misdirection, and the occasional knife
+      in the back. Brute force is for suckers! As for magic, well ... not
+      everyone likes to spend their days reading musty old scrolls. I'd rather
+      be out in the streets, where the action is!
+
+      I can teach you some of the basic skills favored by my guild. Type `guild
+      info` for more information, or type `learn` to see what you can learn from
+      me.")))
+
+(deflocation warehouse-office (warehouse)
+  (:name "Office"
+   :description "A huge mahogany desk dominates this small room. Shelves along
+     the walls are packed with numerous scrolls, ledgers, and other documents."
+   :contents (shady-roger)
+   :exits ((stairway :down warehouse-anteroom))))
+
+(deflocation warehouse-storeroom (warehouse)
+  (:name "Storeroom"
+   :description "This large room has a high ceiling supported by heavy beams.
+     All shapes and sizes of crates, barrels, and boxes are stacked on the
+     floor."
+   :exits ((doorway :west warehouse-anteroom :east warehouse-meeting-room))))
+
+(deflocation warehouse-meeting-room (warehouse)
+  (:name "Meeting Room"
+   :description "This cramped room contains a long table and numerous chairs and
+     stools."
+   :exits ((doorway :west warehouse-storeroom)))
+
+  ;; FIXME: There was a fire trap upon entering...?
   )
 
-  when talk(actor, self, topic)
-    show(actor) "Jimmy looks around warily."
-
-    tell(self, actor) |
-      Hey stranger, keep yer distance. If ya be needin' a dagger, yer in
-      the right place. Pick one ya like an' leave yer silver on the table
-      on yer way out.
-  )
-)
-
-deflocation daggerShop: location
-  name "Shivs n' Such"
-  description "This shop sells all manner of knives and daggers."
-  domain 'indoor
-  surface 'wood
-  contents [daggerVendor]
-  exits [lib.exitDoorway -> 'east to muggersAlley2]
-)
-
-// crow bar
-
-(defentity barkeep: npc
-  brief "a barkeep"
-  pose "stands behind the counter."
-  sells [] // FIXME:
-)
-
-(defentity scarecrow: npc
-  brief "the scarecrow"
-  pose "sits alone at a table."
-  description |
-    The scarecrow is a gaunt young man with a nest of straw-colored hair.
-    His clothes are dirty and ill-fitting.
-
-  when use(actor: .quest(scareTheScarecrow, scare), item: mistmarsh.giantCentipedeHead, self)
-    show(actor) "The scarecrow recoils in horror."
-    tell(self, actor) |
-      Gah! Get that thing away from me and I'll tell you anything!
-
-    await sleep(1)
-    show(actor) "You ask the scarecrow about Evend."
-    await sleep(1)
-
-    tell(self, actor) |
-      Evend? Yeah, he's back. He brought two goons with him. They're holed
-      up in a shack along the road that leads toward the forest, west of
-      here. He's changed...he was always a little dark, but now he
-      honestly scares me a little.
-
-    advanceQuest(actor, scareTheScarecrow)
-  )
-)
-
-deflocation crowBar: location
-  name "The Crow Bar"
-  description |
-    This shadowy, smoke-filled room contains a handful of mismatched tables
-    and chairs. A stained wooden counter runs along the west wall.
-  domain 'indoor
-  surface 'wood
-  contents [barkeep, scarecrow]
-  exits [lib.exitDoorway -> 'east to muggersAlley3]
-
-  after enterLocation(actor: .quest(scareTheScarecrow, scare), location, entry)
-    showTutorial(actor, 'scare) |
-      To scare the scarecrow, just `use` a giant centipede head on him.
-  )
-)
-
-// warehouse
-
-(defentity warehouse: location
-  domain 'indoor
-  surface 'wood
-  subregion "Warehouse"
-)
-
-deflocation warehouseAnteroom: warehouse
-  name "Anteroom"
-  description |
-    This cramped room has stained walls and an uneven wooden floor. The
-    air is heavy with smoke.
-  exits [lib.exitDoorway -> 'west to muggersAlley3,
-       doorway -> 'east to warehouseStoreroom,
-       stairway -> 'up to warehouseOffice]
-)
-
-(defentity vagabondTrainer: npc
-  brief "Shady Roger"
-  pose "sits in a chair with his feet on the desk."
-  description |
-    Roger is a scrawny man with three days' stubble. His gaze is constantly
-    scanning the room, as if he expects an enemy to appear at any moment. He
-    wears well-worn leather garments and a bandolier of knives across his
-    chest.
-
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      I see you found our secret lair. Well, not so secret, really; if it
-      were we'd have no recruits!
-
-      I am a representative of the Gray Hand. My brothers and sisters work
-      to achieve our goals through subtlety, misdirection, and the
-      occasional knife in the back. Brute force is for suckers! As for
-      magic, well...not everyone likes to spend their days reading musty
-      old scrolls. I'd rather be out in the streets, where the action is!
-
-      I can teach you some of the basic skills favored by my guild. Type
-      `guild info` for more information, or type `learn` to see what you
-      can learn from me.
-  )
-)
-
-deflocation warehouseOffice: warehouse
-  name "Office"
-  description |
-    A huge mahogany desk dominates this small room. Shelves along the walls
-    are packed with numerous scrolls, ledgers, and other documents.
-  contents [vagabondTrainer]
-  exits [lib.stairway -> 'down to warehouseAnteroom]
-)
-
-deflocation warehouseStoreroom: warehouse
-  name "Storeroom"
-  description |
-    This large room has a high ceiling supported by heavy beams. All shapes
-    and sizes of crates, barrels, and boxes are stacked on the floor.
-  exits [lib.doorway -> 'west to warehouseAnteroom,
-       doorway -> 'east to warehouseMeetingRoom]
-)
-
-/* TODO: remove trap, for testing. Also the trap should attack the target to
-  apply the aura, which allows for evasion.
-
-proto fire-aura (damage-aura)
- (name "firestorm")
- (icon 'fire)
- (attack-verb "burns")
- (damage-type :fire)
- (total-damage 30)
- (duration 15)
- (tick-interval 3))
-
-proto fire-trap (entity)
- (brief "a fire trap")
- (hidden t))
-*/
-
-deflocation warehouseMeetingRoom: warehouse
-  name "Meeting Room"
-  description |
-    This cramped room contains a long table and numerous chairs and stools.
-  exits [lib.doorway -> 'west to warehouseStoreroom]
-  // FIXME: contents [fireTrap()]
-
-  after enterLocation(actor: avatar, location, entry)
-    // FIXME: applyAura(self, actor, fireAura())
-  )
-)
+#|
 
 // south road
 
