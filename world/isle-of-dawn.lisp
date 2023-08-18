@@ -67,8 +67,9 @@
       For reasons unknown, however, you have been recalled from the Dreamlands
       and once again walk in the physical world.
 
-      My colleagues stand ready to help reorient you after your long absence. As
-      you explore this isle, talk to anyone you meet; we are all here to help.
+      My colleagues and I stand ready to help reorient you after your long
+      absence. As you explore this isle, talk to anyone you meet; we are all
+      here to help.
 
       To the south you will meet an odd creature who will get you started. Head
       that way when you are ready.")))
