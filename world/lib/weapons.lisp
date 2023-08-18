@@ -232,21 +232,21 @@
   (5 "bronze" (silver-coin 70))
   (10 "iron" (silver-coin 140)))
 
-;;; Polearms are two-handed piercing or slashing weapons.
+;;; Spears are two-handed piercing weapons.
 
-(defentity polearm (two-handed-weapon)
-  (:brief "~a ~a polearm"
+(defentity spear (two-handed-weapon)
+  (:brief "~a ~a spear"
    :description "This weapon has a pointed blade attached to one end of a long
      wooden haft, and requires both hands to wield."
    :icon spears-01
    :speed 4.5
    :damage-type :piercing
    :attack-verb "pierces"
-   :proficiency 'polearm-proficiency
-   :mastery 'polearm-mastery
+   :proficiency 'spear-proficiency
+   :mastery 'spear-mastery
    :nonproficiency-penalty 0.25))
 
-(defweapons polearm
+(defweapons spear
   (1 "copper" (silver-coin 35))
   (5 "bronze" (silver-coin 70))
   (10 "iron" (silver-coin 140)))

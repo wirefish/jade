@@ -25,6 +25,7 @@
            #:entity-proto
            #:entity-isa
            #:defentity
+           #:defbehavior
            #:clone-entity
            #:with-attributes
            #:describe-brief
@@ -62,6 +63,7 @@
            #:exit-dest
            #:direction-opposite
            #:traverse-portal
+           #:find-exit
 
            #:avatar
            #:change-race
@@ -74,6 +76,7 @@
            #:show-map
            #:tell
            #:announce
+           #:show-near
 
            #:maybe-show-tutorial
 
@@ -99,4 +102,7 @@
   :jade.isle-of-dawn
   :jade.arwyck
   :jade.silverwood
-  :jade.mistmarsh)
+  :jade.mistmarsh
+  :jade.copper-mine
+  (:export
+   #:))

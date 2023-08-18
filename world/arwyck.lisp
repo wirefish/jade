@@ -1195,706 +1195,565 @@
   ;; FIXME: There was a fire trap upon entering...?
   )
 
-#|
+;;; south road
 
-// south road
+(defentity south-road (location)
+  (:name "South Road"
+   :description "This dirt road connects the village square with the south
+     gate."
+   :domain :outdoor
+   :surface :dirt))
 
-(defentity southRoad: location
-  name "South Road"
-  description |
-    This dirt road connects the village square with the south gate.
-  domain 'outdoor
-  surface 'dirt
-)
+(deflocation south-road-1 (south-road)
+  (:exits ((dirt-road :north square-s :south south-road-2)
+           (entry-doorway :east looted-shop))))
 
-deflocation southRoad1: southRoad
-  exits [dirtRoad -> 'north to squareS, dirtRoad -> 'south to southRoad2,
-       entryDoorway -> 'east to lootedShop]
-)
+(deflocation south-road-2 (south-road)
+  (:exits ((dirt-road :north south-road-1 :south wall-street-3)
+           (entry-doorway :east spear-shop))))
 
-deflocation southRoad2: southRoad
-  exits [dirtRoad -> 'north to southRoad1, dirtRoad -> 'south to wallStreet3,
-       entryDoorway -> 'east to spearShop]
-)
+;;; looted shop
 
-// looted shop
+(defentity mirabel (humanoid)
+  (:name "Mirabel"
+   :pose "sweeps broken glass from the floor."
+   :description "Mirabel is a middle-aged woman with chestnut hair in a tight
+     bun."
+   :offers-quests (talking-shop at-the-gates scare-the-scarecrow
+                                the-key-is-the-key the-end-of-evend))
 
-(defentity distraughtShopkeep: npc
-  brief "Mirabel"
-  pose "sweeps broken glass from the floor."
-  description |
-    Mirabel is a middle-aged woman with chestnut hair in a tight bun.
-  offersQuests [talkingShop, atTheGates, scareTheScarecrow, theKeyIsTheKey,
-           theEndOfEvend]
+  (:when-talk ((actor &quest the-end-of-evend :finished) self topic)
+    (tell self actor "Hello again, ~a. I hope you're staying out of trouble. I'm
+      still picking up the pieces, but life goes on. Take care."
+          (? actor :name))))
 
-  when talk(actor: .quest(theEndOfEvend, complete), self, topic)
-    tell(self, actor) |
-      Hello again, actor). I hope you're staying out of trouble. I'm
-      still picking up the pieces, but life goes on. Take care.
-  )
-)
+(deflocation looted-shop ()
+  (:name "Looted Shop"
+   :description "It's hard to tell what this shop sells, since its entire
+     inventory appears to have been stolen. The thieves also damaged the
+     furniture and broke those few items they did not take."
+   :domain :indoor
+   :surface :wood
+   :contents (mirabel)
+   :exits ((exit-doorway :west south-road-1))))
 
-deflocation lootedShop: location
-  name "Looted Shop"
-  description |
-    It's hard to tell what this shop sells, since its entire inventory
-    appears to have been stolen. The thieves also damaged the furniture and
-    broke those few items they did not take.
-  domain 'indoor
-  surface 'wood
-  contents [distraughtShopkeep]
-  exits [lib.exitDoorway -> 'west to southRoad1]
-)
+;; Evend quest chain
 
-defquest talkingShop
-  name "Talking Shop"
-  summary |
-    Talk to shopkeepers around Arwyck who may have information about the
-    recent spate of thefts.
-  level 2
+(defquest talking-shop
+  (:name "Talking Shop"
+   :level 2
+   :summary "Talk to shopkeepers around Arwyck who may have information about the
+     recent spate of thefts, then report your findings to Mirabel.")
 
-  phase active
-    summary |
-      Talk to shopkeepers around Arwyck who may have information about the
-      recent spate of thefts.
-    initialState ['swordVendor, 'daggerVendor, 'spearVendor]
-  )
+  (:active
+      :summary "Talk to shopkeepers around Arwyck who may have information about
+        the recent spate of thefts."
+      :initial-state '((sword-vendor . 0) (dagger-vendor . 0) (spear-vendor . 0)))
 
-  phase done
-    summary |
-      Report your findings to Mirabel.
-  )
-)
+  (:done
+      :summary "Report your findings to Mirabel."))
 
-extend distraughtShopkeep
-  when talk(actor: .quest(talkingShop, available), self, topic)
-    tell(self, actor) |
-      I'm sorry, but we're closed. As you can see, everything's been
-      stolen. But you look like a capable sort; maybe you can help me out?
-    offerQuest(self, talkingShop, actor)
-  )
+(defbehavior mirabel
+  (:when-talk ((actor &quest talking-shop :available) self topic)
+    (tell self actor "I'm sorry, but we're closed. As you can see,
+        everything's been stolen. But you look like a capable sort; maybe you
+        can help me out?")
+    (offer-quest self 'talking-shop actor))
 
-  after acceptQuest(actor, quest: talkingShop, self)
-    tell(self, actor) |
-      You're a gods-send. As you may be aware, thieves have broken into a
-      number of local shops recently. In most cases they took a few
-      valuables and caused a little damage. In my case, however, they were
-      less kind...I've no idea why.
+  (:after-accept-quest (actor (quest &quest talking-shop) self)
+    (tell self actor "You're a gods-send. As you may be aware, thieves have
+      broken into a number of local shops recently. In most cases they took a
+      few valuables and caused a little damage. In my case, however, they were
+      less kind ... I've no idea why.
 
       Please talk to some of the other shopkeepers. Maybe they have some
-      information that can help me figure out why this happened to me?
-  )
-
-  when talk(actor: .quest(talkingShop, active), self, topic)
-    tell(self, actor) |
-      Have you talked to the other shopkeepers yet? They should
-      be marked on your map, if that helps.
-  )
-
-  when talk(actor: .quest(talkingShop, done), self, topic)
-    tell(self, actor) |
-      Thank you for your help. If my peers are correct, these thefts are
-      the work of a new player in town. I can't help but think my wayward
-      son may be involved.
-
-      From the look on your face, I can see I owe you an explanation.
-
-      I moved here from Irridel with my son, Evend, when he was a young
-      boy. Irridel, as you may know, is a much larger town to the south.
-      Evend hated it here and never forgave me for the move. Our
-      relationship slowly soured until, one day, we had a huge argument.
-      He left that night, swearing he wanted nothing more to do with
-      Arwyck or with me.
-
-      He was always a bitter, vengeful boy. In that way he takes after his
-      late father. If Evend is back in town, I'd like to know about it. I
-      have some friends who might know something more.
-
-    completeQuest(actor, talkingShop)
-  )
-)
-
-defquest atTheGates
-  name "At the Gates"
-  summary |
-    Talk to the gate guards in Arwyck to see if Mirabel's son has been
-    seen entering the town.
-  level 2
-  requiredQuests [talkingShop]
-
-  phase active
-    summary |
-      Ask the gate guards in Arwyck if they've seen Mirabel's son.
-    initialState ['westGate, 'eastGate, 'southGate]
-  )
-
-  phase done
-    summary |
-      Report your findings to Mirabel.
-  )
-)
-
-extend distraughtShopkeep
-  when talk(actor: .quest(atTheGates, available), self, topic)
-    tell(self, actor) |
-      You've already been a great help, but I think I know how we can
-      determine if my son has come back to town.
-    offerQuest(self, atTheGates, actor)
-  )
-
-  after acceptQuest(actor, quest: atTheGates, self)
-    tell(self, actor) |
-      There are only three ways into town, if we ignore the docks...my son
-      was always deathly afraid of the sea. It just so happens that I am
-      friends with the guards at all three gates.
-
-      Go talk to the guards. If my son has dragged himself back to Arwyck,
-      one of them will have seen him.
-  )
-
-  when talk(actor: .quest(atTheGates, active), self, topic)
-    tell(self, actor) |
-      All three guards are very observant. You'll find them at the city
-      gates to the west, south, and east.
-  )
-
-  when talk(actor: .quest(atTheGates, done), self, topic)
-    show(actor) "Mirabel considers for a moment."
-    tell(self, actor) |
-      So, he's back, and he brought friends. This can't be good.
-
-      No doubt you've heard of the Gray Hand. Evend always wanted to join
-      them, but was rebuffed. It's surely not a good sign when even
-      thieves doubt your character.
-
-      Arwyck is a tiny place. A small gang with some ambition can cause a
-      lot of trouble. I know he's my son, but we need to put an end to
-      this before it gets out of hand.
-    completeQuest(actor, atTheGates)
-  )
-)
-
-defquest scareTheScarecrow
-  name "Scare the Scarecrow"
-  summary |
-    Find a giant centipede head in Mistmarsh and use it to scare the
-    Scarecrow into providing information about Mirabel's son.
-  level 2
-  requiredQuests [atTheGates]
-
-  phase getAHead
-    summary |
-      Hunt giant centipedes in Mistmarsh to obtain one of their heads.
-  )
-
-  phase scare
-    summary |
-      Find the scarecrow and use the giant centipede head to scare him.
-  )
-
-  phase done
-    summary |
-      Return to Mirabel and tell her what you've learned.
-  )
-)
-
-extend distraughtShopkeep
-  when talk(actor: .quest(scareTheScarecrow, available), self, topic)
-    tell(self, actor) |
-      We need to find where Evend is hiding. If you're willing to get your
-      hands dirty, I think we can find him.
-    offerQuest(self, scareTheScarecrow, actor)
-  )
-
-  after acceptQuest(avatar, quest: scareTheScarecrow, self)
-    tell(self, actor) |
-      There's a character in town called the scarecrow. He and Evend were
-      friends. He's well connected among the less savory types in town.
-
-      Normally I wouldn't expect him to rat out a friend, but the
-      scarecrow has a weakness...centipedes. He had a bad experience as a
-      child, I guess.
-
-      Scare him with a giant centipede head and I'm sure he'll become
-      talkative. Look for the centipedes in the swamp to the east.
-  )
-
-  when talk(actor: .quest(scareTheScarecrow, getAHead), self, topic)
-    tell(self, actor) "Any luck finding a giant centipede head?"
-  )
-
-  when talk(actor: .quest(scareTheScarecrow, scare), self, topic)
-    tell(self, actor) |
-      Any luck with the scarecrow? I wish I could see his face when you
-      toss that giant head in his lap!
-  )
-
-  when talk(actor: .quest(scareTheScarecrow, done), self, topic)
-    tell(self, actor) |
-      Well, now we know where he is. All that's left is to get in, and I
-      know just the man to help us.
-  )
-)
-
-defquest theKeyIsTheKey
-  name "The Key is the Key"
-  summary "Get the items Kijian requires, then obtain a key to Evend's hideout."
-  level 2
-  requiredQuests [scareTheScarecrow]
-
-  phase findKijian
-    summary "Talk to Kijian the locksmith."
-  )
-
-  phase gatherItems
-    summary "Give Kijian a silky spiderweb and a kobold trinket."
-    initialState ['silkySpiderweb, 'koboldTrinket]
-  )
-
-  phase keyReady
-    summary "Talk to Kijian to obtain the key."
-  )
-
-  phase done
-    summary "Take the key to Mirabel."
-  )
-)
-
-extend distraughtShopkeep
-  when talk(actor: .quest(theKeyIsTheKey, available), self, topic)
-    tell(self, actor) |
-      I'm sure Evend keeps his hideout locked up tight, but it so happens
-      I'm friends with the only locksmith in town.
-    offerQuest(self, theKeyIsTheKey, actor)
-  )
-
-  after acceptQuest(actor, quest: theKeyIsTheKey, self)
-    tell(self, actor) |
-      Go pay a visit to Kijian, the locksmith. He made just about every
-      lock in this town, and I'm sure he can help us. Be warned, he's
-      likely going to require something in return. You'll find his shop
-      just inside the wall on the south end of town.
-  )
-
-  when talk(actor: .quest(theKeyIsTheKey, talkToKijian), self, topic)
-    tell(self, actor) "Was Kijian willing to help?"
-  )
-
-  when talk(actor: .quest(theKeyIsTheKey, done), self, topic)
-    tell(self, actor) |
-      That's the key, then? The end is near. We've only one thing left to
-      do, and it is by far the hardest.
-    completeQuest(actor, theKeyIsTheKey)
-  )
-)
-
-defquest theEndOfEvend
-  name "The End of Evend"
-  summary "Enter Evend's hideout and defeat his gang."
-  level 2
-  requiredQuests [theKeyIsTheKey]
-
-  phase active
-    summary "Defeat Evend and his gang."
-    initialState ['evend, 'goon, 'ruffian]
-  )
-
-  phase done
-    summary "Report to Mirabel."
-  )
-)
-
-(defentity mirabelsRing: ring
-  brief "Mirabel's ring"
-  description |
-    This ring is one that Mirabel received from her late husband. It is a
-    simple copper band etched with a delicate pattern of twisting vines.
-  level 2
-  trait 'vitality
-)
-
-extend distraughtShopkeep
-  when talk(actor: .quest(theEndOfEvend, available), self, topic)
-    tell(self, actor) |
-      It breaks my heart to say this, but my son must be taught
-      a lesson. And you look like a willing teacher.
-  )
-
-  after acceptQuest(actor, quest: theEndOfEvend, self)
-    tell(self, actor) |
-      I fear you know what must be done. Head west, find Evend's hideout,
-      and defeat him. Watch out for his friends, they'll surely fight by
-      his side. I wish you luck.
-  )
-
-  when talk(actor: .quest(theEndOfEvend, active), self, topic)
-    tell(self, actor) "Tell me...is it done?"
-  )
-
-  when talk(actor: .quest(theEndOfEvend, done), self, topic)
-    tell(self, actor) |
-      I'm glad that's over, and I hope you were able to beat some sense
-      into Evend. His father never disciplined him, and once Evend was
-      older I dared not, given his dark moods.
-
-      Speaking of my late, no-good husband, he once gave me this ring. I
-      want you to take it. It triggers too many sad memories for me, but
-      you may find it useful.
-    receiveItems(actor, [mirabelsRing], self)
-    completeQuest(actor, theEndOfEvend)
-  )
-)
-
-// spear shop
-
-(defentity spearVendor: npc
-  brief "Miglin"
-  pose "lounges against the wall."
-  description |
-    Miglin appears to be human, but his features are strangely reptilian.
-  sells [] // FIXME: [copperSpear, bronzeSpear]
-
-  when talk(actor: .quest(talkingShop, active), self, topic)
-    tell(self, actor) |
-      Ah, poor Mirabel. She sold a variety of knickknacks, but nothing of
-      particular value. To be honest I can't figure why she'd be targeted
-      like this.
-
-      Times have been tough since her son, who had been helping with the
-      shop, left town. Rumor has it he headed off to a bigger city to seek
-      his fortune. Haven't seen him since.
-    advanceQuest(actor, talkingShop, 'spearVendor)
-  )
-
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      Miglin's my name. I make the best spears in town. True, they are the
-      only spears in town, but that doesn't disprove my claim. Type `buy`
-      to see what I have for sale.
-  )
-)
-
-deflocation spearShop: location
-  name "Pointy Sticks, Ltd."
-  description "A variety of spears are artfully arranged along the walls."
-  domain 'indoor
-  surface 'wood
-  contents [spearVendor]
-  exits [lib.exitDoorway -> 'west to southRoad2]
-)
-
-// wall street
-
-(defentity monkey: npc
-  brief "a costumed monkey"
-  pose "hops from foot to foot."
-  description "The monkey wears a fitted red coat and a yellow cap."
-
-  moveDirection 'east
-
-  when startWorld()
-    while true
-      showNear(self, "The monkey dances a lively jig.")
-      await sleep(15)
-
-      var exit findExit(self.location, self.moveDirection)
-      if exit ! nil
-        travel(self, exit)
-      ) else
-        showNear(self, "The monkey scratches itself and appears to sigh.")
-        self.moveDirection oppositeDirection(self.moveDirection)
-      )
-      await sleep(5)
-    )
-  )
-
-  after emote(actor: .quest(danceMonkey, active), message)
-    if (containsSubstring(message, "dance"))
-      showNear(self) "The monkey claps wildly at actor)'s dance moves!"
-      completeQuest(actor, danceMonkey)
-    )
-  )
-)
-
-(defentity wallStreet: location
-  name "Wall Street"
-  description |
-    This narrow cobbled lane parallels the low wall that marks the southern
-    boundary of the village.
-  domain 'outdoor
-  surface 'stone
-)
-
-deflocation wallStreet1: wallStreet
-  contents [monkey]
-  exits [cobbledRoad -> 'east to wallStreet2,
-       entryDoorway -> 'north to lodgeWorkshop,
-       entryDoorway -> 'west to frontDesk]
-)
-
-deflocation wallStreet2: wallStreet
-  exits [cobbledRoad -> 'west to wallStreet1, cobbledRoad -> 'east to wallStreet3]
-)
-
-(defentity wallStreetSign: fixture
-  brief "a directional sign"
-  pose "stands at the crossroads."
-  description |
-    Wooden arrows affixed atop the signpost read as follows:
-
-    | North: Village Square
-    | West: Armor Emporium
-    | South: Perenvale
-    | East: Crafters' Hall
-)
-
-deflocation wallStreet3: wallStreet
-  contents [wallStreetSign]
-  exits [cobbledRoad -> 'west to wallStreet2, cobbledRoad -> 'east to wallStreet4,
-       cobbledRoad -> 'south to southGate, dirtRoad -> 'north to southRoad2]
-)
-
-deflocation wallStreet4: wallStreet
-  exits [cobbledRoad -> 'west to wallStreet3, cobbledRoad -> 'east to wallStreet5,
-       entryDoorway -> 'south to locksmithShop]
-)
-
-deflocation wallStreet5: wallStreet
-  exits [cobbledRoad -> 'west to wallStreet4, cobbledRoad -> 'east to wallStreet6]
-)
-
-deflocation wallStreet6: wallStreet
-  exits [cobbledRoad -> 'west to wallStreet5, alley -> 'north to muggersAlley3,
-       entryDoorway -> 'east to craftersHall1nw]
-)
-
-// armor emporium
-
-(defentity armorEmporium: location
-  subregion "Armor Emporium"
-  domain 'indoor
-  surface 'wood
-)
-
-(defentity armorGreeter: npc
-  brief "a heavily-armored man"
-  pose "stands proudly behind a small desk."
-  description |
-    The man wears a mish-mash of various types of armor, including three
-    different helms stacked atop one another.
-
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      Well met! The vendors beyond can provide you with armor of all
-      types. Peruse their wares and be sure to buy something, you'll need
+      information that can help me figure out why this happened to me?"))
+
+  (:when-talk ((actor &quest talking-shop :active) self topic)
+    (tell self actor "Have you talked to the other shopkeepers yet? They should
+      be marked on your map, if that helps."))
+
+  (:when-talk ((actor &quest talking-shop :done) self topic)
+    (show actor "You share your findings with Mirabel.")
+    (with-delay (2)
+      (tell self actor "Thank you for your help. If my peers are correct, these
+        thefts are the work of a new player in town. I can't help but think my
+        wayward son may be involved.
+
+        From the look on your face, I can see I owe you an explanation.
+
+        I moved here from Irridel with my son, Evend, when he was a young boy.
+        Irridel, as you may know, is a much larger town to the south. Evend
+        hated it here and never forgave me for the move. Our relationship slowly
+        soured until, one day, we had a huge argument. He left that night,
+        swearing he wanted nothing more to do with Arwyck or with me.
+
+        He was always a bitter, vengeful boy. In that way he takes after his
+        late father. If Evend is back in town, I'd like to know about it. I have
+        some friends who might know something more.")
+      (advance-quest self actor 'talking-shop))))
+
+(defquest at-the-gates
+  (:name "At the Gates"
+   :level 2
+   :required-quests (talking-shop)
+   :summary "Talk to the gate guards in Arwyck to see if Mirabel's son has been
+     seen entering the town.")
+
+  (:active
+    :summary "Ask the gate guards in Arwyck if they've seen Mirabel's son."
+    :initial-state) ; FIXME: guards
+
+  (:done
+    :summary "Report your findings to Mirabel."))
+
+(defbehavior mirabel
+  (:when-talk ((actor &quest at-the-gates :available) self topic)
+    (tell self actor "You've already been a great help, but I think I know how
+      we can determine if my son has come back to town.")
+    (offer-quest self 'at-the-gates actor))
+
+  (:after-accept-quest (actor (quest &quest at-the-gates) self)
+    (tell self actor "There are only three ways into town, if we ignore the
+      docks --- my son was always deathly afraid of the sea. It just so happens
+      that I am friends with the guards at all three gates.
+
+      Go talk to the guards. If my son has dragged himself back to Arwyck, one
+      of them will have seen him."))
+
+  (:when-talk ((actor &quest at-the-gates :active) self topic)
+    (tell self actor "All three guards are very observant. You'll find them at
+      the city gates to the west, south, and east."))
+
+  (:when-talk ((actor &quest at-the-gates :done) self topic)
+    (show actor "Mirabel considers for a moment.")
+    (with-delay (2)
+      (tell self actor "So, he's back, and he brought friends. This can't be
+        good.
+
+        No doubt you've heard of the Gray Hand. Evend always wanted to join
+        them, but was rebuffed. It's surely not a good sign when even thieves
+        doubt your character.
+
+        Arwyck is a tiny place. A small gang with some ambition can cause a lot
+        of trouble. I know he's my son, but we need to put an end to this before
+        it gets out of hand.")
+      (advance-quest self actor 'at-the-gates))))
+
+(defquest scare-the-scarecrow
+  (:name "Scare the Scarecrow"
+   :summary "Find a giant centipede head in Mistmarsh and use it to scare the
+     Scarecrow into providing information about Mirabel's son."
+   :level 2
+   :required-quests (at-the-gates))
+
+  (:get-ahead
+    :summary "Hunt giant centipedes in Mistmarsh to obtain one of their heads.")
+
+  (:scare
+    :summary "Find the scarecrow and use the giant centipede head to scare
+      him.")
+
+  (:done
+    :summary "Return to Mirabel and tell her what you've learned."))
+
+(defbehavior mirabel
+  (:when-talk ((actor &quest scare-the-scarecrow :available) self topic)
+    (tell self actor "We need to find where Evend is hiding. If you're willing
+      to get your hands dirty, I think we can find him.")
+    (offer-quest self 'scare-the-scarecrow actor))
+
+  (:after-accept-quest (actor (quest &quest scare-the-scarecrow) self)
+    (tell self actor "There's a character in town called the Scarecrow. He and
+      Evend were friends. He's well connected among the less savory types in
+      town.
+
+      Normally I wouldn't expect him to rat out a friend, but the Scarecrow has
+      a weakness ... centipedes. He had a bad experience as a child, I guess.
+
+      Scare him with a giant centipede head and I'm sure he'll become talkative.
+      Look for the centipedes in the swamp to the east."))
+
+  (:when-talk ((actor &quest scare-the-scarecrow :get-ahead) self topic)
+    (tell self actor "Any luck finding a giant centipede head?"))
+
+  (:when-talk ((actor &quest scare-the-scarecrow :scare) self topic)
+    (tell self actor "Any luck with the scarecrow? I wish I could see his face
+      when you toss that giant head in his lap!"))
+
+  (:when-talk ((actor &quest scare-the-scarecrow :done) self topic)
+    (tell self actor "Well, now we know where he is. All that's left is to get
+      in, and I know just the man to help us.")
+    (advance-quest self actor 'scare-the-scarecrow)))
+
+(defquest the-key-is-the-key
+  (:name "The Key is the Key"
+   :summary "Get the items Kijian requires, then obtain a key to Evend's hideout."
+   :level 2
+   :required-quests (scare-the-scarecrow))
+
+  (:find-kijian
+    :summary "Talk to Kijian the locksmith.")
+
+  (:gather-items
+    :summary "Give Kijian a silky spiderweb and a kobold trinket."
+    :initial-state ((silky-spiderweb . 0) (kobold-trinket . 0)))
+
+  (:key-ready
+    :summary "Talk to Kijian to obtain the key.")
+
+  (:done
+    :summary "Take the key to Mirabel."))
+
+(defbehavior mirabel
+  (:when-talk ((actor &quest the-key-is-the-key :available) self topic)
+    (tell self actor "I'm sure Evend keeps his hideout locked up tight, but it
+      so happens I'm friends with the only locksmith in town.")
+    (offer-quest self 'the-key-is-the-key actor))
+
+  (:after-accept-quest (actor (quest &quest the-key-is-the-key) self)
+    (tell self actor "Go pay a visit to Kijian, the locksmith. He made just
+      about every lock in this town, and I'm sure he can help us. Be warned,
+      he's likely going to require something in return. You'll find his shop
+      just inside the wall on the south end of town."))
+
+  (:when-talk ((actor &quest the-key-is-the-key :find-kijian) self topic)
+    (tell self actor "Was Kijian willing to help?"))
+
+  (:when-talk ((actor &quest the-key-is-the-key :done) self topic)
+    (tell self actor "That's the key, then? The end is near. We've only one
+      thing left to do, and it is by far the hardest.")
+    (advance-quest self actor 'the-key-is-the-key)))
+
+(defquest the-end-of-evend
+  (:name "The End of Evend"
+   :summary "Enter Evend's hideout and defeat his gang."
+   :level 2
+   :required-quests (the-key-is-the-key))
+
+  (:active
+    :summary "Defeat Evend and his gang."
+    :initial-state nil) ; FIXME: ['evend, 'goon, 'ruffian]
+
+  (:done
+    :summary "Report to Mirabel."))
+
+(defentity mirabels-ring (item) ; FIXME: ring
+  (:name "Mirabel's ring"
+   :description "This ring is one that Mirabel received from her late husband.
+     It is a simple copper band etched with a delicate pattern of twisting
+     vines."
+   :level 2
+   :traits (:vitality 3)))
+
+(defbehavior mirabel
+  (:when-talk ((actor &quest the-end-of-evend :available) self topic)
+    (tell self actor "It breaks my heart to say this, but my son must be taught
+      a lesson. And you look like a willing teacher.")
+    (offer-quest self 'the-end-of-evend actor))
+
+  (:after-accept-quest (actor (quest &quest 'the-end-of-evend) self)
+    (tell self actor "I fear you know what must be done. Head west, find Evend's hideout,
+      and defeat him. Watch out for his friends, they'll surely fight by his
+      side. I wish you luck."))
+
+  (:when-talk ((actor &quest the-end-of-evend :active) self topic)
+    (tell self actor "Tell me ... is it done?"))
+
+  (:when-talk ((actor &quest the-end-of-evend :done) self topic)
+    (tell self actor "I'm glad that's over, and I hope you were able to beat
+      some sense into Evend. His father never disciplined him, and once Evend
+      was older I dared not, given his dark moods.
+
+      Speaking of my late, no-good husband, he once gave me this ring. I want
+      you to take it. It triggers too many sad memories for me, but you may find
+      it useful.")
+    (receive actor self (list (clone-entity 'mirabels-ring)))
+    (advance-quest self actor 'the-end-of-evend)))
+
+;;; spear shop
+
+(defentity miglin (vendor)
+  (:brief "Miglin"
+   :pose "lounges against the wall."
+   :description "Miglin appears to be human, but his features are strangely
+     reptilian."
+   :sells (copper-spear bronze-spear))
+
+  (:when-talk ((actor &quest talking-shop :active) self topic)
+    (tell self actor "Ah, poor Mirabel. She sold a variety of knickknacks, but
+      nothing of particular value. To be honest I can't figure why she'd be
+      targeted like this.
+
+      Times have been tough since her son, who had been helping with the shop,
+      left town. Rumor has it he headed off to a bigger city to seek his
+      fortune. Haven't seen him since.")
+    (advance-quest self actor 'talking-shop 'spear-vendor))
+
+  (:when-talk (actor self topic)
+    (tell self actor "Miglin's my name. I make the best spears in town. True,
+      they are the only spears in town, but that doesn't disprove my claim. Type
+      `buy` to see what I have for sale.")))
+
+(deflocation spear-shop ()
+  (:name "Pointy Sticks, Ltd."
+   :description "A variety of spears have been artfully arranged along the
+     walls."
+   :domain :indoor
+   :surface :wood
+   :contents (miglin)
+   :exits ((exit-doorway :west south-road-2))))
+
+;;; wall street
+
+(defentity monkey (creature)
+  (:brief "a costumed monkey"
+   :pose "hops from foot to foot."
+   :description "The monkey wears a fitted red coat and a yellow cap."
+   :move-direction :east)
+
+  (:after-enter-location (self location entry)
+    (with-delay (5)
+      (show-near self "The monkey dances a lively jig.")
+      (with-delay (15)
+        (observe-event self :move-along))))
+
+  (:move-along ()
+    (let ((exit (find-exit (location self) (? self :move-direction))))
+      (when (null exit)
+        (setf (? self :move-direction)
+              (direction-opposite (? self :move-direction)))
+        (setf exit (find-exit (location self) (? self :move-direction))))
+      (if exit
+        (traverse-portal self (location self) exit)
+        (progn
+          (show-near self "The monkey scratches itself and sighs.")
+          (with-delay (10)
+            (observe-event self :move-along))))))
+
+  (:after-emote (actor message)
+    (when (search "dance" message :test #'char-equal)
+      (show-near self "The money claps wildly at ~a's dance moves!"
+                      (describe-brief actor))
+      (advance-quest self actor 'dance-monkey))))
+
+(defentity wall-street (location)
+  (:name "Wall Street"
+   :description "This narrow cobbled lane parallels the low wall that marks the
+     southern boundary of the village."
+   :domain :outdoor
+   :surface :stone))
+
+(deflocation wall-street-1 (wall-street)
+  (:contents (monkey)
+   :exits ((cobbled-road :east wall-street-2)
+           (entry-doorway :north lodge-workshop :west front-desk))))
+
+(deflocation wall-street-2 (wall-street)
+  (:exits ((cobbled-road :west wall-street-1 :east wall-street-3))))
+
+(defentity wall-street-sign ()
+  (:brief "a directional sign"
+   :pose "stands at the crossroads."
+   :description "Wooden arrows affixed atop the signpost read as follows:
+
+     | North: Village Square
+     | West: Armor Emporium
+     | South: Perenvale
+     | East: Crafters' Hall"))
+
+(deflocation wall-street-3 (wall-street)
+  (:contents (wall-street-sign)
+   :exits ((cobbled-road :west wall-street-2 :east wall-street-4
+                         :south south-gate)
+           (dirt-road :north south-road-2))))
+
+(deflocation wall-street-4 (wall-street)
+  (:exits ((cobbled-road :west wall-street-3 :east wall-street-5)
+           (entry-doorway :south locksmith-shop))))
+
+(deflocation wall-street-5 (wall-street)
+  (:exits ((cobbled-road :west wall-street-4 :east wall-street-6))))
+
+(deflocation wall-street-6 (wall-street)
+  (:exits ((cobbled-road :west wall-street-5)
+           (alley :north muggers-alley-3)
+           (entry-doorway :east crafters-hall-1nw))))
+
+;;; armor emporium
+
+(defentity armor-emporium (location)
+  (:subregion "Armor Emporium"
+   :domain :indoor
+   :surface :wood))
+
+(defentity armor-greeter (humanoid)
+  (:brief "a heavily-armored man"
+   :pose "stands proudly behind a small desk."
+   :description "The man wears a mish-mash of various types of armor, including three
+     different helms stacked atop one another.")
+
+  (:when-talk (actor self topic)
+    (tell self actor "Well met! The vendors beyond can provide you with armor of
+      all types. Peruse their wares and be sure to buy something, you'll need
       the protection once you venture outside the town.
 
-      Be aware that armor comes in three basic types: light, medium, and
-      heavy. Each type provides more protection than the last, but also
-      incurs more penalties in terms of your speed and ability to cast
-      magic spells. Choose wisely!
-  )
-)
+      Be aware that armor comes in three basic types: light, medium, and heavy.
+      Each type provides more protection than the last, but also incurs more
+      penalties in terms of your attack speed. Choose wisely!")))
 
-deflocation frontDesk: armorEmporium
-  name "Front Desk"
-  description |
-    A number of battered shields hang on the walls here, displaying the
-    coats-of-arms of prominent area families.
-  contents [armorGreeter]
-  exits [lib.exitDoorway -> 'east to wallStreet1,
-       doorway -> 'north to mediumArmorShop,
-       doorway -> 'west to lightArmorShop]
-)
+(deflocation front-desk (armor-emporium)
+  (:name "Front Desk"
+   :description "A number of battered shields hang on the walls here, displaying
+     the coats-of-arms of prominent area families."
+   :contents (armor-greeter)
+   :exits ((exit-doorway :east wall-street-1)
+           (doorway :north medium-armor-shop :west light-armor-shop))))
 
-(defentity leatherArmorVendor: npc
-  brief "Lingum"
-  description |
-    The armor vendor is a goblin, and rather small even for his kind. He
-    wears a conical leather hat that has been dyed bright green.
-  sells []
-  // FIXME: [thinLeatherCap, thinLeatherTunic, thinLeatherGloves,
-  // thinLeatherLeggings, thinLeatherBoots]
+(defentity lingum (vendor)
+  (:name "Lingum"
+   :description "Lingum is a goblin, and rather small even for his kind. He
+     wears a conical leather hat that has been dyed bright green."
+   :sells nil) ; FIXME: thin leather cap tunic gloves leggings boots
 
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      Greetings, greetings! Welcome to my humble shop, where you can `buy`
-      leather armor in all shapes and sizes. Leather is the most versatile
-      of materials and affords much-needed protection to an adventurer
-      such as yourself.
-  )
-)
+  (:when-talk (actor self topic)
+    (tell self actor "Greetings, greetings, well met and greetings! Welcome to
+      my humble shop, where you can `buy` leather armor in all shapes and sizes.
+      Leather is the most versatile of materials and affords much-needed
+      protection to an adventurer such as yourself.")))
 
-deflocation lightArmorShop: armorEmporium
-  name "Lingum's Leathers"
-  description |
-    This room smells of tanned animal skin. Leather garments are displayed
-    on numerous wicker manneqins.
-  contents [leatherArmorVendor]
-  exits [lib.doorway -> 'east to frontDesk, doorway -> 'north to heavyArmorShop]
+(deflocation light-armor-shop (armor-emporium)
+  (:name "Lingum's Leathers"
+   :description "This room smells of tanned animal skin. Leather garments are
+     displayed on numerous wicker manneqins."
+   :contents (lingum)
+   :exits ((doorway :east front-desk :north heavy-armor-shop))
+   :tutorial "Lingum sells light armor. It provides less protection than other
+     armor types, but more than simple clothing. It has no negative impact on
+     your combat actions."))
 
-  tutorial |
-    Light armor, such as that sold here, provides decent protection and does
-    not slow you down or put your magic spells at risk of failure.
-)
+(defentity chiana (vendor)
+  (:name "Chiana"
+   :description "Chiana is a white-haired sidhe woman, slim almost to the point
+     of gauntness. She wears an exquisite knee-length shirt of gleaming
+     chainmail."
+   :sells nil) ; FIXME: copper? chain stuff
 
-(defentity mediumArmorVendor: npc
-  brief "Chiana"
-  description |
-    The vendor is a white-haired sidhe woman, slim almost to the point of
-    gauntness. She wears an exquisite knee-length shirt of gleaming
-    chainmail.
-  sells []
-  // FIXME: [brassChainCoif, brassChainShirt, brassChainGloves,
-  // brassChainLeggings, brassChainBoots]
+  (:when-talk (actor self topic)
+    (tell self actor "Feel free to peruse my wares. If you choose to `buy` from
+      me, you can be assured of the finest quality ... even if you won't
+      recognize it.")))
 
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      Feel free to peruse my wares. If you choose to `buy` from me, you
-      can be assured of the finest quality.
-  )
-)
+(deflocation medium-armor-shop (armor-emporium)
+  (:name "Chiana's Chainmail"
+   :contents (chiana)
+   :exits ((doorway :south front-desk :west heavy-armor-shop))
+   :tutorial "Chiana sells medium armor. It provides more protection than light
+     armor but less than heavy armor. It slows your combat actions slightly."))
 
-deflocation mediumArmorShop: armorEmporium
-  name "Chiana's Chainmail"
-  contents [mediumArmorVendor]
-  exits [lib.doorway -> 'south to frontDesk, doorway -> 'west to heavyArmorShop]
+(defentity palla (vendor)
+  (:name "Palla"
+   :description "Palla is a dwarven woman. She wears a gaily-colored cotton
+     dress and her waist in girded with a belt of polished steel plates."
+   :sells nil) ; FIXME: copper? plate stuff
 
-  tutorial |
-    Chiana sells medium armor. It provides more protection than light armor
-    but less than heavy armor. It slows your actions slightly and adds a
-    small chance that your magic spells will fail.
-)
+  (:when-talk (actor self topic)
+    (tell self actor "Plate armor provides the most protection, it's true! But
+      it is far too heavy to wear all day while tending my shop.")))
 
-(defentity heavyArmorVendor: npc
-  brief "Palla"
-  description |
-    Palla is a dwarven woman. She wears a gaily-colored cotton dress and her
-    waist in girded with a belt of polished steel plates.
-  sells []
-  // FIXME: [brassPlateCoif, brassPlateShirt, brassPlateGloves,
-  // brassPlateLeggings, brassPlateBoots]
+(deflocation heavy-armor-shop (armor-emporium)
+  (:name "Palla's Platemail"
+   :contents (palla)
+   :exits ((doorway :south light-armor-shop :east medium-armor-shop))
+   :tutorial "The heavy armor sold here provides the most protection, but also
+     slows you down considerably in combat."))
 
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      Plate armor provides the most protection, it's true! But it is far
-      too heavy to wear all day while tending my shop.
-  )
-)
+;;; FIXME: crafters' hall
 
-deflocation heavyArmorShop: armorEmporium
-  name "Palla's Platemail"
-  contents [heavyArmorVendor]
-  exits [lib.doorway -> 'south to lightArmorShop, doorway -> 'east to mediumArmorShop]
+;;; south gate
 
-  tutorial |
-    The heavy armor sold here provides the most protection, but also
-    slows you down considerably and substantially increases the chance your
-    magic spells will fail.
-)
+(defentity south-guard (guard)
+  (:pose "stands at attention, spear in hand.")
 
-// FIXME: crafters' hall
+  (:when-talk ((actor &quest at-the-gates :active) self topic)
+    (tell self actor "Ah, that boy was always a pain in my arse. I can't blame
+      his mother. She's a good woman and did her best. Have I seen him lately?
+      No, he hasn't passed through my gate, that's for certain.")
+    (advance-quest self actor 'at-the-gates 'south-gate))
 
-// south gate
+  (:when-talk (actor self topic)
+    (tell self actor "To the south you'll find Perenvale. It's a nice place to
+      visit as long as you avoid the bloodthirsty centaurs that roam the plains
+      between here and there.")))
 
-(defentity southGuard: npc
-  brief "the gate guard"
-  pose "stands at attention, spear in hand."
+(deflocation south-gate ()
+  (:name "South Gate"
+   :domain :outdoor
+   :surface :stone
+   :contents (south-guard)
+   :exits ((cobbled-road :north wall-street-3))))
 
-  when talk(actor: .quest(atTheGates, active), self, topic)
-    tell(self, actor) |
-      Ah, that boy was always a pain in my arse. I can't blame his mother.
-      She's a good woman and did her best. Have I seen him lately? No, he
-      hasn't passed through my gate, that's for certain.
-    advanceQuest(actor, atTheGates, 'southGate)
-  )
+;;; locksmith shop
 
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      To the south you'll find Perenvale. It's a nice place to visit
-      as long as you avoid the centaurs that roam the plains.
-  )
-)
+(defentity pewter-key (item)
+  (:brief "a tiny pewter key"
+   :description "Kijian the locksmith assures you this key will open the door to Evend's
+     hideout."
+   :icon silver-key
+   :bound t))
 
-deflocation southGate: location
-  name "South Gate"
-  domain 'outdoor
-  surface 'stone
-  contents [southGuard]
-  exits [cobbledRoad -> 'north to wallStreet3]
-)
+(defentity locksmith (humanoid)
+  (:name "Kijian"
+   :description "Kijian is a human male of medium height. His steel gray hair is
+     pulled back in a short ponytail. His impressive mustache is waxed and
+     curled.")
 
-// locksmith shop
+  (:when-talk ((actor &quest the-key-is-the-key :find-kijian) self topic)
+    (show actor "You explain the situation to Kijian.")
+    (with-delay (2)
+      (tell self actor "So Mirabel needs to unlock a door, eh? Well of course
+        I'm happy to help. I can make a key to open that lock, but while I work
+        I'll need you to do something for me.
 
-(defentity pewterKey: item
-  brief "a tiny pewter key"
-  description |
-    Kijian the locksmith assures you this key will open the door to Evend's
-    hideout.
-  icon 'silverKey
-  // FIXME: bound true
-)
+        To the west of town, in Silverwood, you can find giant spiders. I need
+        one of their silky spiderwebs for a side project. Don't ask.
 
-(defentity locksmith: npc
-  brief "Kijian"
+        Also, just north of the forest, there's an abandoned mine that's
+        infested with kobolds. I want to study one of their trinkets.
 
-  when talk(actor: .quest(theKeyIsTheKey, findKijian), self, topic)
-    tell(self, actor) |
-      So Mirabel needs to unlock a door, eh? Well of course I'm happy to
-      help. I can make a key to open that lock, but while I work I'll need
-      you to do something for me.
+        Bring me both of those items, and I'll give you the key.")
+      (advance-quest self actor 'the-key-is-the-key)))
 
-      To the west of town, in Silverwood, you can find giant spiders. I
-      need one of their silky spiderwebs for a side project. Don't ask.
+  (:when-talk ((actor &quest the-key-is-the-key :gather-items) self topic)
+    (tell self actor "Did you get the spiderweb and kobold trinket? Hand 'em
+      over and you'll get your key."))
 
-      Also, just north of the forest, there's an abandoned mine that's
-      infested with kobolds. I want to study one of their trinkets.
+  (:when-give ((actor &quest the-key-is-the-key :gather-items)
+               (item jade.silverwood::silky-spiderweb) self)
+    (tell self actor "Ho ho, that really *is* quite silky!")
+    (advance-quest self actor 'the-key-is-the-key 'silky-spiderweb))
 
-      Bring me both of those items, and I'll give you the key.
-    advanceQuest(actor, theKeyIsTheKey)
-  )
+  (:when-give ((actor &quest the-key-is-the-key :gather-items)
+               (item jade.copper-mine::kobold-trinket) self)
+    (tell self actor "Ha ha, that isn't quite what I imagined, but still very
+      interesting!")
+    (advance-quest self actor 'the-key-is-the-key 'kobold-trinket))
 
-  when talk(actor: .quest(theKeyIsTheKey, gatherItems), self, topic)
-    tell(self, actor) |
-      Did you get the spiderweb and kobold trinket? Hand 'em over and
-      you'll get your key.
-  )
+  (:when-talk ((actor &quest the-key-is-the-key :key-ready) self topic)
+    (receive actor self (list (clone-entity 'pewter-key)))
+    (tell self actor "There's your key. Tell Mirabel I wish her all the best.")
+    (advance-quest self actor 'the-key-is-the-key)))
 
-  when giveItem(actor: .quest(theKeyIsTheKey, gatherItems), item: silverwood.silkySpiderweb, self)
-    tell(self, actor) "Ho ho, that really *is* quite silky!"
-    advanceQuest(actor, theKeyIsTheKey, 'silkySpiderweb)
-  )
+(deflocation locksmith-shop ()
+  (:name "Kijian's Locks and Keys"
+   :description "This shop is empty but for a battered workbench and a few crates stacked
+     in the corner."
+   :domain :indoor
+   :surface :wood
+   :contents (locksmith)
+   :exits ((exit-doorway :north wall-street-4))))
 
-  when giveItem(actor: .quest(theKeyIsTheKey, gatherItems), item: copperMine.koboldTrinket, self)
-    tell(self, actor) |
-      Ho ho, that isn't quite what I imagined, but still very interesting!
-    advanceQuest(actor, theKeyIsTheKey, 'koboldTrinket)
-  )
-
-  when talk(actor: .quest(theKeyIsTheKey, keyReady), self, topic)
-    receiveItems(actor, [pewterKey], self)
-    tell(self, actor) |
-      There's your key. Tell Mirabel I wish her all the best.
-    advanceQuest(actor, theKeyIsTheKey)
-  )
-
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      Hullo! Welcome to my shop. Sorry, but we're not quite
-      open for business yet. Please come again.
-  )
-)
-
-deflocation locksmithShop: location
-  name "Kijian's Locks and Keys"
-  description |
-    This shop is empty but for a battered workbench and a few crates stacked
-    in the corner.
-  domain 'indoor
-  surface 'wood
-  contents [locksmith]
-  exits [lib.exitDoorway -> 'north to wallStreet4]
-)
+#|
 
 // forest road
 

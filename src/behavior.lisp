@@ -100,14 +100,15 @@ satisfies `constraint'."
                   ((symbolp param) (list param))
                   (t param))))
 
-(defmacro defbehavior (entity &body clauses)
-  `(progn
-     ,@(loop for (event params . body) in (reverse clauses)
-             collect
-             `(push-event-handler
-               ,entity ',event
-               ,(make-event-handler event (normalize-parameters params) body)))
-     ,entity))
+(defmacro defbehavior (label &body clauses)
+  (with-gensyms (entity)
+    `(let ((,entity (symbol-value ',label)))
+       ,@(loop for (event params . body) in (reverse clauses)
+               collect
+               `(push-event-handler
+                 ,entity ',event
+                 ,(make-event-handler event (normalize-parameters params) body)))
+       ,entity)))
 
 (defgeneric observe-event (observer event &rest args))
 

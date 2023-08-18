@@ -80,7 +80,7 @@
                        ,@(loop for (key value) on attributes by #'cddr
                                nconc (list key
                                            `(transform-initval ,class ,key ',value))))))
-         ,@(when behavior `((defbehavior ,entity ,@behavior)))
+         ,@(when behavior `((defbehavior ,name ,@behavior)))
          ,entity))))
 
 ;;; Working with entity attributes.

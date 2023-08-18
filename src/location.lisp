@@ -163,6 +163,9 @@ starting and stopping simulation.")
   (let ((c (entity-container entity)))
     (when (typep c 'location) c)))
 
+(defun find-exit (location dir)
+  (find-if (lambda (exit) (eq (exit-dir exit) dir)) (? location :exits)))
+
 (defun spawn-entity (location &rest args)
   (let ((entity (apply #'clone-entity args)))
     (enter-world entity)
