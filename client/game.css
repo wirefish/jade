@@ -159,8 +159,8 @@ a:link {
 
 .textbox > div > ul > li {
     margin-left: 1.5em;
+    margin-top: 5pt;
     margin-bottom: 5pt;
-    line-height: 14pt;
 }
 
 .textbox > pre {

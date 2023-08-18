@@ -116,24 +116,6 @@
                (format-list #'describe-brief items "or"))
          nil))))
 
-(defun show-vendor-items (avatar vendor)
-  (let ((items (remove-if-not (lambda (item)
-                                (or (eq (? item :quantity) t)
-                                    (> (? item :quantity) 0)))
-                              (? vendor :sells))))
-    (if items
-        (show-links avatar
-                    (format nil "~a is selling the following items:"
-                            (describe-brief vendor :article :definite :capitalize t))
-                    "look" ; FIXME:
-                    (loop for item in items
-                          collect (format nil "~a (~a each)"
-                                          (describe-brief item :article nil)
-                                          (format-list #'describe-brief
-                                                       (? item :cost)))))
-        (show avatar "~a doesn't have anything for sale at the moment."
-              (describe-brief vendor :article :definite :capitalize t)))))
-
 (defcommand buy (actor "buy" item "from" vendor)
   "Purchase items from a vendor. For example, `buy 3 apples from fruitseller`. If
 *item* is omitted, you will see a list of the items sold by *vendor* and the
@@ -144,4 +126,13 @@ cost of each."
           (when item
             (receive actor vendor
                      (list (clone-entity (entity-proto item) :quantity quantity)))))
-        (show-vendor-items actor vendor))))
+        (let ((items (remove-if (lambda (item) (eql (? item :quantity) 0))
+                                (? vendor :sells))))
+          (if items
+              (show-vendor-items
+               actor
+               (format nil "~a is selling the following items:"
+                       (describe-brief vendor :article :definite :capitalize t))
+               vendor "buy" items)
+              (show actor "~a doesn't have anything for sale at the moment."
+                    (describe-brief vendor :article :definite :capitalize t)))))))

@@ -173,6 +173,18 @@ name and whose subsequent elements are arguments to that command."
 
 ;;;
 
+(defun show-vendor-items (avatar header vendor verb items)
+  (send-client-command
+   avatar "showVendorItems" header
+   (describe-brief vendor)
+   verb
+   (loop for item in items
+         collect (list (describe-brief item :quantity 1 :article nil)
+                       (format-list #'describe-brief (? item :cost))
+                       (? item :quantity)))))
+
+;;;
+
 (defun update-inventory (avatar added-items &optional removed-items)
   (let ((arg (make-hash-table :test #'equal)))
     (loop for item in added-items

@@ -24,6 +24,37 @@
 // Text within backticks creates a link that sends input as if typed by the
 // player.
 
+//
+// Add some useful String methods.
+//
+
+String.prototype.capitalize = function() {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+}
+
+String.prototype.format = function() {
+    var args = arguments;
+    return this.replace(/{(\d+)}/g, function(match, number) {
+        return typeof args[number] != 'undefined' ? args[number] : match;
+    });
+}
+
+//
+// Create a link from `...` syntax.
+//
+
+function formatLink(full, content) {
+    const [style, text, command] = content.split(':');
+
+    var classes = style ? style.split(',') : [];
+    classes.unshift('link');
+
+    const action = 'sendInput(\'{0}\')'.format(command ? command.replace('$', text) : text);
+
+    return '<span class="{0}" onclick="{1}">{2}</span>'.format(
+        classes.join(" "), action, text);
+}
+
 // Given a string that represents a block of text such as a paragraph, returns
 // its formatted HTML representation as a new string.
 function formatBlock(s) {
@@ -39,36 +70,10 @@ function formatBlock(s) {
         .replace(/'/g, "\u2019")
         .replace(/"([^"]*)"/g, "\u201c$1\u201d");
 
-    // This is a major deviation from the spec: the inline code syntax instead
-    // generates links that send input to the server, as if it had been typed by
-    // the player.
-    //
-    // If the value begins with an article, that article is removed from the
-    // resulting input.
-    //
-    // If there is a prefix ending with a colon, it must consist of a
-    // comma-separated series of tokens. These tokens control the link style
-    // and/or the input sent when the link is followed.
-    //
-    // The final token in the list is prepended to the input.
-    //
-    // All tokens in the list are additionally used as styles for the link. The
-    // exception is that, if a token is empty, no subsequent tokens are applied
-    // as styles.
-    s = s.replace(/`(?:([a-z ,]+):)?((?:A|a|An|an|The|the) +)?([^`]*)`/g,
-                  function(full, prefix, article, value) {
-                      var action;
-                      prefix = prefix ? prefix.split(',') : [];
-                      if (prefix.length && prefix[prefix.length - 1])
-                          action = 'sendInput(\'' + prefix[prefix.length - 1] + ' ' + value + '\')';
-                      else
-                          action = 'sendInput(\'' + value + '\')';
-                      var num_styles = prefix.concat(['']).indexOf('');
-                      return '<span class="link ' + prefix.slice(0, num_styles).join(' ') +
-                          '" onclick="' + action + '">' + (article || '') + value + '</span>';
-                  });
+    // Convert `...` to a link that sends input to the server.
+    s = s.replace(/`([^`]*)`/g, formatLink);
 
-    // Another deviation: only inline links are used, and the title attribute isn't supported.
+    // Convert [...](...) to a web link.
     s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
 
     return s;

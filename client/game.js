@@ -14,30 +14,15 @@ function resize() {
 }
 window.onresize = resize;
 
-//
-// Add some useful String methods.
-//
-
-String.prototype.capitalize = function() {
-    return this.charAt(0).toUpperCase() + this.slice(1);
-}
-
-String.prototype.format = function() {
-    var args = arguments;
-    return this.replace(/{(\d+)}/g, function(match, number) {
-        return typeof args[number] != 'undefined' ? args[number] : match;
-    });
-}
-
-function link(s, type) {
-    if (type)
-        return '`{0}:{1}`'.format(type, s);
-    else
-        return '`{0}`'.format(s);
+function link(text, type, command) {
+    return '`{0}:{1}:{2}`'.format(
+        type ? type : "",
+        text,
+        command ? command : "");
 }
 
 function look(s) {
-    return link(s, 'look');
+    return link(s, 'look', 'look at $');
 }
 
 function setIcon(element, type, icon) {
@@ -504,6 +489,26 @@ MessageHandler.prototype.showLinks = function(heading, prefix, topics) {
     })));
 
     appendBlock(wrapElements('div', elements, 'help'));
+}
+
+MessageHandler.prototype.showVendorItems = function(heading, vendor, verb, items) {
+    var header = makeTextElement('div', heading);
+
+    var entries = [];
+    for (const [brief, price, avail] of items) {
+        console.log(brief, price, avail);
+        var div;
+        const buy_link = link(brief, 'buy', 'buy $ from {0}'.format(vendor));
+        if (avail == true) {
+            div = makeTextElement('li', '{0} ({1})'.format(buy_link, price))
+        } else {
+            div = makeTextElement('li', '{0} ({1}, limit {2})'.format(buy_link, price, avail))
+        }
+        entries.push(div);
+    }
+    var ul = wrapElements('ul', entries);
+
+    appendBlock(wrapElements('div', [header, ul]));
 }
 
 MessageHandler.prototype.showLocation = function(name, description, exits, contents) {
