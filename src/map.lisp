@@ -52,7 +52,7 @@ visited only if `cross-domains' is t."
              (:complete +complete-map-bit+)
              (t 0))
            (if (some (lambda (x) (typep x 'vendor)) contents) +vendor-map-bit+ 0)
-           ;; (if (some (lambda (x) (typep x 'trainer)) contents) +trainer-map-bit+ 0)
+           (if (some (lambda (x) (typep x 'trainer)) contents) +trainer-map-bit+ 0)
            (loop for exit in (? location :exits)
                  if (exit-visible-p exit avatar)
                    collect (direction-map-bit (exit-dir exit))))))
