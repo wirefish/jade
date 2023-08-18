@@ -112,7 +112,6 @@ represents `count' of the same item. Returns nil if entity cannot be split."
 
 (defun find-item-isa (container slot proto-label &optional (quantity t))
   (find-if (lambda (e)
-             (print (list e proto-label (entity-isa e proto-label)))
              (and (entity-isa e proto-label)
                   (or (eq quantity t) (>= (? e :quantity) quantity))))
            (? container slot)))
