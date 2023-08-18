@@ -4,6 +4,8 @@
 
 (defentity ore (item)
   (:brief "a chunk[s] of ~*~a ore"
+   :description "The ore is a small piece of ~*~a-bearing rock. It can be
+     smelted to obtain ~:*~a in its pure form."
    :stackable t))
 
 (defentity copper-ore (ore)
@@ -29,18 +31,24 @@
 ;;; Tools.
 
 (defentity pickaxe (item)
-  (:brief "a pickaxe"
+  (:brief "~a ~a pickaxe"
+   :description "The ~*~a pickaxe is a basic mining tool."
    :icon pickaxe
    :equippable-slot :tool))
 
 (defentity copper-pickaxe (pickaxe)
-  (:brief "a copper pickaxe"
-   :level 1
-   :cost (silver-coin 5)))
+  (:level 1
+   :material "copper"
+   :cost (silver-coin 10)))
 
 (defentity bronze-pickaxe (pickaxe)
-  (:brief "a bronze pickaxe"
-   :level 5
-   :cost (silver-coin 10)))
+  (:level 5
+   :material "bronze"
+   :cost (silver-coin 20)))
+
+(defentity iron-pickaxe (pickaxe)
+  (:level 10
+   :material "iron"
+   :cost (silver-coin 40)))
 
 ;;; TODO: Ore deposits.

@@ -44,9 +44,9 @@
                                   (noun-singular material))))))
     item))
 
-;;; The material can be substituted into the brief description of an entity. The
-;;; brief is used as the control-string for format, with the indefinite article
-;;; and singular of the material passed as arguments.
+;;; The material can be substituted into the description of an item. The brief
+;;; or full description is used as the control-string for format, with the
+;;; indefinite article and singular of the material passed as arguments.
 
 (defmethod describe-brief ((item item) &key quantity (article :indefinite) capitalize)
   (declare (ignore quantity article capitalize))
@@ -54,6 +54,12 @@
     (if-let ((material (? item :material)))
       (format nil brief (noun-article material) (noun-singular material))
       brief)))
+
+(defmethod describe-full ((item item))
+  (let ((description (call-next-method)))
+    (if-let ((material (? item :material)))
+      (format nil description (noun-article material) (noun-singular material))
+      description)))
 
 ;;; If the item is associated with a quest, the `:quest' attribute is the label
 ;;; of the quest.

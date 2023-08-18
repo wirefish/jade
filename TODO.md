@@ -2,8 +2,6 @@
 
 * Make exits just entities? Add exit-message and entry-message.
 
-* In describe-full for an item, use the materials.
-
 * Fix command parsing to allow unambiguous prefixes.
 
 * Selling to vendors.
@@ -26,8 +24,7 @@
 
 * Let NPCs have a race so they can be matched properly.
 
-* Make sure to use exported symbols as quest phase state, or preferbly keywords.
-  Deal with plist/alist state.
+* Deal with quest state that is a plist (or alist?) properly.
 
 * Add intro for new player.
 
@@ -35,6 +32,6 @@
 
 * Add quest pane.
 
-* Move chat pane to last. Badge it when new chat appears.
-
 * Add chat channels.
+
+* Badge chat pane icon when new chat appears.
