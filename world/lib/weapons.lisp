@@ -54,13 +54,13 @@
 
 (defmacro defweapons (proto-label &body examples)
   `(progn
-     ,@(loop for (level material cost) in examples
+     ,@(loop for (level material price) in examples
              collect
              (let ((label (format-symbol t "~:@(~a-~a~)"  material proto-label)))
                `(defentity ,label (,proto-label)
                   (:level ,level
                    :material ,material
-                   :cost ,cost))))))
+                   :price (,price silver-coin)))))))
 
 ;;; Daggers are light piercing weapons.
 
@@ -77,9 +77,9 @@
    :nonproficiency-penalty 0.5))
 
 (defweapons dagger
-  (1 "copper" (silver-coin 15))
-  (5 "bronze" (silver-coin 30))
-  (10 "iron" (silver-coin 60)))
+  (1 "copper" 15)
+  (5 "bronze" 30)
+  (10 "iron" 60))
 
 ;;; Wands are light weapons that do magical or elemental damage, depending on
 ;;; the specific wand.
@@ -97,9 +97,9 @@
    :nonproficiency-penalty 0.25))
 
 (defweapons wand
-  (1 "pine" (silver-coin 15))
-  (5 "oak" (silver-coin 30))
-  (10 "maple" (silver-coin 60)))
+  (1 "pine" 15)
+  (5 "oak" 30)
+  (10 "maple" 60))
 
 ;;; Maces are one-handed crushing weapons.
 
@@ -117,9 +117,9 @@
    :nonproficiency-penalty 0.5))
 
 (defweapons mace
-  (1 "copper" (silver-coin 20))
-  (5 "bronze" (silver-coin 40))
-  (10 "iron" (silver-coin 80)))
+  (1 "copper" 20)
+  (5 "bronze" 40)
+  (10 "iron" 80))
 
 ;;; Mauls are two-handed crushing weapons.
 
@@ -137,9 +137,9 @@
    :nonproficiency-penalty 0.25))
 
 (defweapons maul
-  (1 "copper" (silver-coin 35))
-  (5 "bronze" (silver-coin 70))
-  (10 "iron" (silver-coin 140)))
+  (1 "copper" 35)
+  (5 "bronze" 70)
+  (10 "iron" 140))
 
 ;;; Swords (including shortswords) are one-handed slashing (or piercing) weapons.
 
@@ -157,9 +157,9 @@
    :nonproficiency-penalty 0.25))
 
 (defweapons sword
-  (1 "copper" (silver-coin 20))
-  (5 "bronze" (silver-coin 40))
-  (10 "iron" (silver-coin 80)))
+  (1 "copper" 20)
+  (5 "bronze" 40)
+  (10 "iron" 80))
 
 (defentity shortsword (sword)
   (:brief "~a ~a shortsword"
@@ -168,9 +168,9 @@
    :speed 2.5))
 
 (defweapons shortsword
-  (1 "copper" (silver-coin 20))
-  (5 "bronze" (silver-coin 40))
-  (10 "iron" (silver-coin 80)))
+  (1 "copper" 20)
+  (5 "bronze" 40)
+  (10 "iron" 80))
 
 ;;; Greatswords are two-handed slashing weapons.
 
@@ -188,9 +188,9 @@
    :nonproficiency-penalty 0.25))
 
 (defweapons greatsword
-  (1 "copper" (silver-coin 35))
-  (5 "bronze" (silver-coin 70))
-  (10 "iron" (silver-coin 140)))
+  (1 "copper" 35)
+  (5 "bronze" 70)
+  (10 "iron" 140))
 
 ;;; Axes are one-handed slashing weapons.
 
@@ -208,9 +208,9 @@
    :nonproficiency-penalty 0.5))
 
 (defweapons axe
-  (1 "copper" (silver-coin 20))
-  (5 "bronze" (silver-coin 40))
-  (10 "iron" (silver-coin 80)))
+  (1 "copper" 20)
+  (5 "bronze" 40)
+  (10 "iron" 80))
 
 ;;; Battle-axes are two-handed slashing weapons.
 
@@ -228,9 +228,9 @@
    :nonproficiency-penalty 0.25))
 
 (defweapons battle-axe
-  (1 "copper" (silver-coin 35))
-  (5 "bronze" (silver-coin 70))
-  (10 "iron" (silver-coin 140)))
+  (1 "copper" 35)
+  (5 "bronze" 70)
+  (10 "iron" 140))
 
 ;;; Spears are two-handed piercing weapons.
 
@@ -247,9 +247,9 @@
    :nonproficiency-penalty 0.25))
 
 (defweapons spear
-  (1 "copper" (silver-coin 35))
-  (5 "bronze" (silver-coin 70))
-  (10 "iron" (silver-coin 140)))
+  (1 "copper" 35)
+  (5 "bronze" 70)
+  (10 "iron" 140))
 
 ;;; Staves are two-handed magical or elemental weapons.
 
@@ -266,6 +266,6 @@
    :nonproficiency-penalty 0.25))
 
 (defweapons staff
-  (1 "pine" (silver-coin 35))
-  (5 "oak" (silver-coin 70))
-  (10 "maple" (silver-coin 140)))
+  (1 "pine" 35)
+  (5 "oak" 70)
+  (10 "maple" 140))

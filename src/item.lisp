@@ -17,7 +17,7 @@
    :level 1
    :item-group :miscellany
    :quantity 1
-   :cost nil
+   :price nil
    :stackable nil))
 
 ;;; If the item is made of something in particular, the `:material' attribute is
@@ -75,12 +75,12 @@
     :head :torso :back :hands :waist :legs :feet :ears :neck :either-wrist :either-finger
     :backpack :belt-pouch))
 
-;;; If the item can be purcased, its `:cost' attribute is defined by plist of
-;;; labels and quantities describing the items required for payment.
+;;; If the item can be purcased, its `:price' attribute is defined by a
+;;; two-element list (quantity currency).
 
-(defmethod transform-initval ((class (eql 'item)) (name (eql :cost)) value)
-  (loop for (label quantity) on value by #'cddr
-        collect (clone-entity label :quantity quantity)))
+(defmethod transform-initval ((class (eql 'item)) (name (eql :price)) value)
+  (bind (((quantity currency) value))
+    (clone-entity currency :quantity quantity)))
 
 ;;; Items can be stacked if they have the same prototype and their `stackable'
 ;;; attribute is not null. If `stackable' is t, there is no limit on how many

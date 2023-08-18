@@ -13,8 +13,8 @@
     :initarg :summary :initform nil :reader skill-summary
     :documentation "A one-sentence description of what the skill enables the
       player to do.")
-   (required-level
-    :initarg :required-level :initform 1 :reader skill-required-level
+   (level
+    :initarg :level :initform 1 :reader skill-level
     :documentation "The minimum level required to learn this skill.")
    (required-race
     :initarg :required-race :initform nil :reader skill-required-race
@@ -27,10 +27,13 @@
    (exclusive-skills
     :initarg :exclusive-skills :initform nil :reader skill-exclusive-skills
     :documentation "Skills that must not be known when learning this skill.")
-   (cost
-    :initarg :cost :initform nil :reader skill-cost
-    :documentation "A plist of symbols and amounts of currency required to learn
-      this skill, where :karma is a valid currency.")
+   (price
+    :initarg :price :initform nil :reader skill-price
+    :documentation "A list of the form (quantity currency) describing the
+      currency required to learn the skill.")
+   (karma
+    :initarg :karma :initform 0 :reader skill-karma
+    :documentation "The amount of karma required to learn the skill.")
    (max-rank
     :initarg :max-rank :initform 100 :reader skill-max-rank
     :documentation "The maximum rank that can be attained in this skill.")
@@ -43,6 +46,14 @@
     :documentation "A list of recipes made available upon learning this
       skill.")))
 
+(defmethod print-object ((skill skill) stream)
+  (print-unreadable-object (skill stream :type t :identity t)
+    (write (skill-label skill) :stream stream)))
+
+(defmethod transform-initval ((class (eql 'skill)) (name (eql :price)) value)
+  (bind (((quantity currency) value))
+    (clone-entity currency :quantity quantity)))
+
 ;;;
 
 (defmacro defskill (label attributes)
@@ -51,7 +62,7 @@
                     'skill
                     :label ',label
                     ,@(loop for (key value) on attributes by #'cddr
-                            nconc (list key `(transform-initval 'quest ,key ',value))))))
+                            nconc (list key `(transform-initval 'skill ,key ',value))))))
        (set ',label ,skill)
        (export ',label)
        ,skill)))
@@ -73,6 +84,23 @@ gathering skill, etc."
       1.0
       (max 0.0 (- 1.0 (/ (- current-rank difficulty) 20)))))
 
+;;; A trainer is an entity with a `:teaches' attribute, which is a list of
+;;; labels indicating the skills that can be learned from the trainer. A trainer
+;;; also has a `:level' attribute which potentially limits the skills it can
+;;; actually teach; if `:level' is t, the trainer can teach all skills.
+
+(defclass trainer (entity) ())
+
+(defentity trainer (&class trainer)
+  (:brief "a skill trainer"
+   :teaches nil
+   :level t))
+
+(defmethod transform-initval ((class (eql 'trainer)) (name (eql :teaches)) value)
+  (stable-sort (remove-if #'null (mapcar #'symbol-value (ensure-list value)))
+               #'<
+               :key #'skill-level))
+
 ;;;
 
 (defgeneric learn-skill (avatar skill trainer))
@@ -83,7 +111,7 @@ gathering skill, etc."
     (call-next-method)))
 
 (defmethod learn-skill (avatar skill trainer)
-  ;; FIXME: deduct the cost.
+  ;; FIXME: deduct karma and price.
   (update-skills avatar (skill-label skill))
   (setf (gethash (skill-label skill) (skills avatar)) 1)
   (if trainer
@@ -94,18 +122,25 @@ gathering skill, etc."
 
 ;;;
 
+(defun teachable-skills (trainer)
+  (let ((trainer-level (? trainer :level)))
+    (if (eq trainer-level t)
+        (? trainer :teaches)
+        (remove-if-not (lambda (s) (>= trainer-level (skill-level s)))
+                       (? trainer :teaches)))))
+
 (defun match-trainer-skills (tokens trainers)
   "Returns a list of (trainer . skill) for the skills taught by `trainers' that
 best match `tokens'."
   (apply #'find-matches tokens
          (loop for trainer in trainers
                collect (mapcar #'(lambda (x) (cons trainer (symbol-value x)))
-                               (? trainer :teaches)))))
+                               (teachable-skills trainer)))))
 
 (defcommand learn (actor "learn" skill-name)
   "When no *skill-name* is given, list the skills taught by nearby trainers.
 Otherwise, try to learn the specified skill."
-  (if-let ((trainers (remove-if-not (lambda (x) (? x :teaches))
+  (if-let ((trainers (remove-if-not (lambda (x) (typep x 'trainer))
                                     (? (location actor) :contents))))
     (if skill-name
         ;; Try to learn the skill
@@ -120,9 +155,9 @@ Otherwise, try to learn the specified skill."
                  ((gethash (skill-label skill) (skills actor))
                   (show actor "You had already learned ~s."
                         (skill-name skill)))
-                 ((< (? actor :level) (skill-required-level skill))
+                 ((< (? actor :level) (skill-level skill))
                   (show actor "You must reach at least level ~d before learning ~s."
-                        (skill-required-level skill)
+                        (skill-level skill)
                         (skill-name skill)))
                  ((and (skill-required-race skill)
                        (not (eq (skill-required-race skill) (entity-label (? actor :race)))))
@@ -136,15 +171,14 @@ Otherwise, try to learn the specified skill."
                    (format-list #'skill-name (mapcar #'cdr matches) "or")))))
         ;; List all available skills.
         (dolist (trainer trainers)
-          (show actor "~a teaches the following skills:"
-                (describe-brief trainer :article :definite :capitalize t))
-          (dolist (label (? trainer :teaches))
-            (when-let ((skill (symbol-value label)))
-              (show actor "- `learn:~a`: ~a Level ~d. Cost: ~{~(~a~) ~d~^, ~}."
-                    (skill-name skill)
-                    (skill-summary skill)
-                    (skill-required-level skill)
-                    (skill-cost skill))))))
+          (if-let ((skills (teachable-skills trainer)))
+            (show-trainer-skills
+             actor
+             (format nil "~a teaches the following skills:"
+                     (describe-brief trainer :article :definite :capitalize t))
+             trainer skills)
+            (show actor "~a does not teach any skills."
+                  (describe-brief trainer :article :definite :capitalize t)))))
     (show actor "There are no skill trainers here.")))
 
 ;;;

@@ -25,11 +25,10 @@
 ;;; Specialize the receive event.
 
 (defun buyer-can-pay (buyer item)
-  (every (lambda (currency)
-           (find-item-isa buyer :inventory
-                          (entity-type currency)
-                          (* (? item :quantity) (? currency :quantity))))
-         (? item :cost)))
+  (let ((price (? item :price)))
+    (find-item-isa buyer :inventory
+                   (entity-type price)
+                   (* (? item :quantity) (? price :quantity)))))
 
 (defmethod receive :around ((avatar avatar) (vendor vendor) items)
   (let ((item (first items)))
@@ -40,19 +39,16 @@
           nil))))
 
 (defun pay-for-item (buyer vendor item)
-  (let (removed modified paid)
-    (loop for currency in (? item :cost) do
-      (let* ((stack (find-item-isa buyer :inventory (entity-type currency)))
-             (obj (remove-item buyer :inventory stack
-                               (* (? item :quantity) (? currency :quantity)))))
-        (push obj paid)
-        (if (eq obj paid)
-            (push stack removed)
-            (push stack modified))))
+  (let* ((price (? item :price))
+         (stack (find-item-isa buyer :inventory (entity-type price)))
+         (paid (remove-item buyer :inventory stack
+                            (* (? item :quantity) (? price :quantity)))))
     (show buyer "You give ~a ~a."
           (describe-brief vendor)
           (format-list #'describe-brief paid))
-    (update-inventory buyer modified removed)))
+    (if (eq paid stack)
+        (update-inventory buyer nil (list stack))
+        (update-inventory buyer (list stack) nil))))
 
 (defun reduce-vendor-stock (vendor item)
   (let ((stock (find-item-isa vendor :sells (entity-type item))))
@@ -119,7 +115,7 @@
 (defcommand buy (actor "buy" item "from" vendor)
   "Purchase items from a vendor. For example, `buy 3 apples from fruitseller`. If
 *item* is omitted, you will see a list of the items sold by *vendor* and the
-cost of each."
+price of each."
   (when-let ((vendor (match-vendor actor vendor "buy from")))
     (if item
         (bind ((item quantity (match-vendor-item actor item vendor)))

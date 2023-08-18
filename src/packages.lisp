@@ -80,6 +80,8 @@
 
            #:maybe-show-tutorial
 
+           #:defskill
+
            #:defquest
            #:offer-quest
            #:advance-quest

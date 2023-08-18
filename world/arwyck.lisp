@@ -268,7 +268,7 @@
 
 ;;; miner's guild
 
-(defentity marigold (humanoid) ; FIXME: (mining-trainer)
+(defentity marigold (mining-trainer)
   (:name "Marigold"
    :pose "is nearby, poking through a stack of ore."
    :description "Marigold is a cheerful, rosy-cheeked dwarven woman who looks
@@ -516,12 +516,12 @@
   (:brief "a loa[f|ves] of rye bread"
    :description "The loaf of rye bread looks rather delicious."
    :icon bread
-   :cost (silver-coin 2)))
+   :price (2 silver-coin)))
 
 (defentity fish-soup (item) ; FIXME: (food)
   (:brief "a bowl[s] of fish soup"
    :description "Warning: Fish content not guaranteed."
-   :cost (silver-coin 3)))
+   :price (3 silver-coin)))
 
 (defentity sienna (vendor)
   (:name "Sienna"

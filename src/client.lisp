@@ -180,8 +180,21 @@ name and whose subsequent elements are arguments to that command."
    verb
    (loop for item in items
          collect (list (describe-brief item :quantity 1 :article nil)
-                       (format-list #'describe-brief (? item :cost))
+                       (describe-brief (? item :price))
                        (? item :quantity)))))
+
+;;;
+
+(defun show-trainer-skills (avatar header trainer skills)
+  (send-client-command
+   avatar "showTrainerSkills" header
+   (describe-brief trainer)
+   (loop for skill in skills
+         collect (with-slots (name summary price karma) skill
+                   (list name
+                         summary
+                         (when price (describe-brief price))
+                         karma)))))
 
 ;;;
 

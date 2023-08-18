@@ -511,6 +511,32 @@ MessageHandler.prototype.showVendorItems = function(heading, vendor, verb, items
     appendBlock(wrapElements('div', [header, ul]));
 }
 
+MessageHandler.prototype.showTrainerSkills = function(heading, trainer, skills) {
+    var header = makeTextElement('div', heading);
+
+    var entries = [];
+    for (const [name, summary, price, karma] of skills) {
+        const learn_link = link(name, 'learn', 'learn $ from {0}'.format(trainer));
+        var div;
+        if (price === null && karma == 0) {
+            div = makeTextElement('li', '{0} --- {1}'.format(learn_link, summary));
+        } else if (price === null) {
+            div = makeTextElement('li', '{0} --- {1} Costs {2} karma.'.format(
+                learn_link, summary, karma));
+        } else if (karma == 0) {
+            div = makeTextElement('li', '{0} --- {1} Costs {2}.'.format(
+                learn_link, summary, price));
+        } else {
+            div = makeTextElement('li', '{0} --- {1} Costs {2} karma and {3}.'.format(
+                learn_link, summary, karma, price));
+        }
+        entries.push(div);
+    }
+    var ul = wrapElements('ul', entries);
+
+    appendBlock(wrapElements('div', [header, ul]));
+}
+
 MessageHandler.prototype.showLocation = function(name, description, exits, contents) {
     var elements = [];
 

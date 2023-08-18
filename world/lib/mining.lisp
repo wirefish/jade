@@ -39,16 +39,29 @@
 (defentity copper-pickaxe (pickaxe)
   (:level 1
    :material "copper"
-   :cost (silver-coin 10)))
+   :price (10 silver-coin)))
 
 (defentity bronze-pickaxe (pickaxe)
   (:level 5
    :material "bronze"
-   :cost (silver-coin 20)))
+   :price (20 silver-coin)))
 
 (defentity iron-pickaxe (pickaxe)
   (:level 10
    :material "iron"
-   :cost (silver-coin 40)))
+   :price (40 silver-coin)))
 
-;;; TODO: Ore deposits.
+;;; TODO: Mineral deposits.
+
+;;; Skills.
+
+(defskill mining
+  (:name "mining"
+   :summary "Allows you to obtain ore and other resources from mineral
+     deposits."
+   :price (20 silver-coin)))
+
+;;; Trainer.
+
+(defentity mining-trainer (trainer)
+  (:teaches mining))
