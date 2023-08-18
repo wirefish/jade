@@ -54,8 +54,9 @@
 
 (defmethod clone-entity ((proto entity) &rest attributes)
   (make-instance (type-of proto)
+                 :proto proto
                  :attributes (plist-hash-table attributes)
-                 :proto proto :behavior (entity-behavior proto)))
+                 :behavior (entity-behavior proto)))
 
 ;;; A mechanism for transforming initializer forms in `defentity' and similar
 ;;; macros.
