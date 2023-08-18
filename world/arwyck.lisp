@@ -988,8 +988,8 @@
    :level 2)
 
   (:active
-      :summary "Obtain three units of venom from the corpses of giant
-        centipedes.")
+      :summary "Use the venom extractor to obtain three units of venom from the
+        corpses of giant centipedes.")
 
   (:done
       :summary "Talk to Dilwar."))
