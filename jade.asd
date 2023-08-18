@@ -54,9 +54,9 @@
    (:module "world" :components
             ((:module "lib" :components
                       ((:file "creatures")
+                       (:file "currency")
                        (:file "clothing")
                        (:file "weapons")
-                       (:file "currency")
                        (:file "portals")
                        (:file "vehicles")
                        (:file "mining")
