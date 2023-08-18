@@ -103,6 +103,4 @@
   :jade.arwyck
   :jade.silverwood
   :jade.mistmarsh
-  :jade.copper-mine
-  (:export
-   #:))
+  :jade.copper-mine)
