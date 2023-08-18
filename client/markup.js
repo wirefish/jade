@@ -43,16 +43,28 @@ String.prototype.format = function() {
 // Create a link from `...` syntax.
 //
 
+function escapeForLink(s) {
+    return s.replaceAll("\u2019", "\\'");
+}
+
 function formatLink(full, content) {
-    const [style, text, command] = content.split(':');
+    const template = '<span class="link {0}" onclick="sendInput(\'{1}\')">{2}</span>';
 
-    var classes = style ? style.split(',') : [];
-    classes.unshift('link');
+    var [cls, text, command] = content.split(':');
 
-    const action = 'sendInput(\'{0}\')'.format(command ? command.replace('$', text) : text);
+    if (text === undefined) {
+        // The lone part is a class, the input, and the text to display.
+        text = command = cls;
+    } else if (command === undefined) {
+        // The first part is a class and also the verb to prepend to the second
+        // part to form the input. The second part is the text to display.
+        command = [cls, escapeForLink(text)].join(" ");
+    } else {
+        // The last part is a template for the input.
+        command = escapeForLink(command.replace('$', text));
+    }
 
-    return '<span class="{0}" onclick="{1}">{2}</span>'.format(
-        classes.join(" "), action, text);
+    return template.format(cls, command, text);
 }
 
 // Given a string that represents a block of text such as a paragraph, returns
