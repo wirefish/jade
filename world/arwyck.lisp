@@ -127,7 +127,7 @@
 (defquest dance-monkey
   (:name "Dance Monkey"
    :summary "Find the monkey and dance for it, dance for it, dance for it, oh oh
-     oh.")
+     oh. Then tell the young laborer all about it.")
   (:active
       :summary "Dance in the presence of the monkey in Arwyck.")
   (:done
