@@ -95,10 +95,9 @@ satisfies `constraint'."
 
 (defun normalize-parameters (params)
   (loop for param in params
-        collect (cond
-                  ((eq param 'self) (list (gensym) 'self))
-                  ((symbolp param) (list param))
-                  (t param))))
+        collect (if (eq param 'self)
+                    (list (gensym) 'self)
+                    (ensure-list param))))
 
 (defmacro defbehavior (label &body clauses)
   (with-gensyms (entity)
