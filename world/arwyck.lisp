@@ -516,11 +516,13 @@
   (:brief "a loa[f|ves] of rye bread"
    :description "The loaf of rye bread looks rather delicious."
    :icon bread
+   :stackable t
    :price (2 silver-coin)))
 
 (defentity fish-soup (item) ; FIXME: (food)
   (:brief "a bowl[s] of fish soup"
    :description "Warning: Fish content not guaranteed."
+   :stackable t
    :price (3 silver-coin)))
 
 (defentity sienna (vendor)
