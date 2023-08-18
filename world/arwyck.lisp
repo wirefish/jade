@@ -1753,48 +1753,57 @@
    :contents (locksmith)
    :exits ((exit-doorway :north wall-street-4))))
 
+;;; forest road
+
+(defentity forest-road (location)
+  (:name "Forest Road"
+   :description "This narrow dirt road runs between the village and a small forest to
+     the west."
+   :domain :outdoor
+   :surface :dirt))
+
+(deflocation forest-road-1 (forest-road)
+  (:exits ((dirt-road :east square-sw :west forest-road-2))))
+
+(defentity shack-door () ; FIXME: (portal)?
+  (:key pewter-key))
+
+(deflocation forest-road-2 (forest-road)
+  (:exits ((dirt-road :east forest-road-1 :west forest-road-3)
+           (shack-door :south shack))))
+
+(deflocation forest-road-3 (forest-road)
+  (:exits ((dirt-road :east forest-road-2 :west forest-gate)
+           (narrow-path :north grove-sw))))
+
+;;; shack
+
+(defentity gang-member (humanoid)
+  (:min-health 10)
+
+  (:after-kill (actor self)
+    (show-near self "~a falls to his knees in submission."
+               (describe-brief self :capitalize t))))
+
+(defentity goon (gang-member)
+  (:brief "a barrel-chested goon"
+   :attacks (copper-mace)))
+
+(defentity ruffian (gang-member)
+  (:brief "a lanky ruffian"
+   :attacks (copper-dagger)))
+
+(defentity evend (gang-member)
+  (:name "Evend"
+   :attacks (copper-sword))
+
+  ;; TODO: how to advance quest after all three are subdued? then reset them.
+
+  (:after-enter-location (actor location entry)
+    (tell self actor "Hey! How did you get in here? You'd better turn around and
+      leave, or my friends here will make you sorry.")))
+
 #|
-
-// forest road
-
-(defentity forestRoad: location
-  name "Forest Road"
-  description |
-    This narrow dirt road runs between the village and a small forest to
-    the west.
-  domain 'outdoor
-  surface 'dirt
-)
-
-deflocation forestRoad1: forestRoad
-  exits [dirtRoad -> 'east to squareSw, dirtRoad -> 'west to forestRoad2]
-)
-
-(defentity shackDoor: portal
-  key pewterKey
-)
-
-deflocation forestRoad2: forestRoad
-  exits [dirtRoad -> 'east to forestRoad1, dirtRoad -> 'west to forestRoad3,
-       shackDoor -> 'south to shack]
-)
-
-deflocation forestRoad3: forestRoad
-  exits [dirtRoad -> 'east to forestRoad2, dirtRoad -> 'west to forestGate,
-       narrowPath -> 'north to groveSw]
-)
-
-// shack
-
-(defentity gangMember: creature
-  level 1
-  minHealth 10
-
-  // FIXME:
-  func visible(observer)
-    return questPhase(observer, theEndOfEvend) = 'active
-  )
-
   after kill(actor, self, weapon)
     showNear(self) "self:D) falls to his knees in submission."
     if advanceQuest(actor, theEndOfEvend, self.questKey)
@@ -1804,224 +1813,159 @@ deflocation forestRoad3: forestRoad
       show(actor) |
         Evend motions to his henchmen, and all three of them stumble out
         of the shack.
-    )
-
-    await sleep(60)
-    // FIXME:
-    self.health self.maxHealth
-  )
 )
+|#
 
-(defentity evend: gangMember
-  brief "Evend"
-  weapons [] // FIXME: sword
-  questKey 'evend
+(deflocation shack ()
+  (:name "Evend's Hideout"
+   :description "Despite the ramshackle appearance of its exterior, the interior
+     of this shack is quite comfortable."
+   :domain :indoor
+   :surface :wood
+   :contents (evend goon ruffian)
+   :exits ((exit-doorway :north forest-road-2))))
 
-  after enterLocation(actor: .quest(theEndOfEvend, active), location, entry)
-    tell(self, actor) |
-      Hey! How did you get in? You'd better turn around and
-      leave, or my friends here will make you sorry.
-  )
-)
+;;; secluded grove
 
-(defentity goon: gangMember
-  brief "a barrel-chested goon"
-  weapons [] // FIXME: mace
-)
+(defentity grove (location)
+  (:name "Secluded Grove"
+   :description "This beautiful grove of aspens and birches seems unnaturally
+     quiet, especially given the proximity of the village."
+   :domain :outdoor
+   :surface :forest))
 
-(defentity ruffian: gangMember
-  brief "a lanky ruffian"
-  weapons [] // FIXME: dagger
-)
+(deflocation grove-sw (grove)
+  (:exits ((narrow-path :south forest-road-3 :north grove-nw :east grove-se))))
 
-deflocation shack: location
-  name "Evend's Hideout"
-  description |
-    Despite the ramshackle appearance of its exterior, the interior of this
-    shack is quite comfortable.
-  domain 'indoor
-  surface 'wood
-  contents [evend, goon, ruffian]
-  exits [lib.exitDoorway -> 'north to forestRoad2]
-)
+(defentity raspin (humanoid) ; FIXME: (druid-trainer)
+  (:name "Raspin Redleaf"
+   :pose "tends to a nearby tree."
+   :description "Raspin is a wiry, rugged-looking man who wears plain brown
+     clothes well suited to travel in the wilderness. His wide leather belt
+     holds numerous small pouches as well as a pair of long, curved daggers.")
 
-// secluded grove
-
-(defentity grove: location
-  name "Secluded Grove"
-  description |
-    This beautiful grove of aspens and birches seems unnaturally quiet,
-    especially given the proximity of the village.
-  domain 'outdoor
-  surface 'forest
-)
-
-deflocation groveSw: grove
-  exits [narrowPath -> 'south to forestRoad3, narrowPath -> 'north to groveNw,
-       narrowPath -> 'east to groveSe]
-)
-
-(defentity druidTrainer: npc
-  brief "Raspin Redleaf"
-  pose "tends to a nearby tree."
-  description |
-    Raspin is a wiry, rugged-looking man who wears plain brown clothes well
-    suited to travel in the wilderness. His wide leather belt holds numerous
-    small pouches as well as a pair of long, curved daggers."
-
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      Welcome, friend. I am Raspin, a representative of the Circle of the
-      Grove.
+  (:when-talk (actor self topic)
+    (tell self actor "Welcome, friend. I am Raspin, a representative of the
+      Circle of the Grove.
 
       My guild teaches skills that draw upon the power of nature to heal,
-      sustain, and---when needed---destroy. Type `learn` to see what I can
-      teach you, or type `help skills` for more general information.
-  )
-)
+      sustain, and --- when needed --- destroy. Type `learn` to see what I can
+      teach you, or type `help skills` for more general information.")))
 
-deflocation groveNw: grove
-  contents [druidTrainer]
-  exits [narrowPath -> 'south to groveSw, narrowPath -> 'east to groveNe]
-)
+(deflocation grove-nw (grove)
+  (:contents (raspin)
+   :exits ((narrow-path :south grove-sw :east grove-ne))))
 
-deflocation groveNe: grove
-  exits [narrowPath -> 'west to groveNw, narrowPath -> 'south to groveSe,
-       narrowPath -> 'north to tidyGarden]
-)
+(deflocation grove-ne (grove)
+  (:exits ((narrow-path :west grove-nw :south grove-se :north tidy-garden))))
 
-(defentity staffVendor: npc
-  brief "Ilivirian"
-  pose "polishes one of the many staves on display."
-  description "Ilivirian is a very tall elf with long golden hair."
-  sells [] // FIXME: [pineStaff, oakStaff]
+(defentity ilivrian (vendor)
+  (:name "Ilivrian"
+   :pose "polishes one of the many staves on display."
+   :description "Ilivrian is a very tall elf with long golden hair."
+   :sells (pine-staff oak-staff))
 
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      Welcome, traveler. Are you in need of a staff, perchance? Type `buy`
-      to see what I have available.
-  )
-)
+  (:when-talk (actor self topic)
+    (tell self actor "Welcome, traveler. Are you in need of a staff, perchance?
+      Type `buy` to see what I have available.")))
 
-deflocation groveSe: grove
-  contents [staffVendor]
-  exits [narrowPath -> 'north to groveNe, narrowPath -> 'west to groveSw]
-)
+(deflocation grove-se (grove)
+  (:contents (ilivrian)
+   :exits ((narrow-path :north grove-ne :west grove-sw))))
 
-// garden
+;;; garden
 
-(defentity botanyTrainer: npc
-  brief "Gariande"
-  pose "is busily tying up bundles of herbs."
-  description |
-    Gariande is an very old woman with deep wrinkles on her face. Her
-    steel-gray hair is tied in a bun.
-  teaches [] // FIXME:
+(defentity gariande (humanoid) ; FIXME: (botany-trainer)
+  (:name "Gariande"
+   :pose "is busily tying up bundles of herbs."
+   :description "Gariande is an very old woman with deep wrinkles on her face. Her
+     steel-gray hair is tied in a bun."
+   :teaches nil) ; FIXME: from botany-trainer
 
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      Come for some sweet corn? Or perhaps a few tomatoes? Well, you're
-      out of luck: they're not for sale. But if you want to `learn` about
-      botany, then you've come to the right place. I represent the
-      Botanists' Guild in these parts. Type `guild info` to learn more.
-  )
-)
+  (:when-talk (actor self topic)
+    (tell self actor "Come for some sweet corn? Or perhaps a few tomatoes? Well,
+      you're out of luck: they're not for sale. But if you want to `learn` about
+      botany, then you've come to the right place. I represent the Botanists'
+      Guild in these parts. Type `guild info` to learn more.")))
 
-(defentity botanyVendor: npc
-  brief "Bonnos"
-  pose "is watering the plants."
-  description |
-    Bonnos is a man of perhaps thirty years, with perhaps ten years' worth
-    of dirt under his fingernails.
-  sells [] // FIXME: [lib:botany/copperSickle]
+(defentity bonnos (vendor)
+  (:name "Bonnos"
+   :pose "is watering the plants."
+   :description "Bonnos is a man of perhaps thirty years, with perhaps ten
+      years' worth of dirt under his fingernails."
+   :sells nil) ; FIXME: copper and bronze sickles
 
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      Nice to meet you. Grandmother keeps me quite busy here, so I don't
-      meet many travelers. If you've come to learn about botany, you can
-      `buy` the tools you'll need from me.
-  )
-)
+  (:when-talk (actor self topic)
+    (tell self actor "Nice to meet you. Grandmother keeps me quite busy here, so
+      I don't meet many travelers. If you've come to explore botany, you can
+      `buy` the tools you'll need from me.")))
 
-deflocation tidyGarden: location
-  name "Tidy Garden"
-  description |
-    This small plot is filled with rows of carefully-tended vegetables and
-    herbs.
-  domain 'outdoor
-  surface 'grass
-  contents [botanyTrainer, botanyVendor]
-  exits [narrowPath -> 'south to groveNe]
-)
+(deflocation tidy-garden ()
+  (:name "Tidy Garden"
+   :description "This small plot is filled with rows of carefully-tended
+      vegetables and herbs."
+   :domain :outdoor
+   :surface :grass
+   :contents (gariande bonnos)
+   :exits ((narrow-path :south grove-ne))))
 
-// forest gate
+;;; forest gate
 
-defquest findMySon
-  name "Find My Son"
-  summary |
-    Find Miranda's son, who disappeared with his friend while picking
-    berries in Silverwood.
-  level 2
+(defquest find-my-son
+  (:name "Find My Son"
+   :summary "Find Miranda's son, who disappeared with his friend while picking
+     berries in Silverwood, and let her know if he's ok."
+   :level 2)
 
-  phase active
-    summary "Find Miranda's soon in the Silverwood."
-  )
+  (:active
+    :summary "Find Miranda's soon in the Silverwood.")
 
-  phase done
-    summary "Report to Miranda."
-  )
-)
+  (:done
+    :summary "Report to Miranda."))
 
-(defentity miranda: npc
-  brief "Miranda Mathers"
-  description |
-    Miranda is a stout middle-aged woman. She wears practical clothing that
-    has seen numerous repairs over the years.
-  offersQuests [findMySon]
+(defentity miranda (humanoid)
+  (:name "Miranda Mathers"
+   :description "Miranda is a stout middle-aged woman. She wears practical
+     clothing that has seen numerous repairs over the years."
+   :offers-quests (find-my-son))
 
-  when talk(actor: .quest(findMySon, available), self, topic)
-    tell(self, actor) |
-      I know we've never met, but I have nobody else to turn to. My son is
-      missing. Will you help me?
-  )
+  (:when-talk ((actor &quest find-my-son :available) self topic)
+    (tell self actor "I know we've never met, but I have nobody else to turn to.
+      My son is missing. Will you help me?")
+    (offer-quest self 'find-my-son actor))
 
-  after acceptQuest(actor, quest: findMySon, self)
-    tell(self, actor) |
-      Oh, thank the gods! My son went into the woods west of here to pick
-      some berries with his friend. He has been there dozens of times
-      without any problems, but today he never returned. I'm so worried!
+  (:after-accept-quest (actor (quest &quest find-my-son) self)
+    (tell self actor "Oh, thank the gods! My son went into the woods west of
+      here to pick some berries with his friend. He has been there dozens of
+      times without any problems, but today he never returned. I'm so worried!
 
-      Please...find my boy. I don't know what I'd do if I lost him.
-  )
+      Please ... find my boy. I don't know what I'd do if I lost him."))
 
-  when talk(actor: .quest(findMySon, active), self, topic)
-    tell(self, actor) |
-      Have you found my boy? He should be in the forest to the west.
-  )
+  (:when-talk ((actor &quest find-my-son :active) self topic)
+    (tell self actor "Have you found my boy? He should be in the forest to the
+      west."))
 
-  when talk(actor: .quest(findMySon, done), self, topic)
-    tell(self, actor) |
-      Thank the gods you found him! He may be a little rascal, but he's
-      *my* little rascal and I love him to death.
-    completeQuest(actor, findMySon)
-  )
+  (:when-talk ((actor &quest find-my-son :done) self topic)
+    (tell self actor "Thank the gods you found him! He may be a little rascal,
+      but he's *my* little rascal and I love him to death.")
+    (advance-quest self actor 'find-my-son))
 
-  when talk(actor, self, topic)
-    tell(self, actor) "A pleasant day to you!"
-  )
-)
+  (:when-talk (actor self topic)
+    (tell self actor "A pleasant day to you!")))
 
-(defentity rhody: npc
-  brief "Rhody Mathers"
-  pose "fidgets nearby."
-  description |
-    Rhody is a young boy, perhaps eight years old. Every now and then you
-    catch him glancing westward, toward the forest.
+(defentity rhody (humanoid)
+  (:name "Rhody Mathers"
+   :pose "fidgets nearby."
+   :description "Rhody is a young boy, perhaps eight years old. Every now and
+     then you catch him glancing westward, toward the forest.")
 
-  func visible(observer)
-    var state questPhase(observer, findMySon)
-    return state = 'done || state = 'complete
-  )
+  ;; FIXME: visible only if find-my-son is :done or :finished
+
+  (:when-talk (actor self topic)
+    (tell self actor "Hello again! Don't tell my mom, but as soon as her back is
+      turned I'm gonna sneak into the forest for more berries!")))
+
+#|
 
   // FIXME: move this to the Rhody in the forest.
   when talk(actor: .quest(findMySon, active), self, topic)
@@ -2032,43 +1976,29 @@ defquest findMySon
       Rhody wipes his face with his sleeve then heads north, back toward
       Arwyck.
     advanceQuest(actor, findMySon)
-  )
-
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      Hello again! Don't tell my mom, but as soon as her back is turned
-      I'm gonna sneak into the forest for more berries!
-  )
-)
-
-(defentity forestGuard: npc
-  brief "the gate guard"
-  pose "keeps an eye on the road."
-
-  when talk(actor: .quest(atTheGates, active), self, topic)
-    tell(self, actor) "Mirabel's son?"
-    show(actor) "The guard spits into the dirt."
-    tell(self, actor) |
-      I know of him. Always a troublemaker. But I haven't seen him in
-      ages, thank the gods.
-    advanceQuest(actor, atTheGates, 'westGate)
-  )
-
-  when talk(actor, self, topic)
-    tell(self, actor) |
-      Be wary in the forest, traveler. Those spiders are no joke.
-  )
-)
-
-deflocation forestGate: location
-  name "Forest Gate"
-  description |
-    A stout wooden stockade separates Arwyck from the forest to the west. A
-    narrow gate allows access to the wilderness beyond.
-  domain 'outdoor
-  surface 'dirt
-  contents [miranda, rhody, forestGuard]
-  exits [dirtRoad -> 'east to forestRoad3, dirtRoad -> 'west to silverwood.roadZ14]
 )
 
 |#
+
+(defentity forest-guard (guard)
+  (:pose "keeps an eye on the road.")
+
+  (:when-talk ((actor &quest at-the-gates :active) self topic)
+    (tell self actor "Mirabel's son?")
+    (show actor "The guard spits into the dirt.")
+    (tell self actor "I know of him. Always a troublemaker. But I haven't seen
+      him in ages, thank the gods.")
+    (advance-quest self actor 'at-the-gates 'west-gate))
+
+  (:when-talk (actor self topic)
+    (tell self actor "Be wary in the forest to the west, traveler. Those spiders
+    are no joke.")))
+
+(deflocation forest-gate ()
+  (:name "Forest Gate"
+   :description "A stout wooden stockade separates Arwyck from the forest to the
+     west. A narrow gate allows access to the wilderness beyond."
+   :domain :outdoor
+   :surface :dirt
+   :contents (miranda rhody forest-guard)
+   :exits ((dirt-road :east forest-road-3 :west jade.silverwood::road-z14))))
