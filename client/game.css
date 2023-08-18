@@ -418,6 +418,7 @@ a:link {
 /* The chat pane shows messages to/from other players and chat channels. */
 
 #chat_pane {
+    display: none;
 }
 
 /* The equipment pane shows items that the player's avatar has equipped.  */
@@ -474,7 +475,6 @@ a:link {
 /* The inventory pane shows items that the player's avatar is carrying. */
 
 #inventory_pane {
-    display: none;
 }
 
 #inventory_contents {
