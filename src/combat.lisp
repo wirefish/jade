@@ -289,13 +289,12 @@ slots. This value is cached as the :armor trait."
       (:observers (cons (location actor) (? (location actor) :contents)))
     (call-next-method)))
 
-(defgeneric describe-attack (observer actor target attack damage)
-  (:method (observer actor target attack damage)))
+(defgeneric describe-attack (observer actor target attack damage crit)
+  (:method (observer actor target attack damage crit)))
 
 (defmethod attack ((actor combatant) (target combatant))
   (with-slots (attack-timer current-attack) actor
     (bind ((damage crit (resolve-attack actor current-attack target)))
-      (declare (ignore crit)) ; FIXME: handle crits
       (when (> (? target :health) 0)
         (when (<= (decf (? target :health) damage) 0)
           ;; The target dies but not until after this event has been fully
@@ -303,7 +302,8 @@ slots. This value is cached as the :armor trait."
           (with-delay (0)
             (kill actor target))))
       (show-observers (? (location actor) :contents)
-                      (lambda (e) (describe-attack e actor target current-attack damage))))
+                      (lambda (e) (describe-attack e actor target
+                                                   current-attack damage crit))))
     (setf attack-timer nil)
     (begin-attack actor target)))
 
