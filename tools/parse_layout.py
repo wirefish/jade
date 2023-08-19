@@ -50,10 +50,10 @@ connections.
 !! location
 
 For each location type, this section contains an entry for each location type.
-The first line of the symbol for that location followed by a symbol to name the
-new prototype and optionally the name of its prototype. This is followed
-followed by lines describing its attributes, ending with a blank line. For
-example, this section might contain:
+The first line contains the letter for that location followed by a symbol to
+name the new prototype and optionally the name of its prototype. This is
+followed followed by lines describing its attributes, ending with a blank line.
+For example, this section might contain:
 
 F forest
 :name "Forest"
@@ -64,11 +64,12 @@ F forest
 
 This section defines portal prototypes to use when connection locations. For
 each pair of location types, this section may contain an entry whose first line
-consists of the two location symbols followed by a name for the new prototype,
-optionally followed by the name of its prototype. The following lines define the
-portal's attributes. A blank line ends the entry. For example:
+consists of one or more symbols combining two the two location letters, followed
+by a name for the new prototype and optionally the name of its prototype. The
+following lines define the portal's attributes. A blank line ends the entry. For
+example:
 
-FF forest-portal continuing-portal
+FF FC forest-portal continuing-portal
 :brief "the forest"
 
 """
@@ -154,13 +155,14 @@ class Layout:
         for block in blocks:
             header, *attrs = block
             parts = header.split()
-            key = "".join(sorted(parts[0]))
-            name = parts[1]
-            if len(parts) == 3:
-                proto = parts[2]
+            num_keys = next(i for i, item in enumerate(parts) if len(item) != 2)
+            name = parts[num_keys]
+            if len(parts) > num_keys + 1:
+                proto = parts[num_keys + 1]
             else:
                 proto = ""
-            self.portal_prototypes[key] = [name, proto] + attrs
+            for key in parts[:num_keys]:
+                self.portal_prototypes[key] = [name, proto] + attrs
 
     def parse(self, f):
         for section in split_file(f):
@@ -198,8 +200,11 @@ class Layout:
             self.write_definition(f"defentity {name} ({proto})", attrs, f)
 
     def write_portal_prototypes(self, f):
+        unique = {}
+        for proto in self.portal_prototypes.values():
+            unique[proto[0]] = proto
         f.write(";;; portal prototypes\n\n")
-        self.write_prototypes(self.portal_prototypes.values(), f)
+        self.write_prototypes(unique.values(), f)
 
     def location_suffix(self, i, j):
         if j < 26:
