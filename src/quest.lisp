@@ -61,6 +61,9 @@ The state associated with a quest phase can take one of three forms:
    (initial-state :initarg :initial-state :initform nil :reader quest-phase-initial-state
                   :documentation "The state stored upon entering this phase.")))
 
+(defun quest-get-phase (quest index)
+  (elt (quest-phases quest) index))
+
 (defun ensure-quest (arg)
   (ctypecase arg
     (quest arg)
@@ -190,6 +193,7 @@ complete, advances to the next phase. Returns the index of the new phase, or
                                             (if (listp state) (copy-list state) state))
                     (show-notice avatar "You have progressed in the quest ~s!"
                                  (quest-name quest))
+                    (show-map avatar)
                     (update-quests avatar label)
                     next-phase)
                   (progn
@@ -199,6 +203,7 @@ complete, advances to the next phase. Returns the index of the new phase, or
                     (push label (dirty-quests avatar))
                     (show-notice avatar "You have completed the quest ~s!"
                                  (quest-name quest))
+                    (show-map avatar)
                     (notify-observers (list* (location avatar)
                                              (? (location avatar) :contents))
                                       :after-finish-quest avatar quest)

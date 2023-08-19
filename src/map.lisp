@@ -43,14 +43,34 @@ visited only if `cross-domains' is t."
 (defconstant +vendor-map-bit+ (ash 1 15))
 (defconstant +trainer-map-bit+ (ash 1 16))
 
+(defun location-quest-state-bit (location avatar)
+  (when-let ((candidates (loop for entity in (? location :contents)
+                               when (entity-behavior entity)
+                                 collect entity)))
+    ;; Check if any candidate reacts to the actor's current phase of any active
+    ;; quest.
+    (loop for (label phase-index . state) in (active-quests avatar) do
+      (when-let ((quest (symbol-value-or-nil label)))
+        (let ((phase-label (quest-phase-label (quest-get-phase quest phase-index))))
+          (when (some (lambda (x) (reacts-to-quest-phase x label phase-label))
+                      candidates)
+            (return-from location-quest-state-bit
+              (if (= phase-index (1- (length (quest-phases quest))))
+                  +complete-map-bit+
+                  +incomplete-map-bit+))))))
+    ;; Check if any candidate offers a quest that the actor can accept.
+    (loop for entity in candidates do
+      (when-let ((quest-labels (? entity :offers-quests)))
+        (loop for label in quest-labels do
+          (when-let ((quest (symbol-value-or-nil label)))
+            (when (can-accept-quest avatar quest)
+              (return-from location-quest-state-bit +available-map-bit+)))))))
+  0)
+
 (defun location-state (location avatar)
   (let ((contents (? location :contents)))
     (apply #'logior
-           (case nil ; FIXME: (location-quest-state avatar location)
-             (:available +available-map-bit+)
-             (:incomplete +incomplete-map-bit+)
-             (:complete +complete-map-bit+)
-             (t 0))
+           (location-quest-state-bit location avatar)
            (if (some (lambda (x) (typep x 'vendor)) contents) +vendor-map-bit+ 0)
            (if (some (lambda (x) (typep x 'trainer)) contents) +trainer-map-bit+ 0)
            (loop for exit in (? location :exits)

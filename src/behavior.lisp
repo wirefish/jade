@@ -169,6 +169,20 @@ appropriate describes an action taken by `actor'."
 (defun reacts-to-event-p (observer event)
   (? observer 'behavior event))
 
+(defun reacts-to-quest-phase (observer label phase)
+  "Returns true if `observer' has any event handler whose first parameter has a
+quest constraint that matches `label' and `phase'."
+  (when-let ((behavior (entity-behavior observer)))
+    (maphash-values (lambda (handlers)
+                      (when (some (lambda (handler)
+                                    (let ((param (first (event-handler-params handler))))
+                                      (and (eq (second param) '&quest)
+                                           (eq (third param) label)
+                                           (eq (fourth param) phase))))
+                                  handlers)
+                        (return-from reacts-to-quest-phase t)))
+                    behavior)))
+
 (defun observer-list* (actor &rest objects)
   "Like list* except that `actor' appears only once in the resulting list, and
 always as the first element."
