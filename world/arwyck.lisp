@@ -15,7 +15,7 @@
    :description "This once-sleepy hamlet has recently become a hub of
      adventuring activity."
    :climate :temperate
-   :level-range '(1 10)))
+   :level-range (1 10)))
 
 ;;; common prototypes
 
