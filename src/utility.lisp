@@ -72,6 +72,12 @@ elements."
       (values (subseq list 0 n) (subseq list n))
       (values (butlast list (- n)) (last list (- n)))))
 
+(defun map-plist-values (fn plist)
+  "Returns a new plist with the same keys as `plist' in the same order, but
+whose values are the result of applying `fn' to each."
+  (loop for (k v) on plist by #'cddr
+        nconc (list k (funcall fn v))))
+
 ;;; Hash table utilities.
 
 (declaim (inline sethash))
