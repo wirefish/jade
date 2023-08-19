@@ -290,7 +290,8 @@ complete, advances to the next phase. Returns the index of the new phase, or
   (with-slots (label name) quest
     (deactivate-quest actor label)
     (remove-quest-items actor label)
-    (show-notice actor "You are no longer on the quest ~s." name)))
+    (show-notice actor "You are no longer on the quest ~s." name)
+    (show-map actor)))
 
 (defcommand quest (actor ("quest" "qu") :word subcommand :rest quest-name)
   "Display information about your active quests. This command has several

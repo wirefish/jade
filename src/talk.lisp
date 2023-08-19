@@ -85,7 +85,7 @@ particular topic of interest."
   (let ((actor-description (describe-brief actor :capitalize t))
         (verb (parse-verb (first message)))
         (rest (join-words (rest message))))
-    (dolist (observer (? (location actor) :contents))
+    (for-avatars-in (observer (location actor))
       (if (eq observer actor)
           (show observer "You ~a ~a" (verb-plural verb) rest)
           (show observer "~a ~a ~a" actor-description (verb-singular verb) rest)))))

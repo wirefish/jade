@@ -127,7 +127,8 @@
 (defquest dance-monkey
   (:name "Dance Monkey"
    :summary "Find the monkey and dance for it, dance for it, dance for it, oh oh
-     oh. Then tell the young laborer all about it.")
+     oh. Then tell the young laborer all about it. (You can dance using the
+     `help:emote` command. For example, `emote dance`.)")
   (:active
       :summary "Dance in the presence of the monkey in Arwyck.")
   (:done
@@ -1534,7 +1535,8 @@
             (observe-event self :move-along))))))
 
   (:after-emote ((actor &quest dance-monkey :active) message)
-    (when (search "dance" message :test #'char-equal)
+    ;; FIXME: message should just be a string
+    (when (search "dance" (first message) :test #'char-equal)
       (show-near self "The money claps wildly at ~a's dance moves!"
                       (describe-brief actor))
       (advance-quest self actor 'dance-monkey))))

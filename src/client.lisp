@@ -74,7 +74,7 @@ name and whose subsequent elements are arguments to that command."
 
 (defun show-near (actor control-string &rest args)
   (for-avatars-in (avatar (location actor))
-    (show avatar control-string args)))
+    (apply #'show avatar control-string args)))
 
 (defun show-notice (target control-string &rest args)
   (show-text target "showNotice" control-string args))
