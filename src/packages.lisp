@@ -86,6 +86,8 @@
            #:offer-quest
            #:advance-quest
            #:quest-phase
+
+           #:add-damage-type
            ))
 
 (defpackage :jade.lib

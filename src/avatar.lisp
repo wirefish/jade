@@ -224,6 +224,7 @@
                   (? avatar :equipment))
   (when-let ((race (? avatar :race)))
     (merge-traits race cache))
+  (sethash :armor cache (armor-defense avatar))
   (call-next-method))
 
 (defmethod select-attack ((actor avatar) target)

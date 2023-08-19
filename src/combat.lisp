@@ -22,50 +22,93 @@
 select during combat."
   (mapcar #'symbol-value value))
 
-;;; Types of damage.
+;;; Damage types. A few basic ones are defined here; the game world can call
+;;; `add-damage-type' to add more.
 
-(defparameter *damage-types*
-  (plist-hash-table
-   (list
-    ;; Physical
-    :crushing '("crushing" "crushes" :crushing-resistance)
-    :slashing '("slashing" "slashes" :slashing-resistance))))  ;; TODO: add more
+(defstruct damage-type
+  name verb resistance)
+
+(defparameter *damage-types* (make-hash-table))
+
+(defun add-damage-type (key name verb &optional resistance)
+  (let ((resistance (or resistance
+                        (format-symbol :keyword "~a-RESISTANCE" key))))
+    (sethash key *damage-types*
+             (make-damage-type :name name :verb verb :resistance resistance))))
+
+(mapcar (lambda (x) (apply #'add-damage-type x))
+        '((:crushing "crushing" "crushes")
+          (:slashing "slashing" "slashes")
+          (:piercing "piercing" "pierces")
+          (:fire "fire" "burns")
+          (:cold "cold" "freezes")
+          (:electricity "electricity" "zaps")))
 
 (defun resistance-name (damage-type)
-  (format nil "~a resistance" (car (gethash damage-type *damage-types*))))
+  (format nil "~a resistance" (damage-type-name damage-type)))
 
 ;;; Combat traits.
+;;;
+;;; In addition to those described here, damage types and their resistances are
+;;; also considered combat traits and are cached in the same way. Each point in
+;;; a damage type (here called an "affinity") increases effective attack level
+;;; for related attacks by one percent. Similarly, each point in a resistance
+;;; increases effective defense level for related attacks by one percent.
 
-;; In addition to those described below, damage types and their resistances are
-;; also combat traits. Each point in a damage type (or "affinity") increases
-;; effective attack level for related attacks by one percent. Similarly, Each
-;; point in a resistance increases effective defense level for related attacks
-;; by one percent.
+(defun softcap (n k)
+  (if (<= n k)
+      n
+      (let ((x (float (- n k))))
+        (+ k (/ x (1+ (/ x k)))))))
+
+(defun health-bonus (combatant)
+  (1+ (softcap (* 0.01 (gethash :vitality (cached-traits combatant) 0))
+               1.0)))
+
+(defun critical-chance-bonus (combatant)
+  (softcap (* 0.002 (gethash :precision (cached-traits combatant) 0))
+           0.5))
+
+(defun critical-damage-bonus (combatant)
+  (softcap (* 0.01 (gethash :ferocity (cached-traits combatant) 0))
+           1.0))
+
+(defun affinity-bonus (combatant damage-type)
+  (softcap (* 0.01 (gethash damage-type (cached-traits combatant) 0))
+           1.0))
+
+(defun resistance-bonus (combatant damage-type)
+  (let ((resistance (damage-type-resistance (gethash damage-type *damage-types*))))
+    (softcap (* 0.01 (gethash resistance (cached-traits combatant) 0))
+             1.0)))
 
 (defparameter *combat-traits*
   (plist-hash-table
    (list
     ;; Each point of vitality increases maximum health by one percent.
-    :vitality '("vitality")
+    :vitality (list "vitality" #'health-bonus)
     ;; Each point of precision increases the chance of scoring a critical hit by
     ;; 0.1 percent.
-    :precision '("precision")
+    :precision (list "precision" #'critical-chance-bonus)
     ;; Each point of ferocity increases the effect of a critical hit by
     ;; 0.1 percent.
-    :ferocity '("ferocity")))) ; TODO: add more
+    :ferocity (list "ferocity" #'critical-damage-bonus)))) ; TODO: add more
 
-;;; Weights for equipment slots that contribute to the armor trait.
+;;; Armor.
 
+;; Weights for slots equipment slots that contribute to the armor trait. The
+;; values must add up to one.
 (defparameter *armor-slots*
   (plist-hash-table
    (list
-    :head 0
-    :torso 0
-    :back 0
-    :hands 0
-    :waist 0
-    :legs 0
-    :feet)))
+    :head 3/16
+    :torso 4/16
+    :back 1/16
+    :hands 2/16
+    :waist 1/16
+    :legs 3/16
+    :feet 2/16
+    )))
 
 (defun armor-defense (avatar)
   "Returns the total defense provided to `avatar' by all items worn in armor
@@ -73,40 +116,32 @@ slots. This value is cached as the :armor trait."
   (apply #'+
          (maphash (lambda (slot weight)
                     (if-let ((item (? avatar :equipment slot)))
-                      (* weight (? item :level) (or (? item :armor-modifier) 0))
+                      (* (float weight) (? item :level) (or (? item :armor-multiplier) 1))
                       0))
                   *armor-slots*)))
 
-;;;
-
-(defun attack-affinity (actor attack)
-  (let ((damage-type (? attack :damage-type)))
-    (gethash damage-type (cached-traits actor) 0)))
+;;; Attack.
 
 (defun attack-level (actor attack)
   (let* ((actor-level (? actor :level))
-         (attack-level (or (? attack :level) actor-level))
-         (affinity (attack-affinity actor attack)))
+         (attack-level (or (? attack :level) actor-level)))
     (+ actor-level
-       (* (1+ (* affinity 0.01)) attack-level))))
+       (* (1+ (affinity-bonus actor (? attack :damage-type)))
+          attack-level))))
 
 ;;; Defense. Note that the defense trait describes natural defense, and the
 ;;; armor trait describes defense gained from wearing armor.
-
-(defun attack-resistance (target attack)
-  (let ((damage-type (? attack :damage-type)))
-    (gethash damage-type (cached-traits target) 0)))
 
 (defun defense-level (target attack)
   (with-slots (cached-traits) target
     (let ((target-level (? target :level))
           (armor (gethash :armor cached-traits 0))
-          (defense (gethash :defense cached-traits 0))
-          (resistance (attack-resistance target attack)))
+          (defense (gethash :defense cached-traits 0)))
       (+ target-level
-         (* (1+ (* resistance 0.01)) (+ armor defense))))))
+         (* (1+ (resistance-bonus target (? attack :damage-type)))
+            (+ armor defense))))))
 
-;;;
+;;; Computing damage for an attack.
 
 (defun smoothstep (x &optional (from 0.0) (to 1.0))
   (let ((x (max 0.0 (min 1.0 (/ (- x from) (- to from))))))
@@ -114,8 +149,6 @@ slots. This value is cached as the :armor trait."
 
 (defun attack-effectiveness (att def)
   (* 2.0 (smoothstep (- att def) -20 20)))
-
-;;;
 
 (defun roll-damage (actor attack)
   (with-attributes (level base-damage damage-variance) attack
@@ -128,27 +161,24 @@ slots. This value is cached as the :armor trait."
 (defun resolve-attack (actor attack target)
   "Computes the damage done by an instance of `actor' using `attack' against
 `target'. The secondary return value is true if the attack was a critical hit."
-  (with-slots (cached-traits) actor
-    (let* ((att (attack-level actor attack))
-           (def (defense-level target attack))
-           (eff (attack-effectiveness att def))
-           (damage (* eff (roll-damage actor attack)))
-           (crit-chance (+ 0.05 (* 0.001 (gethash :precision cached-traits 0)))))
-      (if (< (random 1.0) crit-chance)
-          (values (round-random (* damage
-                                   (+ 1.5 (* 0.01 (gethash :ferocity cached-traits 0)))))
-                  t)
-          (values (round-random damage) nil)))))
+  (let* ((att (attack-level actor attack))
+         (def (defense-level target attack))
+         (eff (attack-effectiveness att def))
+         (damage (* eff (roll-damage actor attack)))
+         (crit-chance (+ 0.05 (critical-chance-bonus actor))))
+    (if (< (random 1.0) crit-chance)
+        (values (round-random (* damage (+ 1.5 (critical-damage-bonus actor)))) t)
+        (values (round-random damage) nil))))
 
-;;;
+;;; Health.
 
 (defun base-health (combatant)
   (or (? combatant :race :base-health) (? combatant :base-health) 1))
 
 (defun max-health (combatant)
-  (floor (* (1+ (* 0.25 (1- (? combatant :level))))
+  (floor (* (1+ (* 0.5 (1- (? combatant :level))))
             (base-health combatant)
-            (1+ (* 0.01 (gethash :vitality (cached-traits combatant) 0))))))
+            (1+ (health-bonus combatant)))))
 
 ;;; Update cached traits for a combatant.
 
