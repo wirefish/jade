@@ -240,7 +240,7 @@
   (:allow-give (actor self items)
     (every (lambda (e) (entity-isa e 'yellow-ticket)) items))
 
-  (:after-give (actor self items)
+  (:after-give ((actor &quest ticket-please :done) self items)
     (tell self actor "Another ticket redeemed! My bonus this month is going to
       be off the charts! Here's your silver. Don't spend it all in one place!")
     (receive actor self (list (clone-entity 'silver-coin :quantity 30)))
@@ -1533,7 +1533,7 @@
           (with-delay (10)
             (observe-event self :move-along))))))
 
-  (:after-emote (actor message)
+  (:after-emote ((actor &quest dance-monkey :active) message)
     (when (search "dance" message :test #'char-equal)
       (show-near self "The money claps wildly at ~a's dance moves!"
                       (describe-brief actor))
