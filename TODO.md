@@ -1,6 +1,7 @@
 * Add aura icons.
 
-* Make exits just entities? Add exit-message and entry-message.
+* Make exits just entities? That way they can react to events. Add exit-message
+  and entry-message.
 
 * Fix command parsing to allow unambiguous prefixes.
 
@@ -35,4 +36,10 @@
 * Fix verb in remove-quest-items.
 
 * Only show quest icon if matching event is when-talk, after-give, not all
-  events.
+  events. Or based on attribute of entity that reacts.
+
+* Generally handle visible/matchable in: neighbors, show-location, all matching
+  for commands, ...
+
+* Sort inventory pane by group/subgroup/level. Keep inventory sorted? Use the
+  item-sort-key as the primary key, name/singular as secondary key.
