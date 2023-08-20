@@ -62,8 +62,6 @@
    :size +tiny+
    :stackable t))
 
-(defallocator spider-allocator 10)
-
 (defentity giant-spider (combatant)
   (:brief "a giant forest spider"
    :pose "hangs from a nearby branch."
@@ -74,11 +72,9 @@
    :level 1
    :attacks (giant-spider-bite)
    :entry-message "drops down from the branches above."
-   :loot ((0.5 silky-spiderweb)))
+   :loot ((0.5 silky-spiderweb))))
 
-  (:after-exit-world ()
-    (despawn-entity self)
-    (spider-allocator :release)))
+(limit-spawn-quantity 'giant-spider 25)
 
 ;;; portal prototypes
 
@@ -109,8 +105,7 @@
 
   (:after-enter-world ()
     (with-random-interval (10 120)
-      (when (spider-allocator :acquire)
-        (spawn-entity self 'giant-spider)))))
+      (spawn-entity self 'giant-spider))))
 
 (deflocation forest-E00 (forest)
   (:exits ((forest-portal :south forest-E01 :east forest-F00))))
@@ -1253,7 +1248,7 @@
            (forest-portal :north forest-S04 :south forest-S06))))
 
 (deflocation road-T05 (road)
-  (:exits ((road-portal :west road-S05)
+  (:exits ((road-portal :west road-S05 :east jade.arwyck::forest-gate)
            (forest-portal :north forest-T04 :south forest-T06))))
 
 (deflocation road-N06 (road)
@@ -1338,7 +1333,7 @@
 ;;; ranger-camp
 
 (defentity ranger-camp (location)
-  (:name Rangers' Camp
+  (:name "Rangers' Camp"
    :domain :outdoor
    :surface :grass))
 

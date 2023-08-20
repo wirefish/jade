@@ -1922,7 +1922,7 @@
    :level 2)
 
   (:active
-    :summary "Find Miranda's soon in the Silverwood.")
+    :summary "Find Miranda's son in Silverwood.")
 
   (:done
     :summary "Report to Miranda."))
@@ -2005,4 +2005,4 @@
    :domain :outdoor
    :surface :dirt
    :contents (miranda rhody forest-guard)
-   :exits ((dirt-road :east forest-road-3 :west jade.silverwood::road-z14))))
+   :exits ((dirt-road :east forest-road-3 :west jade.silverwood::road-T05))))
