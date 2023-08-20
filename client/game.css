@@ -317,6 +317,7 @@ a:link {
     margin-right: 4px;
     height: 34px;
     flex-grow: 1;
+    overflow: hidden;
 }
 
 .neighbor_brief {
