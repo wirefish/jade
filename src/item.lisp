@@ -20,9 +20,40 @@
    :price nil
    :stackable nil))
 
+;;; Items can be sorted based on their group, subgroup, and level.
+
+(defparameter *item-groups*
+  '((:weapon :dagger :wand)
+    (:armor :head :torso)
+    (:tool)
+    (:resource :metal)))
+
+(defun add-item-group-after (group predecessor)
+  (setf *item-groups*
+        (if predecessor
+            (insert-after-if group (lambda (g) (eq (first g) predecessor)) *item-groups*)
+            (cons group *item-groups*))))
+
+(defun add-item-subgroup (group subgroup)
+  (when-let ((tail (member-if (lambda (g) (eq (first g) group)) *item-groups*)))
+    (appendf (first tail) (list subgroup))))
+
+(defun find-item-group (group)
+  (loop for (g . s) in *item-groups* for i from 1
+    when (eq g group) return (values i s)))
+
+(defun item-sort-key (item)
+  (with-attributes (item-group item-subgroup level) item
+    (bind ((group-index subgroups (find-item-group item-group))
+           (subgroup-index (position item-subgroup subgroups)))
+      (logior level
+              (ash (if subgroup-index (1+ subgroup-index) 0) 10)
+              (ash (if group-index (1+ group-index) 0) 20)))))
+
 ;;; If the item is made of something in particular, the `:material' attribute is
 ;;; a noun describing that something. To facilitate this, defer parsing `:brief'
-;;; until after the item has been created.
+;;; until after the item has been created. Also, precompute the `:item-sort-key'
+;;; attribute when the item is defined.
 
 (defmethod transform-initval (class (name (eql :material)) value)
   (when value (parse-noun value)))
@@ -42,6 +73,7 @@
               (parse-noun (format nil brief
                                   (noun-article material)
                                   (noun-singular material))))))
+    (setf (? item :item-sort-key) (item-sort-key item))
     item))
 
 ;;; The material can be substituted into the description of an item. The brief
@@ -79,8 +111,9 @@
 ;;; two-element list (quantity currency).
 
 (defmethod transform-initval ((class (eql 'item)) (name (eql :price)) value)
-  (bind (((quantity currency) value))
-    (clone-entity currency :quantity quantity)))
+  (when value
+    (bind (((quantity currency) value))
+      (clone-entity currency :quantity quantity))))
 
 ;;; Items can be stacked if they have the same prototype and their `stackable'
 ;;; attribute is not null. If `stackable' is t, there is no limit on how many

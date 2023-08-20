@@ -5,7 +5,8 @@
 (defentity resource (item)
   (:required-skill nil
    :required-rank 1
-   :stackable t))
+   :stackable t
+   :item-group :resource))
 
 ;;; A `resource-node' is an entity that allows players to gather resources.
 

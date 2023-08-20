@@ -7,7 +7,8 @@
    :description "The ore is a small piece of ~*~a-bearing rock. It can be
      smelted to obtain ~:*~a in its pure form."
    :stackable t
-   :required-skill mining))
+   :required-skill mining
+   :item-subgroup :metal))
 
 (defentity copper-ore (ore)
   (:material "copper"
