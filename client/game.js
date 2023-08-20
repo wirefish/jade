@@ -251,7 +251,7 @@ MessageHandler.prototype.updateSkills = function(karma, ...skills) {
         } else if (div) {
             // Update an existing entry.
             if (max_rank > 0)
-                div.children(1).innerHTML = `${rank} / ${max_rank}`;
+                div.children[1].innerHTML = `${rank} / ${max_rank}`;
         } else {
             // Find the existing skill entry before which to insert the new one,
             // based on ordering by skill name. Ignore the first child, which is
