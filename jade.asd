@@ -21,6 +21,7 @@
 
              (:file "config")
              (:file "entity")
+             (:file "generator")
              (:file "activity")
              (:file "behavior")
              (:file "match")
