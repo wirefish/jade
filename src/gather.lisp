@@ -9,13 +9,13 @@
 
 ;;; A `resource-node' is an entity that allows players to gather resources.
 
-(defclass resource-node (entity) ())
+(defclass resource-node (entity)
+  ((users :initform nil :accessor resource-node-users)))
 
 (defentity resource-node (&class resource-node)
   (:required-skill nil
    :required-tool-level 1
-   :resources nil
-   :users nil))
+   :resources nil))
 
 (defmethod transform-initval ((class (eql 'resource-node)) (name (eql :resources)) value)
   "The `:resources' attribute describes a generator used to determine resources
@@ -25,11 +25,6 @@ gathered with each attempt."
 ;;;
 
 (defgeneric gather (actor node))
-
-(defmethod gather :around (actor node)
-  (process-simple-event gather (actor node)
-      (:observers (? (location actor) :contents))
-    (call-next-method)))
 
 (defmethod gather ((avatar avatar) (node resource-node))
   (let* ((rank (skill-rank avatar (? node :required-skill) 0))
@@ -46,6 +41,37 @@ gathered with each attempt."
     (push avatar (? node :users))
     ;; TODO: make the node disappear after a bit
     ))
+
+;;;
+
+(defclass gathering (activity)
+  ((node :initarg :node :initform nil :reader gathering-node)))
+
+(defparameter *gathering-duration* 3)  ; FIXME: from node?
+
+(defmethod begin-activity (actor (activity gathering))
+  (with-slots (node) activity
+    (push actor (resource-node-users node))
+    (let ((msg (action-message actor "begins to gather from ~a." (describe-brief node))))
+      (show-observers (observer-list* actor (location actor) (? (location actor) :contents))
+                      msg :before-gather actor))
+    (start-casting actor *gathering-duration*)
+    (with-delay (*gathering-duration*)
+      (finish-activity actor activity))))
+
+(defmethod finish-activity (actor (activity gathering))
+  (with-slots (node) activity
+    (stop-casting actor)
+    (gather actor node)
+    (let ((msg (action-message actor "finishes gathering.")))
+      (show-observers (? (location actor) :contents) msg :after-gather actor))
+    (unless (deletef (resource-node-users node) actor)
+      (despawn-entity node))))
+
+(defmethod cancel-activity (actor (activity gathering))
+  (stop-casting actor)
+  (deletef (resource-node-users (gathering-node activity)) actor)
+  (show actor "Your gathering has been interrupted."))
 
 ;;;
 
@@ -81,7 +107,7 @@ gathering tool equipped."
                   (describe-brief tool :article nil)
                   (describe-brief node :article :definite)))
            (t
-            (gather actor node)))))
+            (begin-activity actor (make-instance 'gathering :node node))))))
       (t
        (show actor "Do you want to gather from ~a?"
              (format-list #'describe-brief nodes))))))
