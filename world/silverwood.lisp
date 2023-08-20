@@ -77,6 +77,7 @@
    :loot ((0.5 silky-spiderweb)))
 
   (:after-exit-world ()
+    (despawn-entity self)
     (spider-allocator :release)))
 
 ;;; portal prototypes
