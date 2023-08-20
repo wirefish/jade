@@ -44,13 +44,14 @@
 
 (defstruct event-handler event params fn)
 
-(defun push-event-handler (entity event handler)
+(defun push-event-handler (entity event params fn)
   "Adds an event handler to the front of the list of an entity's handlers for a
 specific event."
   (with-slots (behavior) entity
     (when (null behavior)
       (setf behavior (make-hash-table)))
-    (push handler (gethash event behavior))))
+    (push (make-event-handler :event event :params params :fn fn)
+          (gethash event behavior))))
 
 (defun allow-phase-p (event)
   "Returns t if `event' names an event in the allow phase."
@@ -108,11 +109,7 @@ satisfies `constraint'."
                collect
                (let ((params (normalize-parameters params)))
                  `(push-event-handler
-                   ,entity ',event
-                   (make-event-handler
-                     :event ,event
-                     :params ',params
-                     :fn ,(make-handler-fn event params body)))))
+                   ,entity ',event ',params ,(make-handler-fn event params body))))
        ,entity)))
 
 (defgeneric observe-event (observer event &rest args))
