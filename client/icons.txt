@@ -81,7 +81,14 @@ brass_key       $loot/Key_Type_4.png
 
 # Food
 bread           $resources/Bread.png
-mushroom        $loot/Mushroom_Type_6.png
+
+# Mushrooms
+mushroom_1      $loot/Mushroom_Type_1.png
+mushroom_2      $loot/Mushroom_Type_2.png
+mushroom_3      $loot/Mushroom_Type_3.png
+mushroom_4      $loot/Mushroom_Type_4.png
+mushroom_5      $loot/Mushroom_Type_5.png
+mushroom_6      $loot/Mushroom_Type_6.png
 
 # Misc. items
 sack            $loot/Sack.png
