@@ -59,15 +59,15 @@
 
            #:location
            #:deflocation
-           #:spawn-entity
-           #:spawn-unique-entity
-           #:despawn-entity
            #:make-exit
            #:exit-dir
            #:exit-dest
            #:direction-opposite
            #:traverse-portal
            #:find-exit
+           #:spawn-entity
+           #:spawn-unique-entity
+           #:limit-spawn-quantity
 
            #:avatar
            #:change-race
