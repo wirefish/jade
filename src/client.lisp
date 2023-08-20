@@ -233,7 +233,7 @@ name and whose subsequent elements are arguments to that command."
                          (rank (gethash label (skills avatar))))
                      (with-slots (name max-rank) skill
                        (if rank
-                           (list label name rank max-rank)
+                           (list label name (floor rank) max-rank)
                            (list label))))))))
 
 ;;;

@@ -82,6 +82,9 @@
 
 ;;;
 
+(defun skill-rank (avatar skill &optional default)
+  (gethash skill (skills avatar) default))
+
 (defun skill-rank-increase (current-rank difficulty)
   "Returns the amount by which to increase an avatar's rank in a skill,
 based on the avatar's current rank and the difficulty of the task being
@@ -89,8 +92,20 @@ performed. Difficulty depends on context; it could be computed from the level of
 an adversary for a combat skill, or be the required rank of a resource for a
 gathering skill, etc."
   (if (<= current-rank difficulty)
-      1.0
-      (max 0.0 (- 1.0 (/ (- current-rank difficulty) 20)))))
+      1
+      (let ((k (floor (/ (- current-rank difficulty) 4))))
+        (/ 1 (expt 2 k)))))
+
+(defun increase-skill-rank (avatar label difficulty)
+  (when-let* ((rank (skill-rank avatar label))
+              (skill (symbol-value-as 'skill label nil)))
+    (let ((new-rank (+ rank (skill-rank-increase rank difficulty))))
+      (sethash label (skills avatar) new-rank)
+      (when (> (floor new-rank) (floor rank))
+        (show-notice avatar "Your rank in ~a is now ~d!"
+                     (skill-name skill)
+                     (floor new-rank))
+        (update-skills avatar label)))))
 
 ;;; A trainer is an entity with a `:teaches' attribute, which is a list of
 ;;; labels indicating the skills that can be learned from the trainer. A trainer

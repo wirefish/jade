@@ -110,11 +110,6 @@
   ;; FIXME: update neighbors. check for change.
   (update-avatar actor :health :energy))
 
-;;; Skills.
-
-(defun skill-rank (avatar skill &optional default)
-  (gethash skill (skills avatar) default))
-
 ;;; Experience.
 
 (defun xp-required-for-level (level)

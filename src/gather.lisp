@@ -14,6 +14,7 @@
 
 (defentity resource-node (&class resource-node)
   (:required-skill nil
+   :required-rank 1
    :required-tool-level 1
    :resources nil))
 
@@ -34,8 +35,9 @@ gathered with each attempt."
                     (and resources (funcall resources)))))
     (if obtained
         (progn
-          ;; TODO: increase rank based on items received?
-          (receive avatar "obtain" obtained))
+          (receive avatar "obtain" obtained)
+          (with-attributes (required-skill required-rank) node
+            (increase-skill-rank avatar required-skill required-rank)))
         (show avatar "You do not obtain anything from ~a."
               (describe-brief node :article :definite)))))
 
@@ -86,6 +88,7 @@ gathering tool equipped."
       (1
        (let* ((node (first nodes))
               (skill (symbol-value-as 'skill (? node :required-skill) nil))
+              (rank (skill-rank actor (skill-label skill)))
               (tool (? actor :equipment :tool)))
          (cond
            ((null skill)
@@ -96,8 +99,11 @@ gathering tool equipped."
            ((find actor (resource-node-users node))
             (show actor "You cannot gather from ~a again."
                   (describe-brief node :article :definite)))
-           ((null (skill-rank actor (skill-label skill)))
+           ((null rank)
             (show actor "You need to learn ~a before gathering from ~a."
+                  (skill-name skill) (describe-brief node :article :definite)))
+           ((< rank (? node :required-rank))
+            (show actor "Your rank in ~a is too low to gather from ~a."
                   (skill-name skill) (describe-brief node :article :definite)))
            ((or (null tool) (not (entity-isa tool (skill-required-tool skill))))
             (show actor "You do not have the right type of tool equipped to gather from ~a."
