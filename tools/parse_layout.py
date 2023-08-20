@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 import argparse
 from collections import defaultdict
 
@@ -112,32 +113,33 @@ class Layout:
 
     def parse_region(self, blocks):
         if len(blocks) != 1:
-            print("region section must contain exactly one block")
-            return
+            raise RuntimeError("region section must contain exactly one block")
         self.region = blocks[0]
 
     def parse_map(self, blocks):
         if len(blocks) != 1:
-            print("map section must contain exactly one block")
+            raise RuntimeError("map section must contain exactly one block")
             return
         block = blocks[0]
 
         self.cols = 0
         for line in block:
             if len(line) % 2 == 0:
-                print(f"length of map line must be odd: \"{line}\"")
+                raise RuntimeError(f"length of map line must be odd: \"{line}\"")
                 return
             self.cols = max(self.cols, (len(line) + 1) // 2)
 
         if len(block) % 2 == 0:
-            print("map block must contain an odd number of lines")
+            raise RuntimeError("map block must contain an odd number of lines")
             return
         self.rows = (len(block) + 1) // 2
+
+        print(f"map is {self.cols} by {self.rows}")
 
         # Add padding to make parsing easier.
         empty_row = " " * (2 * self.cols + 3)
         self.map_rows = [empty_row, empty_row,
-                         *["  " + line.ljust(2 * self.cols - 1) for line in block],
+                         *["  " + line.ljust(2 * self.cols + 1) for line in block],
                          empty_row, empty_row]
 
     def parse_locations(self, blocks):
@@ -178,7 +180,7 @@ class Layout:
             elif name == "portal":
                 self.parse_portals(blocks)
             else:
-                print(f"ignoring invalid region {name}")
+                raise RuntimeError(f"invalid section {name}")
 
     def write_attributes(self, attrs, f):
         f.write(f"  ({attrs[0]}")
@@ -243,8 +245,8 @@ class Layout:
     ]
 
     def get_exits(self, letter, i, j):
-        x = 2 + 2 * i
-        y = 2 + 2 * j
+        x = 2 + i * 2
+        y = 2 + j * 2
         rows = self.map_rows
         exits = defaultdict(list)
         for (dx, dy, dir_name) in Layout.exit_directions:
@@ -265,6 +267,9 @@ class Layout:
             for (dir, dest) in instances:
                 s += f" {dir} {dest}"
             s += ")"
+            if len(s) > 76:
+                pos = s.rfind(" :", 0, 74)
+                s = s[:pos] + "\n" + " " * (13 + len(portal)) + s[pos+1:]
             parts.append(s)
         sep = "\n" + " " * 11
         return f":exits ({sep.join(parts)})"
@@ -279,33 +284,38 @@ class Layout:
     def write_locations(self, f):
         groups = defaultdict(list)
         rows = self.map_rows
-        for j in range(0, (len(rows) - 3) // 2):
-            y = 2 + j * 2
+        for j in range(0, self.rows):
             row = rows[2 + j * 2]
-            for i in range(0, (len(row) - 3) // 2):
+            for i in range(0, self.cols):
                 letter = row[2 + i * 2]
                 if letter != " ":
                     groups[letter].append([i, j])
 
+        num_locations = 0
         for (letter, ijs) in groups.items():
             f.write(f";;; {self.location_prototypes[letter][0]}\n\n")
             self.write_prototypes([self.location_prototypes[letter]], f)
             for (i, j) in ijs:
+                num_locations += 1
                 self.write_location(letter, i, j)
+        print(f"defined {num_locations} locations")
 
     def save(self, f):
         self.write_region(f)
         self.write_map(f)
         self.write_portal_prototypes(f)
         self.write_locations(f)
-        print(f"map is {self.cols} by {self.rows}")
 
 if __name__ == "__main__":
     args = parser.parse_args()
 
-    layout = Layout()
-    with open(args.input[0]) as f:
-        layout.parse(f)
+    try:
+        layout = Layout()
+        with open(args.input[0]) as f:
+            layout.parse(f)
 
-    with open(args.output, "w") as f:
-        layout.save(f)
+        with open(args.output, "w") as f:
+            layout.save(f)
+    except RuntimeError as e:
+        print(f"error: {e}", file=sys.stderr)
+        exit(1)
