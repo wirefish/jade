@@ -35,12 +35,9 @@ gathered with each attempt."
     (if obtained
         (progn
           ;; TODO: increase rank based on items received?
-          (receive avatar nil obtained))
+          (receive avatar "obtain" obtained))
         (show avatar "You do not obtain anything from ~a."
-              (describe-brief node :article :definite)))
-    (push avatar (? node :users))
-    ;; TODO: make the node disappear after a bit
-    ))
+              (describe-brief node :article :definite)))))
 
 ;;;
 
@@ -95,6 +92,9 @@ gathering tool equipped."
             (format-log :warning "~s requires invalid skill ~s"
                         (entity-type node) (? node :required-skill))
             (show actor "You cannot gather from ~a."
+                  (describe-brief node :article :definite)))
+           ((find actor (resource-node-users node))
+            (show actor "You cannot gather from ~a again."
                   (describe-brief node :article :definite)))
            ((null (skill-rank actor (skill-label skill)))
             (show actor "You need to learn the skill ~s before gathering from ~a."

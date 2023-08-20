@@ -357,12 +357,12 @@ location."
     (call-next-method)))
 
 (defmethod receive ((avatar avatar) source items)
-  (if source
-      (show avatar "~a gives you ~a."
-            (describe-brief source :article :definite :capitalize t)
-            (format-list #'describe-brief items))
-      (show avatar "You receive ~a."
-            (format-list #'describe-brief items)))
+  (typecase source
+    (entity (show avatar "~a gives you ~a."
+                  (describe-brief source :article :definite :capitalize t)
+                  (format-list #'describe-brief items)))
+    (string (show avatar "You ~a ~a." source (format-list #'describe-brief items)))
+    (t (show avatar "You receive ~a." source (format-list #'describe-brief items))))
   (update-inventory avatar
                     (loop for item in items
                           collect (insert-item avatar :inventory item)))
