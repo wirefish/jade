@@ -68,6 +68,7 @@
            #:spawn-entity
            #:spawn-unique-entity
            #:limit-spawn-quantity
+           #:despawn-entity
 
            #:avatar
            #:change-race

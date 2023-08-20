@@ -24,7 +24,9 @@ If `force' is true, do not allow observers to disallow the action."))
   (declare (ignore force))
   (cancel-current-activity actor)
   (deletef (? location :contents) actor)
-  (setf (entity-container actor) nil)
+  ;; NOTE: This doesn't set (entity-container actor) to nil, since it should
+  ;; still be set in exit-world if applicable. It will either be reset upon
+  ;; entering a new location, or unused after exit-world.
   (for-avatars-in (avatar location)
     (remove-neighbor avatar actor)))
 

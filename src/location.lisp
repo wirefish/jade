@@ -181,7 +181,10 @@ starting and stopping simulation.")
   (unless (contains-isa location :contents label)
     (apply #'spawn-entity location label attributes)))
 
-
 (defun limit-spawn-quantity (label quantity)
   (when-let ((entity (symbol-value-as 'entity label)))
     (setf (? entity :allocator) (make-allocator quantity))))
+
+(defun despawn-entity (entity)
+  (exit-location entity (location entity) nil)
+  (exit-world entity))
