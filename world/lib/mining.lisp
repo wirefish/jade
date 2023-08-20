@@ -2,31 +2,36 @@
 
 ;;; Ore.
 
-(defentity ore (item)
+(defentity ore (resource)
   (:brief "a chunk[s] of ~*~a ore"
    :description "The ore is a small piece of ~*~a-bearing rock. It can be
      smelted to obtain ~:*~a in its pure form."
-   :stackable t))
+   :stackable t
+   :required-skill mining))
 
 (defentity copper-ore (ore)
-  (:material "copper"))
+  (:material "copper"
+   :required-rank 1))
 
 (defentity tin-ore (ore)
-  (:material "tin"))
+  (:material "tin"
+   :required-rank 10))
 
 (defentity zinc-ore (ore)
-  (:material "zinc"))
+  (:material "zinc"
+   :required-rank 20))
 
 (defentity silver-ore (ore)
-  (:material "silver"))
-
-(defentity gold-ore (ore)
-  (:material "gold"))
+  (:material "silver"
+   :required-rank 30))
 
 (defentity iron-ore (ore)
-  (:material "iron"))
+  (:material "iron"
+   :required-rank 40))
 
-;;; TODO: Other mineable things.
+(defentity gold-ore (ore)
+  (:material "gold"
+   :required-rank 50))
 
 ;;; Tools.
 
@@ -59,7 +64,8 @@
   (:name "mining"
    :summary "Allows you to obtain ore and other resources from mineral
      deposits."
-   :price (20 silver-coin)))
+   :price (20 silver-coin)
+   :required-tool pickaxe))
 
 ;;; Trainer.
 

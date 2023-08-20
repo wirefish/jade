@@ -48,7 +48,6 @@ already left its location."))
 
 (defmethod exit-world (entity)
   (when-let ((allocator (? entity :allocator)))
-    (format-log :info "despawning ~a" entity)
     (deletef (? (location entity) :contents) entity)
     (funcall allocator :release)))
 

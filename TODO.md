@@ -31,3 +31,7 @@
 * Add chat channels.
 
 * Badge chat pane icon when new chat appears.
+
+* Gathering: Make it an activity. Track who is using and who has used a node.
+  Make the node disappear after a few seconds once it has no users. Disallow
+  using again.

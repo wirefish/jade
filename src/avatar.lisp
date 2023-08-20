@@ -112,8 +112,8 @@
 
 ;;; Skills.
 
-(defun skill-rank (avatar skill)
-  (? avatar :skills skill))
+(defun skill-rank (avatar skill &optional default)
+  (gethash skill (skills avatar) default))
 
 ;;; Experience.
 

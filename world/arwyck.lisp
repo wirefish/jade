@@ -1879,12 +1879,11 @@
 
 ;;; garden
 
-(defentity gariande (humanoid) ; FIXME: (botany-trainer)
+(defentity gariande (botany-trainer)
   (:name "Gariande"
    :pose "is busily tying up bundles of herbs."
    :description "Gariande is an very old woman with deep wrinkles on her face. Her
-     steel-gray hair is tied in a bun."
-   :teaches nil) ; FIXME: from botany-trainer
+     steel-gray hair is tied in a bun.")
 
   (:when-talk (actor self topic)
     (tell self actor "Come for some sweet corn? Or perhaps a few tomatoes? Well,
@@ -1897,7 +1896,7 @@
    :pose "is watering the plants."
    :description "Bonnos is a man of perhaps thirty years, with perhaps ten
       years' worth of dirt under his fingernails."
-   :sells nil) ; FIXME: copper and bronze sickles
+   :sells (copper-sickle bronze-sickle))
 
   (:when-talk (actor self topic)
     (tell self actor "Nice to meet you. Grandmother keeps me quite busy here, so

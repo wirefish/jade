@@ -76,6 +76,62 @@
 
 (limit-spawn-quantity 'giant-spider 25)
 
+;;; mushroom clusters
+
+(defentity small-brown-mushroom (resource)
+  (:brief "a small brown mushroom"
+   :required-skill botany
+   :required-rank 1))
+
+(defentity small-white-mushroom (resource)
+  (:brief "a small white mushroom"
+   :required-skill botany
+   :required-rank 20))
+
+(defentity small-speckled-mushroom (resource)
+  (:brief "a small speckled mushroom"
+   :required-skill botany
+   :required-rank 40))
+
+(defentity mushroom-cluster (resource-node)
+  (:brief "a cluster of small mushrooms"
+   :required-skill botany
+   :resources ((1.0 small-brown-mushroom :quantity (random-integer 1 3))
+               (0.2 small-white-mushroom)
+               (0.01 small-speckled-mushroom))))
+
+(limit-spawn-quantity 'mushroom-cluster 25)
+
+;;; maple trees
+
+(defentity maple-log (resource-node)
+  (:brief "a maple log"
+   :required-skill logging
+   :required-rank 1))
+
+(defentity maple-tree (resource-node)
+  (:brief "a mature maple tree"
+   :pose "stands nearby."
+   :required-skill logging
+   :resources ((1.0 maple-log :quantity (random-integer 1 3)))))
+
+(limit-spawn-quantity 'maple-tree 20)
+
+;;; birch trees
+
+(defentity birch-log (resource-node)
+  (:brief "a birch log"
+   :required-skill logging
+   :required-rank 20))
+
+(defentity birch-tree (resource-node)
+  (:brief "a mature birch tree"
+   :pose "stands nearby."
+   :required-skill logging
+   :resources ((1.0 birch-log :quantity (random-integer 1 2)))))
+
+(limit-spawn-quantity 'birch-tree 5)
+
 ;;; portal prototypes
 
 (defentity forest-portal (continuing-portal)
@@ -100,12 +156,18 @@
 
 (defentity forest (location)
   (:name "Forest"
+   :description "You are surrounded by a beautiful forest of birch and maple
+     trees."
    :domain :outdoor
    :surface :forest)
 
   (:after-enter-world ()
     (with-random-interval (10 120)
-      (spawn-entity self 'giant-spider))))
+      (whichever
+       (spawn-entity self 'mushroom-cluster)
+       (spawn-entity self 'maple-tree)
+       (spawn-entity self 'birch-tree)
+       (spawn-entity self 'giant-spider)))))
 
 (deflocation forest-E00 (forest)
   (:exits ((forest-portal :south forest-E01 :east forest-F00))))

@@ -60,6 +60,7 @@
                        (:file "weapons")
                        (:file "portals")
                        (:file "vehicles")
+                       (:file "botany")
                        (:file "mining")
                        (:file "avatar")
                        ))

@@ -173,14 +173,14 @@ starting and stopping simulation.")
          (allocator (? proto :allocator)))
     (when (or (null allocator) (funcall allocator :acquire))
       (let ((entity (apply #'clone-entity proto args)))
-        (format-log :info "spawning ~a" entity)
         (enter-world entity)
         (enter-location entity location nil)
         entity))))
 
 (defun spawn-unique-entity (location label &rest attributes)
   (unless (contains-isa location :contents label)
-     (apply #'spawn-entity location label attributes)))
+    (apply #'spawn-entity location label attributes)))
+
 
 (defun limit-spawn-quantity (label quantity)
   (when-let ((entity (symbol-value-as 'entity label)))

@@ -27,6 +27,14 @@
    (exclusive-skills
     :initarg :exclusive-skills :initform nil :reader skill-exclusive-skills
     :documentation "Skills that must not be known when learning this skill.")
+   (required-tool
+    :initarg :required-tool :initform nil :reader skill-required-tool
+    :documentation "A label defining the type of tool that must be equipped in
+      order to exercise this skill.")
+   (required-nearby
+    :initarg :required-nearby :initform nil :reader skill-required-nearby
+    :documentation "A label defining the type of object that must be present at
+      the current location in order to exercise this skill.")
    (price
     :initarg :price :initform nil :reader skill-price
     :documentation "A list of the form (quantity currency) describing the
