@@ -79,16 +79,19 @@
 
 (defentity small-brown-mushroom (resource)
   (:brief "a small brown mushroom"
+   :icon mushroom-6
    :required-skill botany
    :required-rank 1))
 
 (defentity small-white-mushroom (resource)
   (:brief "a small white mushroom"
+   :icon mushroom-3
    :required-skill botany
    :required-rank 20))
 
 (defentity small-speckled-mushroom (resource)
   (:brief "a small speckled mushroom"
+   :icon mushroom-1
    :required-skill botany
    :required-rank 40))
 
