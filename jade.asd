@@ -61,6 +61,7 @@
                        (:file "portals")
                        (:file "vehicles")
                        (:file "botany")
+                       (:file "logging")
                        (:file "mining")
                        (:file "avatar")
                        ))

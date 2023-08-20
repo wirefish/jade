@@ -32,6 +32,7 @@
 
 * Badge chat pane icon when new chat appears.
 
-* Gathering: Make it an activity. Track who is using and who has used a node.
-  Make the node disappear after a few seconds once it has no users. Disallow
-  using again.
+* Fix verb in remove-quest-items.
+
+* Only show quest icon if matching event is when-talk, after-give, not all
+  events.

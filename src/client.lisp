@@ -142,8 +142,8 @@ name and whose subsequent elements are arguments to that command."
 (defun show-neighbors (avatar)
   (send-client-command
    avatar "setNeighbors"
-   (loop for entity in (? (entity-container avatar) :contents)
-         unless (eq entity avatar)
+   (loop for entity in (? (location avatar) :contents)
+         unless (or (eq entity avatar) (? entity :implicit) (? entity :implicit-neighbor))
            collect (neighbor-properties entity))))
 
 (defun update-neighbor (avatar neighbor &rest properties)
@@ -168,7 +168,7 @@ name and whose subsequent elements are arguments to that command."
            when t  ; FIXME: (visiblep exit avatar)
              collect (exit-dir exit))
      (loop for obj in (? location :contents)
-           when (and (not (eq obj avatar)) (not (? obj :implicit)))  ; FIXME: (visiblep obj viewer))
+           unless (or (eq obj avatar) (? obj :implicit))  ; FIXME: visibility?
              collect (list (entity-id obj) (describe-brief obj) (describe-pose obj))))))
 
 ;;;

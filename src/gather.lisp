@@ -97,7 +97,7 @@ gathering tool equipped."
             (show actor "You cannot gather from ~a again."
                   (describe-brief node :article :definite)))
            ((null (skill-rank actor (skill-label skill)))
-            (show actor "You need to learn the skill ~s before gathering from ~a."
+            (show actor "You need to learn ~a before gathering from ~a."
                   (skill-name skill) (describe-brief node :article :definite)))
            ((or (null tool) (not (entity-isa tool (skill-required-tool skill))))
             (show actor "You do not have the right type of tool equipped to gather from ~a."

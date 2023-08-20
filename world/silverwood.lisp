@@ -53,11 +53,10 @@
   (:speed 2.5
    :base-damage 4))
 
-(defentity silky-spiderweb (item)
-  (:brief "a silky spiderweb"
-   :description "This spiderweb can be turned into thread by a skilled
-     weaver."
-   :icon spiderweb
+(defentity spider-silk (item)
+  (:brief "a clump of spider silk"
+   :description "This item can be turned into thread by a skilled weaver."
+   :icon spider-web
    :level 1
    :size +tiny+
    :stackable t))
@@ -72,7 +71,7 @@
    :level 1
    :attacks (giant-spider-bite)
    :entry-message "drops down from the branches above."
-   :loot ((0.5 silky-spiderweb))))
+   :loot ((0.5 spider-silk))))
 
 (limit-spawn-quantity 'giant-spider 25)
 
@@ -96,7 +95,7 @@
 (defentity mushroom-cluster (resource-node)
   (:brief "a cluster of small mushrooms"
    :required-skill botany
-   :resources ((1.0 small-brown-mushroom :quantity (random-integer 1 3))
+   :resources ((1.0 small-brown-mushroom :quantity (random-integer 1 2))
                (0.2 small-white-mushroom)
                (0.01 small-speckled-mushroom))))
 
@@ -113,7 +112,7 @@
   (:brief "a mature maple tree"
    :pose "stands nearby."
    :required-skill logging
-   :resources ((1.0 maple-log :quantity (random-integer 1 3)))))
+   :resources ((1.0 maple-log :quantity (random-integer 1 2)))))
 
 (limit-spawn-quantity 'maple-tree 20)
 
@@ -167,6 +166,7 @@
        (spawn-entity self 'mushroom-cluster)
        (spawn-entity self 'maple-tree)
        (spawn-entity self 'birch-tree)
+       (spawn-entity self 'large-spiderweb)
        (spawn-entity self 'giant-spider)))))
 
 (deflocation forest-E00 (forest)
@@ -1239,10 +1239,115 @@
   (:exits ((stream-portal :west forest-stream-Q13 :south canyon-R14)
            (forest-portal :north forest-R12 :east forest-S13))))
 
+;;; cabin
+
+(defentity cabin-exterior ()
+  (:brief "a tiny cabin"
+   :pose "stands in the middle of the clearing."
+   :description "The cabin's exterior is decorated in bright colors. Smoke rises from a
+    stone chimney. A gaily painted door leads into the cabin."
+   :implicit-neighbor t))
+
+(defentity cabin-outside-door (entry-doorway)
+  (:brief "a gaily painted door"
+   :exit-verb "heads into the cabin."
+   :entry-verb "comes from inside the cabin."))
+
+(defentity cabin-inside-door (exit-doorway)
+  (:brief "a gaily painted door"
+   :exit-verb "leaves the cabin."
+   :entry-verb "enters the cabin."))
+
+(defentity old-sword ()
+  (:brief "a single-edged sword"
+   :pose "hangs above the hearth."
+   :icon swords-10
+   :description "Although clearly old and in need of sharpening, the sword
+     appears to be of excellent craftsmanship. Its long hilt is wrapped with
+     dark cord and its small circular guard is ornately carved.
+
+     A slip of parchment is tacked to the wall below the sword. It reads:
+
+     > This blade is given to Knight-Captain Zara Alenys in recognition of her
+     heroism at the Battle of Three Rivers. May it help her succeed in her
+     quest."))
+
+(defquest find-spiderwebs
+  (:name "Silk for Sewing"
+   :summary "Collect large spiderwebs for the hermit in Silverwood."
+   :level 2)
+
+  (:active
+    :summary "Collect five large spiderwebs."
+    :initial-state 0)
+
+  (:done
+    :summary "Return to the hermit."))
+
+(defentity large-spiderweb (item)
+  (:brief "a large spiderweb"
+   :pose "is visible in the branches of a nearby tree."
+   :description "The strands of this web are especially strong and thick."
+   :icon spider-web
+   :alts ("large web")
+   :stackable 5
+   :quest find-spiderwebs)
+
+  (:allow-take ((actor &quest find-spiderwebs :active) self container))
+
+  (:allow-take (actor self container)
+    (show actor "You cannot take that right now.")
+    (disallow-action))
+
+  (:after-take ((actor &quest find-spiderwebs :active) self container)
+    (advance-quest self actor 'find-spiderwebs 1/5)))
+
+(limit-spawn-quantity 'large-spiderweb 15)
+
+(defentity hermit (humanoid)
+  (:brief "an old hermit"
+   :pose "whistles as she mends a shirt."
+   :description "The hermit is an elderly woman, her skin deeply wrinkled from
+     many years of wind and sun. She is stooped and walks only with great
+     effort, but her eyes and mind are as sharp as ever. An old scar runs down
+     the left side of her face."
+   :offers-quests (find-spiderwebs))
+
+  (:when-talk ((actor &quest find-spiderwebs :available) self topic)
+    (tell self actor "Ah, a visitor. Few people come to my little house these
+      days, what with the spiders and worse lurking in the woods. Speaking of
+      spiders, I could use your help if you are willing.")
+    (offer-quest self 'find-spiderwebs actor))
+
+  (:after-accept-quest (actor (quest &quest find-spiderwebs) self)
+    (tell self actor "As you can see I like to sew; it helps me pass the time
+      and keeps my nieces and nephews from running around bare naked! There's
+      just one problem: I need spider silk to make thread. Perhaps you can bring
+      me a few of the largest webs? You can find them all over the forest, but
+      watch out for the webspinners! They can be dangerous."))
+
+  (:when-talk ((actor &quest find-spiderwebs :active) self topic)
+    (tell self actor "Having trouble finding webs? Just look around the woods,
+      you'll see them up in the branches."))
+
+  (:when-talk ((actor &quest find-spiderwebs :done) self topic)
+    (tell self actor "Thank you! You can rest assured that I will put these to
+      good use.")
+    (advance-quest self actor 'find-spiderwebs)))
+
+(deflocation cabin ()
+  (:name "Cabin in the Woods"
+   :description "This one-room cabin is tiny but impeccably maintained."
+   :domain :indoor
+   :surface :wood
+   :contents (old-sword hermit)
+   :exits ((cabin-inside-door :out clearing-E05))))
+
 ;;; clearing
 
 (defentity clearing (location)
   (:name "Small Clearing"
+   :description "This grassy area is surrounded by the forest."
    :domain :outdoor
    :surface :grass))
 
@@ -1263,8 +1368,11 @@
            (clearing-portal :north clearing-D04 :south clearing-D06 :east clearing-E05))))
 
 (deflocation clearing-E05 (clearing)
-  (:exits ((clearing-portal :west clearing-D05 :north clearing-E04
-                            :south clearing-E06 :east clearing-F05))))
+  (:contents (cabin-exterior)
+   :icon house
+   :exits ((clearing-portal :west clearing-D05 :north clearing-E04
+                            :south clearing-E06 :east clearing-F05)
+           (cabin-outside-door :in cabin))))
 
 (deflocation clearing-F05 (clearing)
   (:exits ((clearing-portal :west clearing-E05 :north clearing-F04 :south clearing-F06)
