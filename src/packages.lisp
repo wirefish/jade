@@ -61,6 +61,7 @@
            #:deflocation
            #:spawn-entity
            #:spawn-unique-entity
+           #:despawn-entity
            #:make-exit
            #:exit-dir
            #:exit-dest

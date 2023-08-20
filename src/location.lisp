@@ -110,15 +110,15 @@
 (defmethod enter-world ((location location))
   (call-next-method)
   (dolist (entity (? location :contents))
-    (enter-world entity)
     (setf (entity-container entity) location)
+    (enter-world entity)
     (observe-event entity :after-enter-location entity location nil)))
 
 (defmethod exit-world ((location location))
   (dolist (entity (? location :contents))
     (observe-event entity :before-exit-location entity location nil)
-    (setf (entity-container entity) nil)
-    (exit-world entity))
+    (exit-world entity)
+    (setf (entity-container entity) nil))
   (call-next-method))
 
 ;;; A prototype for locations.
@@ -174,3 +174,6 @@ starting and stopping simulation.")
 (defun spawn-unique-entity (location proto-label &rest attributes)
   (unless (contains-isa location :contents proto-label)
      (apply #'spawn-entity location proto-label attributes)))
+
+(defun despawn-entity (entity)
+  (deletef (? (location entity) :contents) entity))
