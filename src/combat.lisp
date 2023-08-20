@@ -22,6 +22,11 @@
 select during combat."
   (mapcar #'symbol-value value))
 
+(defmethod transform-initval (class (name (eql :loot)) value)
+  "The `:loot' attribute describes a generator used to determine loot dropped
+when the combatant dies."
+  (make-generator value))
+
 ;;; Damage types. A few basic ones are defined here; the game world can call
 ;;; `add-damage-type' to add more.
 
