@@ -1,0 +1,102 @@
+!! region
+
+silverwood
+:name "Silverwood"
+:description "The Silverwood is a small forest nestled in the hills west of Arwyck."
+:climate :temperate
+:level-range (1 10)
+
+!! map
+
+        :-:-:-:       :-:-:-:-S-:-:
+        | | | |       | | | | | | |
+    :-:-:-:-:-:-:   :-:-:-:-:-S-:-:-:
+    | | | | | | |   | | | | | | | | |
+  :-:-:-:-:-:-:-:-:-:-:-:-:-:-S-:-:-:-:
+  | | | | | | | | | | | | | | | | | | |
+:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-S-:-:-:-:
+| | | | | | | | | | | | | | | | | | | |
+:-:-:-C-C-C-:-:-:-:-:-:-:-:-:-S-:-:-:-:
+| | | | | | | | | | | | | | |   | | | |
+:-:-:-C-C-C-:-:-:-:-:-:-:-R-R-=-R-R-R-R
+| | | | | | | | | | | | | | |   | | | |
+:-:-:-C-C-C-:-:-:-:-:-:-:-R-:-S-:-:-:-:
+| | | | | | | | | | | | | | | | | | | |
+:-:-:-:-:-:-:-:-:-:-:-:-:-R-:-S-:-:-:-:
+| | | | | | | | | | | | | | | | | | |
+:-:-:-:-:-:-:-:-:-:-:-:-:-R-:-S-:-:-:
+| | | | | | | | | | | | | | | | | |
+:-:-:-:-:-:-:-:-:-:-:-:-:-R-:-S-:-:
+      | | | | | | | | | | | | | | |
+  :-:-:-:-:-:-:-:-:-:-:-:-R-:-S-:-:-:
+ /      | | | | | | | | | | | | | | |
+:       :-:-:-:-:-:-:-:-:-R-:-S-:-:-:-:
+        | | | | | | | | | | | | | | | |
+    :-:-:-:-:-:-:-:-R-R-R-R-:-S :-:-:-:
+    | | | | | | | | | | | | | |   | | |
+:-:-:-:-:-:-:-:-:-:-R-:-:-X-:-S-S-S-:-:
+| | | | | | | | | | | | | | | | | | | |
+:-:-:-:-:-:-:-:-R-R-R-:-:-:-:-:-: c :-:
+| | | | | | | | | | | | | | |     |
+:-:-:-:-:-:-:-:-R-:-:-:-:-:-:     c
+  | | | | | | | | | | | | | |     |
+  :-:-:-:-:-:-:-R-:-:-:-:-:-:     c
+    | | | | | | | | | | |    \    |
+    :-:-:-:-:-:-R-:-:-:-:     :-: c
+
+!! location
+
+: forest
+:name "Forest"
+:domain :outdoor
+:surface :forest
+
+R road
+:name "Forest Road"
+:domain :outdoor
+:surface :dirt
+
+= bridge
+:name "Stone Bridge"
+:domain :outdoor
+:surface :stone
+
+S forest-stream
+:name "Swift Stream"
+:domain :outdoor
+:surface :shallow-water
+
+c canyon
+:name "Narrow Canyon"
+:domain :outdoor
+:surface :shallow-water
+
+C clearing
+:name "Small Clearing"
+:domain :outdoor
+:surface :grass
+
+X ranger-camp
+:name Rangers' Camp
+:domain :outdoor
+:surface :grass
+
+!! portal
+
+:: :R :S :C :W :X forest-portal continuing-portal
+:brief "the forest"
+
+RR =R road-portal continuing-portal
+:brief "the road"
+
+CC clearing-portal continuing-portal
+:brief "the clearing"
+
+SS Sc stream-portal continuing-portal
+:brief "the stream"
+
+cc canyon-portal continuing-portal
+:brief "the canyon"
+
+XR narrow-track
+:brief "a barely-visible track"

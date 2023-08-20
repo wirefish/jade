@@ -64,4 +64,5 @@
                        ))
              (:file "isle-of-dawn")
              (:file "arwyck")
+             (:file "silverwood")
              ))))
