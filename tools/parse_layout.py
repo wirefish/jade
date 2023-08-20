@@ -79,7 +79,7 @@ def split_file(f):
     section = None
     block = None
     for line in f:
-        line = line.strip()
+        line = line.rstrip()
         if line.startswith(";"):
             pass
         elif len(line) == 0:
@@ -122,21 +122,22 @@ class Layout:
             return
         block = blocks[0]
 
-        width = 0
+        self.cols = 0
         for line in block:
             if len(line) % 2 == 0:
-                print("length of map line must be odd")
+                print(f"length of map line must be odd: \"{line}\"")
                 return
-            width = max(width, len(line))
+            self.cols = max(self.cols, (len(line) + 1) // 2)
 
         if len(block) % 2 == 0:
             print("map block must contain an odd number of lines")
             return
+        self.rows = (len(block) + 1) // 2
 
         # Add padding to make parsing easier.
-        empty_row = " " * (width + 4)
+        empty_row = " " * (2 * self.cols + 3)
         self.map_rows = [empty_row, empty_row,
-                         *["  " + line.ljust(width + 2) for line in block],
+                         *["  " + line.ljust(2 * self.cols - 1) for line in block],
                          empty_row, empty_row]
 
     def parse_locations(self, blocks):
@@ -162,6 +163,7 @@ class Layout:
             else:
                 proto = ""
             for key in parts[:num_keys]:
+                key = "".join(sorted(key))
                 self.portal_prototypes[key] = [name, proto] + attrs
 
     def parse(self, f):
@@ -206,12 +208,25 @@ class Layout:
         f.write(";;; portal prototypes\n\n")
         self.write_prototypes(unique.values(), f)
 
-    def location_suffix(self, i, j):
-        if j < 26:
-            c = chr(ord('A') + j)
+    def col_label(self, i):
+        if i < 26:
+            return chr(ord('A') + i)
         else:
-            c = chr(ord('a') + j)
-        return f"{c}{i:02}"
+            return chr(ord('a') + (i - 26))
+
+    def location_suffix(self, i, j):
+        return f"{self.col_label(i)}{j:02}"
+
+    def write_map(self, f):
+        f.write("#|\n")
+        f.write("    " + " ".join([self.col_label(i) for i in range(0, self.cols)]) + "\n")
+        for j, row in enumerate(self.map_rows[1:-1]):
+            if (j % 2):
+                f.write(f"{j // 2:02}")
+            else:
+                f.write("  ")
+            f.write(row.rstrip() + "\n")
+        f.write("|#\n\n")
 
     def location_label(self, letter, i, j):
         return f"{self.location_prototypes[letter][0]}-{self.location_suffix(i, j)}"
@@ -269,7 +284,7 @@ class Layout:
             row = rows[2 + j * 2]
             for i in range(0, (len(row) - 3) // 2):
                 letter = row[2 + i * 2]
-                if letter.isalpha():
+                if letter != " ":
                     groups[letter].append([i, j])
 
         for (letter, ijs) in groups.items():
@@ -280,8 +295,10 @@ class Layout:
 
     def save(self, f):
         self.write_region(f)
+        self.write_map(f)
         self.write_portal_prototypes(f)
         self.write_locations(f)
+        print(f"map is {self.cols} by {self.rows}")
 
 if __name__ == "__main__":
     args = parser.parse_args()
