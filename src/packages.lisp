@@ -10,7 +10,10 @@
            #:?
            #:->
            #:bind
+           #:defallocator
            #:with-delay
+           #:with-random-delay
+           #:with-random-interval
 
            #:round-random
            #:random-integer
