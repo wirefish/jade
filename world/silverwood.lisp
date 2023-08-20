@@ -8,7 +8,7 @@
 
 #|
     A B C D E F G H I J K L M N O P Q R S T
-  
+
 00          :-:-:-:       :-:-:-:-S-:-:
             | | | |       | | | | | | |
 01      :-:-:-:-:-:-:   :-:-:-:-:-S-:-:-:
@@ -44,8 +44,40 @@
 16    :-:-:-:-:-:-:-R-:-:-:-:-:-:     c
         | | | | | | | | | | |    \    |
 17      :-:-:-:-:-:-R-:-:-:-:     :-: c
-  
+
 |#
+
+;;; spiders
+
+(defentity giant-spider-bite (bite)
+  (:speed 2.5
+   :base-damage 4))
+
+(defentity silky-spiderweb (item)
+  (:brief "a silky spiderweb"
+   :description "This spiderweb can be turned into thread by a skilled
+     weaver."
+   :icon spiderweb
+   :level 1
+   :size +tiny+
+   :stackable t))
+
+(defallocator spider-allocator 10)
+
+(defentity giant-spider (combatant)
+  (:brief "a giant forest spider"
+   :pose "hangs from a nearby branch."
+   :description "This enormous webspinner has luminous eyes and long, hairy
+     legs. Its kind prefer to lurk in the forest canopy, awaiting the
+     opportunity to drop down upon unsuspecting prey."
+   :icon long-legged-spider
+   :level 1
+   :attacks (giant-spider-bite)
+   :entry-message "drops down from the branches above."
+   :loot ((0.5 silky-spiderweb)))
+
+  (:after-exit-world ()
+    (spider-allocator :release)))
 
 ;;; portal prototypes
 
@@ -72,7 +104,12 @@
 (defentity forest (location)
   (:name "Forest"
    :domain :outdoor
-   :surface :forest))
+   :surface :forest)
+
+  (:after-enter-world ()
+    (with-random-interval (10 120)
+      (when (spider-allocator :acquire)
+        (spawn-entity self 'giant-spider)))))
 
 (deflocation forest-E00 (forest)
   (:exits ((forest-portal :south forest-E01 :east forest-F00))))
@@ -1327,4 +1364,3 @@
 
 (deflocation canyon-R17 (canyon)
   (:exits ((canyon-portal :north canyon-R16))))
-
