@@ -224,3 +224,16 @@ supported."
     (dolist (binding (reverse bindings))
       (setf result `((,@(apply #'expand-binding binding) ,@result))))
     (first result)))
+
+;;; An allocator is a lambda that wraps a semaphore-style counter.
+
+(defun make-allocator (limit)
+  (let ((counter limit))
+    (lambda (op)
+      (case op
+        (:acquire (when (> counter 0) (decf counter)))
+        (:release (incf counter))
+        (:value counter)))))
+
+(defmacro defallocator (name limit)
+  `(setf (fdefinition ',name) (make-allocator ,limit)))
