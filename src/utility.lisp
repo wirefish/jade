@@ -5,11 +5,16 @@
 (defun symbol-value-or-nil (symbol)
   (and (boundp symbol) (symbol-value symbol)))
 
-(defun symbol-value-as (type symbol)
-  (let ((value (symbol-value-or-nil symbol)))
-    (if (typep value type)
-        value
-        (error "value of symbol ~a does not have required type ~a" symbol type))))
+(defun symbol-value-as (type symbol &optional (default nil default-present))
+  (if (boundp symbol)
+      (let ((value (symbol-value symbol)))
+        (or (when (typep value type) value)
+            (if default-present
+                default
+                (error "value of symbol ~a does not have required type ~a" symbol type))))
+      (if default-present
+          default
+          (error "symbol ~a is unbound" symbol))))
 
 ;;; String utilities.
 
