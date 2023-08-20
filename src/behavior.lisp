@@ -146,10 +146,10 @@ satisfies `constraint'."
   (dolist (observer observers)
     (apply #'observe-event observer event args)))
 
-(defun action-message (actor verb)
+(defun action-message (actor verb &rest args)
   "Returns a closure that when called with an entity, returns a string that
 appropriate describes an action taken by `actor'."
-  (let* ((verb (parse-verb verb))
+  (let* ((verb (parse-verb (apply #'format nil verb args)))
          (self-message (format nil "You ~a" (verb-plural verb)))
          (other-message (format nil "~a ~a"
                                (describe-brief actor :capitalize t)
