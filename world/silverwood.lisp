@@ -1224,16 +1224,51 @@
 (deflocation forest-Q17 (forest)
   (:exits ((forest-portal :west forest-P17))))
 
+;;; behind-the-waterfall
+
+(defentity behind-waterfall-portal ()
+  (:brief "a waterfall"
+   :pose "obscures the entrance to this small cave."))
+
+(defentity bespectacled-frog ()
+  (:brief "a bespectacled frog"
+   :pose "sits on a mossy rock with a frown on its face. The frog, not the rock."
+   :description "The frog is both abnormally large and apparently quite
+     near-sighted.")
+
+  (:when-talk (actor self topic)
+    (tell self actor "What is it with explorers like you, always looking for
+      secret spaces behind waterfalls? I just wanted to be alone and contemplate
+      life. Is that too much to ask?")))
+
+(deflocation behind-the-waterfall ()
+  (:name "Behind the Waterfall"
+   :domain :underground
+   :contents (bespectacled-frog)
+   :exits ((behind-waterfall-portal :south forest-stream-P00))))
+
 ;;; forest-stream
 
 (defentity forest-stream (location)
   (:name "Swift Stream"
+   :description "This burbling, turbulent stream of cold water runs north to
+     south through the forest."
    :domain :outdoor
    :surface :shallow-water))
 
+(defentity waterfall-portal ()
+  (:brief "a waterfall"
+   :pose "cascades down the rocky cliff."
+   :hidden t))
+
 (deflocation forest-stream-P00 (forest-stream)
-  (:exits ((forest-portal :west forest-O00 :east forest-Q00)
-           (stream-portal :south forest-stream-P01))))
+  (:name "Shallow Pool"
+   :description "A shallow pool has formed at the base of a small waterfall to
+     the north. Spray from the waterfall hangs in the air. Thick moss covers the
+     rocks that surround the pool."
+   :exits ((forest-portal :west forest-O00 :east forest-Q00)
+           (stream-portal :south forest-stream-P01)
+           (waterfall-portal :north behind-the-waterfall))))
 
 (deflocation forest-stream-P01 (forest-stream)
   (:exits ((forest-portal :west forest-O01 :east forest-Q01)
@@ -1249,11 +1284,19 @@
 
 (deflocation forest-stream-P04 (forest-stream)
   (:exits ((forest-portal :west forest-O04 :east forest-Q04)
-           (stream-portal :north forest-stream-P03))))
+           (stream-portal :north forest-stream-P03 :south under-the-bridge))))
+
+(deflocation under-the-bridge (forest-stream)
+  (:name "Under the Bridge"
+   :description "The stream passes beneath an arched bridge of white stone.
+     Someone has scratched a few words into the underside of the bridge; it is
+     nearly illegible, but you think it says \"Anthony was here.\""
+   :z-offset -1
+   :exits ((stream-portal :north forest-stream-P04 :south forest-stream-P06))))
 
 (deflocation forest-stream-P06 (forest-stream)
   (:exits ((forest-portal :west forest-O06 :east forest-Q06)
-           (stream-portal :south forest-stream-P07))))
+           (stream-portal :south forest-stream-P07 :north under-the-bridge))))
 
 (deflocation forest-stream-P07 (forest-stream)
   (:exits ((forest-portal :west forest-O07 :east forest-Q07)
@@ -1546,6 +1589,8 @@
 
 (defentity bridge (location)
   (:name "Stone Bridge"
+   :description "You stand on an arched bridge of white stone that spans the
+     gurgling stream below."
    :domain :outdoor
    :surface :stone))
 
