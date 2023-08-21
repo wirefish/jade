@@ -15,40 +15,47 @@
    :icon pouch
    :size +small+
    :level 1
-   :item-group :miscellany
    :quantity 1
    :price nil
    :stackable nil))
 
-;;; Items can be sorted based on their group, subgroup, and level.
+;;; Items can be sorted based on their :item-group, :item-subgroup, :level, and
+;;; :brief attributes. Groups and subgroups are defined by calling
+;;; set-item-groups. The argument is a list of lists. Each sublist contains a
+;;; group label followed by zero or more subgroup labels. Items are first sorted
+;;; in order by group in the order they appear in the list, then by subgroup in
+;;; the order they appear in the group, then by :level, and finally by the
+;;; noun-singular of their :brief attribute.
 
-(defparameter *item-groups*
-  '((:weapon :dagger :wand)
-    (:armor :head :torso)
-    (:tool)
-    (:resource :metal)))
+(defparameter *item-groups* nil)
 
-(defun add-item-group-after (group predecessor)
-  (setf *item-groups*
-        (if predecessor
-            (insert-after-if group (lambda (g) (eq (first g) predecessor)) *item-groups*)
-            (cons group *item-groups*))))
+(defun set-item-groups (groups)
+  (setf *item-groups* groups))
 
-(defun add-item-subgroup (group subgroup)
-  (when-let ((tail (member-if (lambda (g) (eq (first g) group)) *item-groups*)))
-    (appendf (first tail) (list subgroup))))
+;; FIXME: should be called from world definition to customize as needed. In that
+;; case needn't use keywords, this could export all symbols in the calling
+;; package.
+(set-item-groups
+ '((:weapon :dagger :wand)
+   (:armor :head :torso)
+   (:tool)
+   (:resource :metal)))
 
 (defun find-item-group (group)
   (loop for (g . s) in *item-groups* for i from 1
-    when (eq g group) return (values i s)))
+        when (eq g group) return (values i s))
+  0)
+
+(defun item-subgroup-index (subgroup subgroups)
+  (if-let ((i (position subgroup subgroups))) (1+ i) 0))
 
 (defun item-sort-key (item)
   (with-attributes (item-group item-subgroup level) item
     (bind ((group-index subgroups (find-item-group item-group))
-           (subgroup-index (position item-subgroup subgroups)))
+           (subgroup-index (item-subgroup-index item-subgroup subgroups)))
       (logior (or level 0)
-              (ash (if subgroup-index (1+ subgroup-index) 0) 10)
-              (ash (if group-index (1+ group-index) 0) 20)))))
+              (ash subgroup-index 10)
+              (ash group-index 20)))))
 
 (defun item< (a b)
   "Returns true iff item `a' sorts before item `b'."
