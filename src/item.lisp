@@ -54,7 +54,6 @@
     (bind (((group &optional subgroup) (or (ensure-list item-group) '(nil)))
            (group-index subgroups (find-item-group group))
            (subgroup-index (item-subgroup-index subgroup subgroups)))
-      (print (list item-group group subgroup level group-index subgroup-index))
       (+ (or level 0)
          (* 1000 subgroup-index)
          (* 1000000 group-index)))))
