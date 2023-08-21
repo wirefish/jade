@@ -56,6 +56,7 @@
            #:contains-isa
            #:find-item-isa
            #:remove-item-isa
+           #:set-item-groups
 
            #:location
            #:deflocation
