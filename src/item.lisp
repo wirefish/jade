@@ -19,43 +19,42 @@
    :price nil
    :stackable nil))
 
-;;; Items can be sorted based on their :item-group, :item-subgroup, :level, and
-;;; :brief attributes. Groups and subgroups are defined by calling
-;;; set-item-groups. The argument is a list of lists. Each sublist contains a
-;;; group label followed by zero or more subgroup labels. Items are first sorted
-;;; in order by group in the order they appear in the list, then by subgroup in
-;;; the order they appear in the group, then by :level, and finally by the
-;;; noun-singular of their :brief attribute.
+;;; Items can be sorted based on their :item-group, :level, and :brief
+;;; attributes.
+;;;
+;;; The :item-group attribute is a list where the first element denotes the
+;;; group and the optional second element denotes a subgroup within that group.
+;;;
+;;; Groups are defined by calling set-item-groups. The argument is a list of
+;;; lists. Each sublist contains a group label followed by zero or more subgroup
+;;; labels.
+;;;
+;;; Items are first sorted in order by group in the order they appear in the
+;;; list, then by subgroup in the order they appear in the group, then by
+;;; :level, and finally by the noun-singular of their :brief attribute.
 
 (defparameter *item-groups* nil)
 
 (defun set-item-groups (groups)
   (setf *item-groups* groups))
 
-;; FIXME: should be called from world definition to customize as needed. In that
-;; case needn't use keywords, this could export all symbols in the calling
-;; package.
-(set-item-groups
- '((:weapon :dagger :wand)
-   (:armor :head :torso)
-   (:tool)
-   (:resource :metal)))
-
-(defun find-item-group (group)
-  (loop for (g . s) in *item-groups* for i from 1
-        when (eq g group) return (values i s))
+(defun find-item-group (g)
+  (loop for group in *item-groups* for i from 1
+        when (eq g (car group)) do (return-from find-item-group (values i (cdr group))))
   0)
 
 (defun item-subgroup-index (subgroup subgroups)
   (if-let ((i (position subgroup subgroups))) (1+ i) 0))
 
 (defun item-sort-key (item)
-  (with-attributes (item-group item-subgroup level) item
-    (bind ((group-index subgroups (find-item-group item-group))
-           (subgroup-index (item-subgroup-index item-subgroup subgroups)))
-      (logior (or level 0)
-              (ash subgroup-index 10)
-              (ash group-index 20)))))
+  (with-attributes (item-group level) item
+    (bind (((group &optional subgroup) (ensure-list item-group))
+           (group-index subgroups (find-item-group group))
+           (subgroup-index (item-subgroup-index subgroup subgroups)))
+      (print (list item-group group subgroup level group-index subgroup-index))
+      (+ (or level 0)
+         (* 1000 subgroup-index)
+         (* 1000000 group-index)))))
 
 (defun item< (a b)
   "Returns true iff item `a' sorts before item `b'."

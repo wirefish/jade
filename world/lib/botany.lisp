@@ -1,12 +1,19 @@
 (in-package :jade.lib)
 
+;;; A prototype for resources gatherable using botany.
+
+(defentity botany-resource (resource)
+  (:required-skill botany
+   :item-group (resource botany)))
+
 ;;; Tools.
 
 (defentity sickle (item)
   (:brief "~a ~a sickle"
    :description "The ~*~a sickle is a basic botany tool."
    :icon sickle
-   :equippable-slot :tool))
+   :equippable-slot :tool
+   :item-group (tool botany)))
 
 (defentity copper-sickle (sickle)
   (:level 1
@@ -22,6 +29,11 @@
   (:level 10
    :material "iron"
    :price (40 silver-coin)))
+
+;;; Nodes.
+
+(defentity botany-node (resource-node)
+  (:required-skill botany))
 
 ;;; Skills.
 

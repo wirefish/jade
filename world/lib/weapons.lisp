@@ -10,8 +10,7 @@
    :base-damage 2
    :damage-type :crushing
    :damage-variance 0.25
-   :attack-verb "hits"
-   :item-group :weapons))
+   :attack-verb "hits"))
 
 ;;; A natural weapon inherits its user's level. A value of nil for :brief is
 ;;; used here to avoid messages like "Ann kicks Bob with a foot".
@@ -69,11 +68,12 @@
    :description "The dagger has a double-edged ~a blade with a sharp point. Its ~a
      handle is wrapped with ~a."
    :icon knives-01
+   :item-group (weapon dagger)
    :speed 2
    :damage-type :piercing
    :attack-verb "pokes"
-   :proficiency 'dagger-proficiency
-   :mastery 'dagger-mastery
+   :proficiency dagger-proficiency
+   :mastery dagger-mastery
    :nonproficiency-penalty 0.5))
 
 (defweapons dagger
@@ -89,11 +89,12 @@
    :description "This light weapon appears to be a simple piece of polished
      wood, but it radiates a magical aura."
    :icon staves-01
+   :item-group (weapon wand)
    :speed 2.5
    :damage-type :arcane
    :attack-verb "zaps"
-   :proficiency 'wand-proficiency
-   :mastery 'dagger-mastery
+   :proficiency wand-proficiency
+   :mastery dagger-mastery
    :nonproficiency-penalty 0.25))
 
 (defweapons wand
@@ -108,12 +109,13 @@
    :description "This weapon has a heavy metal ball attached to a stout wooden
      handle, sized for use in one hand."
    :icon bluntweapons-05
+   :item-group (weapon mace)
    :speed 3.5
    :damage-type :crushing
    :damage-variance 0.2
    :attack-verb "smashes"
-   :proficiency 'mace-proficiency
-   :mastery 'mace-mastery
+   :proficiency mace-proficiency
+   :mastery mace-mastery
    :nonproficiency-penalty 0.5))
 
 (defweapons mace
@@ -128,12 +130,13 @@
    :description "This weapon has a heavy metal ball attached to a long wooden
      handle. It requires both hands to wield."
    :icon bluntweapons-05
+   :item-group (weapon maul)
    :speed 5
    :damage-type :crushing
    :damage-variance 0.2
    :attack-verb "smashes"
-   :proficiency 'maul-proficiency
-   :master 'maul-mastery
+   :proficiency maul-proficiency
+   :master maul-mastery
    :nonproficiency-penalty 0.25))
 
 (defweapons maul
@@ -148,12 +151,13 @@
    :description "This weapon has a long metal blade attached to a plain wooden
      hilt, sized for use in one hand."
    :icon swords-01
+   :item-group (weapon sword)
    :speed 3
    :damage-type :slashing
    :damage-variance 0.3
    :attack-verb "slashes"
-   :proficiency 'sword-proficiency
-   :mastery 'sword-mastery
+   :proficiency sword-proficiency
+   :mastery sword-mastery
    :nonproficiency-penalty 0.25))
 
 (defweapons sword
@@ -179,12 +183,13 @@
    :description "This weapon has a long, dual-edged blade and requires both
      hands to wield."
    :icon swords-01
+   :item-group (weapon greatsword)
    :speed 5
    :damage-type :slashing
    :damage-variance 0.3
    :attack-verb "slashes"
-   :proficiency 'greatsword-proficiency
-   :mastery 'greatsword-mastery
+   :proficiency greatsword-proficiency
+   :mastery greatsword-mastery
    :nonproficiency-penalty 0.25))
 
 (defweapons greatsword
@@ -199,12 +204,13 @@
    :description "This weapon has a curved blade attached to one end of a wooden
     shaft, sized for use in one hand."
    :icon axes-01
+   :item-group (weapon axe)
    :speed 3.5
    :damage-type :slashing
    :damage-variance 0.33
    :attack-verb "slashes"
-   :proficiency 'axe-proficiency
-   :mastery 'axe-mastery
+   :proficiency axe-proficiency
+   :mastery axe-mastery
    :nonproficiency-penalty 0.5))
 
 (defweapons axe
@@ -219,12 +225,13 @@
    :description "This weapon has a large blade attached to one end of a long
      wooden haft, and requires both hands to wield."
    :icon axes-01
+   :item-group (weapon battle-axe)
    :speed 5
    :damage-type :slashing
    :damage-variance 0.33
    :attack-verb "slashes"
-   :proficiency 'battle-axe-proficiency
-   :mastery 'battle-axe-mastery
+   :proficiency battle-axe-proficiency
+   :mastery battle-axe-mastery
    :nonproficiency-penalty 0.25))
 
 (defweapons battle-axe
@@ -239,11 +246,12 @@
    :description "This weapon has a pointed blade attached to one end of a long
      wooden haft, and requires both hands to wield."
    :icon spears-01
+   :item-group (weapon spear)
    :speed 4.5
    :damage-type :piercing
    :attack-verb "pierces"
-   :proficiency 'spear-proficiency
-   :mastery 'spear-mastery
+   :proficiency spear-proficiency
+   :mastery spear-mastery
    :nonproficiency-penalty 0.25))
 
 (defweapons spear
@@ -258,11 +266,12 @@
    :description "This two-handed weapon is a polished length of wood that
      radiates a strong magical aura."
    :icon staves-04
+   :item-group (weapon staff)
    :speed 4
    :damage-type :arcane
    :attack-verb "zaps"
-   :proficiency 'staff-proficiency
-   :mastery 'staff-mastery
+   :proficiency staff-proficiency
+   :mastery staff-mastery
    :nonproficiency-penalty 0.25))
 
 (defweapons staff

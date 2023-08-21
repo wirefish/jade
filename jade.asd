@@ -63,6 +63,7 @@
                        (:file "botany")
                        (:file "logging")
                        (:file "mining")
+                       (:file "item-groups")
                        (:file "avatar")
                        ))
              (:file "isle-of-dawn")

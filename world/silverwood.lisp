@@ -77,27 +77,24 @@
 
 ;;; mushroom clusters
 
-(defentity small-brown-mushroom (resource)
+(defentity small-brown-mushroom (botany-resource)
   (:brief "a small brown mushroom"
    :icon mushroom-6
-   :required-skill botany
    :required-rank 1))
 
-(defentity small-white-mushroom (resource)
+(defentity small-white-mushroom (botany-resource)
   (:brief "a small white mushroom"
    :icon mushroom-3
-   :required-skill botany
    :required-rank 20))
 
-(defentity small-speckled-mushroom (resource)
+(defentity small-speckled-mushroom (botany-resource)
   (:brief "a small speckled mushroom"
    :icon mushroom-1
-   :required-skill botany
    :required-rank 40))
 
-(defentity mushroom-cluster (resource-node)
+(defentity mushroom-cluster (botany-node)
   (:brief "a cluster of small mushrooms"
-   :required-skill botany
+   :icon mushroom-6
    :resources ((1.0 small-brown-mushroom :quantity (random-integer 1 2))
                (0.2 small-white-mushroom)
                (0.01 small-speckled-mushroom))))
