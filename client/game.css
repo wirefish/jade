@@ -309,6 +309,7 @@ a:link {
 
 .neighbor > div:nth-child(1) {
     width: 34px;
+    min-width: 34px;
     height: 34px;
 }
 
