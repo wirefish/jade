@@ -54,7 +54,7 @@
 
    (:module "world" :components
             ((:module "lib" :components
-                      ((:file "creatures")
+                      ((:file "item-groups")
                        (:file "currency")
                        (:file "clothing")
                        (:file "weapons")
@@ -63,7 +63,7 @@
                        (:file "botany")
                        (:file "logging")
                        (:file "mining")
-                       (:file "item-groups")
+                       (:file "creatures")
                        (:file "avatar")
                        ))
              (:file "isle-of-dawn")
