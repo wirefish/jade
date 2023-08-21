@@ -85,21 +85,16 @@ whose values are the result of applying `fn' to each."
 
 (defun insert-sorted (item list predicate)
   "Returns the result of modifying `list' to insert `item' before the first
-element `x' for which (predicate item x) returns nil."
+element `x' for which (predicate item x) returns true."
   (cond
     ((null list) (list item))
     ((funcall predicate item (car list))
      (cons item list))
     (t
-     (loop for tail on (cdr list) do
-       (cond
-         ((funcall predicate item (car tail))
-          (setf (cdr tail) (cons (car tail) (cdr tail))
-                (car tail) item)
-          (return list))
-         ((null (cdr tail))
-          (setf (cdr tail) (cons item nil))
-          (return list)))))))
+     (loop for tail on list do
+       (when (or (null (cdr tail)) (funcall predicate item (second tail)))
+         (setf (cdr tail) (cons item (cdr tail)))
+         (return list))))))
 
 ;;; Hash table utilities.
 
