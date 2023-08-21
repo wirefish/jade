@@ -39,7 +39,9 @@
   (setf *item-groups* groups))
 
 (defmacro define-item-groups (&body groups)
-  `(set-item-groups ',@groups))
+  `(progn
+     (set-item-groups ',groups)
+     (export ',(apply #'append groups))))
 
 (defun find-item-group (g)
   (loop for group in *item-groups* for i from 1
