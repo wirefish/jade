@@ -3,7 +3,7 @@
 (defentity currency (item)
   (:stackable t
    :size +miniscule+
-   :item-group :currency))
+   :item-group (currency)))
 
 (defentity silver-coin (currency)
   (:brief "a silver coin"
