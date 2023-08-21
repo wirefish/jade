@@ -1421,7 +1421,7 @@
 
 (deflocation clearing-E05 (clearing)
   (:contents (cabin-exterior)
-   :icon house
+   :icon cabin
    :exits ((clearing-portal :west clearing-D05 :north clearing-E04
                             :south clearing-E06 :east clearing-F05)
            (cabin-outside-door :in cabin))))

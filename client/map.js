@@ -12,7 +12,10 @@ var map_icon_urls = {
     // Vehicle and structure icons.
     'boat': 'icons/sinagot.png',
     'house': 'icons/house.png',
+    'cabin': 'icons/wood-cabin.png',
     'mill': 'icons/water-mill.png',
+    'hut': 'icons/hut.png',
+    'treehouse': 'icons/treehouse.png',
     'wagon': 'icons/old-wagon.png',
 };
 
