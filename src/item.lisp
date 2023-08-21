@@ -46,9 +46,16 @@
   (with-attributes (item-group item-subgroup level) item
     (bind ((group-index subgroups (find-item-group item-group))
            (subgroup-index (position item-subgroup subgroups)))
-      (logior level
+      (logior (or level 0)
               (ash (if subgroup-index (1+ subgroup-index) 0) 10)
               (ash (if group-index (1+ group-index) 0) 20)))))
+
+(defun item< (a b)
+  "Returns true iff item `a' sorts before item `b'."
+  (let ((k (- (? a :item-sort-key) (? b :item-sort-key))))
+    (if (/= k 0)
+        (< k 0)
+        (string< (noun-singular (? a :brief)) (noun-singular (? b :brief))))))
 
 ;;; If the item is made of something in particular, the `:material' attribute is
 ;;; a noun describing that something. To facilitate this, defer parsing `:brief'
@@ -185,8 +192,10 @@ represents `count' of the same item. Returns nil if entity cannot be split."
     (incf (? stack :quantity) (? item :quantity))
     stack))
 
-(defun insert-item (container slot item)
+(defun insert-item (container slot item &key sorted)
   (or (find-if (lambda (x) (stack-item item x)) (? container slot))
       (progn
-        (push item (? container slot))
+        (if sorted
+            (setf (? container slot) (insert-sorted item (? container slot) #'item<))
+            (push item (? container slot)))
         item)))

@@ -64,7 +64,7 @@ present, display a more detailed description of matching items."
 
 (defmethod unequip ((actor avatar) item slot)
   (remhash slot (? actor :equipment))
-  (push item (? actor :inventory))
+  (insert-item actor :inventory item :sorted t)
   (update-cached-traits actor)
   (update-equipment actor (list slot))
   (update-inventory actor (list item))
@@ -199,7 +199,7 @@ from `container'."))
         (show actor "You take ~a from ~a."
               (describe-brief removed)
               (describe-brief container :article :definite)))
-    (let ((stack (insert-item actor :inventory removed)))
+    (let ((stack (insert-item actor :inventory removed :sorted t)))
       (update-inventory actor (list stack)))
     (check-encumbrance actor)
     removed))
@@ -365,7 +365,7 @@ location."
     (t (show avatar "You receive ~a." source (format-list #'describe-brief items))))
   (update-inventory avatar
                     (loop for item in items
-                          collect (insert-item avatar :inventory item)))
+                          collect (insert-item avatar :inventory item :sorted t)))
   (check-encumbrance avatar))
 
 ;;; Discard an item.
