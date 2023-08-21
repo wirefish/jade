@@ -1,5 +1,16 @@
 (in-package :jade.lib)
 
+;;; A prototype for resources gatherable using botany.
+
+(defentity logging-resource (resource)
+  (:required-skill logging
+   :item-group (resource logging)))
+
+;;; Nodes.
+
+(defentity logging-node (resource-node)
+  (:required-skill logging))
+
 ;;; Tools.
 
 (defentity logging-axe (item)

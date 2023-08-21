@@ -103,30 +103,30 @@
 
 ;;; maple trees
 
-(defentity maple-log (resource-node)
+(defentity maple-log (logging-resource)
   (:brief "a maple log"
-   :required-skill logging
    :required-rank 1))
 
 (defentity maple-tree (resource-node)
   (:brief "a mature maple tree"
    :pose "stands nearby."
    :required-skill logging
+   :required-rank 1
    :resources ((1.0 maple-log :quantity (random-integer 1 2)))))
 
 (limit-spawn-quantity 'maple-tree 20)
 
 ;;; birch trees
 
-(defentity birch-log (resource-node)
+(defentity birch-log (logging-resource)
   (:brief "a birch log"
-   :required-skill logging
    :required-rank 20))
 
 (defentity birch-tree (resource-node)
   (:brief "a mature birch tree"
    :pose "stands nearby."
    :required-skill logging
+   :required-rank 20
    :resources ((1.0 birch-log :quantity (random-integer 1 2)))))
 
 (limit-spawn-quantity 'birch-tree 5)
@@ -541,9 +541,61 @@
   (:exits ((forest-portal :west road-N06 :north road-O05 :south forest-O07
                           :east forest-stream-P06))))
 
+(defentity mill-exterior ()
+  (:brief "a water mill"
+   :pose "stands on the bank of the stream, its wheel spinning slowly."
+   :description "The mill is made of rough-hewn maple logs, with a roof of
+     orange clay tiles."
+   :implicit-neighbor t))
+
+(defentity jopalinson (logging-trainer)
+  (:name "Jopalinson"
+   :pose "sorts through a pile of logs in the corner."
+   :description "Jopalinson's a lumberjack and he's ok, he sleeps all night and
+     he works all day.")
+
+  (:after-enter-world ()
+    (with-random-interval (40 60)
+      (say self
+           (whichever
+            "I cut down trees, I eat my lunch, I go to the lavatory!"
+            "On Wednesdays I go shoppin' and have buttered scones for tea!"
+            "I cut down trees, I skip and jump, I like to press wild flowers!"
+            "I put on women's clothing and hang around in bars!"
+            "I cut down trees, I wear high heels, suspendies, and a bra!"
+            "I wish I'd been a girlie just like my dear papa!"))))
+
+  (:when-talk (actor self topic)
+    (tell self actor "Come to learn about logging? Perhaps you seek to one day
+      cut down a towering Wattle of Aldershot? I can teach you all about it! Type
+      `learn` to learn more.")))
+
+(defentity termired (vendor)
+  (:name "Termired"
+   :pose "leans against the wall."
+   :description "Termired is Jopalinson's best buddy."
+   :sells (copper-logging-axe bronze-logging-axe))
+
+  (:when-talk (actor self topic)
+    (tell self actor "I have just the axe you'll need to cut down a flatulent
+      Elm of West Ruislip, should you discover such a legendary tree. Type `buy`
+      to see my wares.")))
+
+(deflocation water-mill ()
+  (:name "Water Mill"
+   :description "The water wheel outside this building powers an ingenious
+     sawmill that lets a skilled operator quickly turn logs into rough-cut
+     lumber."
+   :domain :indoor
+   :surface :wood
+   :contents (jopalinson termired)
+   :exits ((exit-doorway :out forest-Q06))))
+
 (deflocation forest-Q06 (forest)
-  (:exits ((forest-portal :west forest-stream-P06 :north road-Q05 :south forest-Q07
-                          :east forest-R06))))
+  (:icon mill
+   :exits ((forest-portal :west forest-stream-P06 :north road-Q05 :south forest-Q07
+                          :east forest-R06)
+           (entry-doorway :in water-mill))))
 
 (deflocation forest-R06 (forest)
   (:exits ((forest-portal :west forest-Q06 :north road-R05 :south forest-R07

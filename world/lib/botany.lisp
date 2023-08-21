@@ -6,6 +6,11 @@
   (:required-skill botany
    :item-group (resource botany)))
 
+;;; Nodes.
+
+(defentity botany-node (resource-node)
+  (:required-skill botany))
+
 ;;; Tools.
 
 (defentity sickle (item)
@@ -29,11 +34,6 @@
   (:level 10
    :material "iron"
    :price (40 silver-coin)))
-
-;;; Nodes.
-
-(defentity botany-node (resource-node)
-  (:required-skill botany))
 
 ;;; Skills.
 
