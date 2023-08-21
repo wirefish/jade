@@ -87,14 +87,14 @@ satisfies `constraint'."
     `(lambda (self ,more-handlers ,@param-names)
        (declare (ignorable self ,@param-names ,more-handlers))
        (block ,handler-body
-         (labels (,@(when (or tests (tree-contains 'call-next-handler body))
+         (labels (,@(when (tree-contains 'call-next-handler body)
                       `((call-next-handler () (continue-event self ,more-handlers
                                                               ,event ,@param-names))))
                   ,@(when (and (allow-phase-p event)
                                (tree-contains 'disallow-action body))
                       `((disallow-action () (return-from ,handler-body :disallow-action)))))
            ,@(when tests
-               `((unless (and ,@tests) 'constraints-not-satisfied)))
+               `((unless (and ,@tests) (return-from ,handler-body 'constraints-not-satisfied))))
            ,@body)))))
 
 (defun normalize-parameters (params)
