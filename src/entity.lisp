@@ -112,19 +112,18 @@
     t))
 
 (defmacro with-attributes ((&rest attrs) entity &body body)
-  "Executes `body' with variables bound to attributes of `entity'. Each
-attribute is specified by either a symbol or a two-element list. In the latter
-case, the first element is a symbol and the second is a default value if the
-attribute's value is nil."
-  `(let ,(loop for attr in attrs
-               collect
-               (typecase attr
-                 (symbol `(,attr (? ,entity ,(make-keyword attr))))
-                 (list `(,(first attr) (or (? ,entity ,(make-keyword (first attr)))
-                                           ,(second attr))))))
-     ,@body))
+  "Executes `body' with variables bound to attributes of `entity'."
+  (with-gensyms (obj)
+    `(let ((,obj ,entity))
+       (declare (ignorable ,obj))
+       (symbol-macrolet ,(loop for attr in attrs
+                               collect `(,attr (? ,obj ,(make-keyword (symbol-name attr)))))
+         ,@body))))
 
 (defmacro when-attributes ((&rest attrs) entity &body body)
+  "Like `with-attributes', but executes `body' only if all required attributes
+have non-nil values. If `&optional' occurs in the attribute list, any subsequent
+attributes are not considered to be required."
   (let ((all-attrs (remove '&optional attrs))
         (required-attrs (subseq attrs 0 (position '&optional attrs))))
     `(with-attributes (,@all-attrs) ,entity
