@@ -175,6 +175,21 @@
     (update-avatar avatar :race)
     (show-notice avatar "You are now ~a!" (describe-brief race))))
 
+(defun run-lengths (s)
+  "Returns a list of the lengths of successive substrings of `s' that consist of
+the same character as compared by char-equal."
+  (let ((current #\Nul) count runs)
+    (loop for c across s
+          do (if (char-equal c current)
+                 (incf count)
+                 (progn
+                   (when count
+                     (push count runs))
+                   (setf count 1 current c))))
+    (when count
+        (push count runs))
+    (nreverse runs)))
+
 (defun validate-name (name)
   "If `name' is a valid avatar name after stripping trailing punctuation, then
   return it after capitalizing it appropriately. Otherwise, return `nil'."
@@ -186,8 +201,9 @@
                  (alpha-char-p (char name (1- (length name))))
                  (<= (count #\- name) 2)
                  (null (search "--" name))
-                 (<= (count #\' name) 1))
-        name))))
+                 (<= (count #\' name) 1)
+                 (< (apply #'max (run-lengths name)) 3))
+        (format nil "~@(~a~)" name)))))
 
 (defun change-name (avatar name)
   ;; FIXME: check for naughty words?
