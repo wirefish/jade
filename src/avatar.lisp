@@ -282,3 +282,9 @@ the same character as compared by char-equal."
 
 (defmethod kill :after ((avatar avatar) (target combatant))
   (gain-xp avatar (xp-granted-by-kill (? target :level))))
+
+(defmethod spawn-corpse ((avatar avatar) attackers)
+  (when-let ((corpse (call-next-method)))
+    (setf (corpse-owners corpse) (list avatar))
+    ;; TODO: drop items?
+    corpse))
