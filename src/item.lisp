@@ -48,7 +48,7 @@
 
 (defun item-sort-key (item)
   (with-attributes (item-group level) item
-    (bind (((group &optional subgroup) (ensure-list item-group))
+    (bind (((group &optional subgroup) (or (ensure-list item-group) '(nil)))
            (group-index subgroups (find-item-group group))
            (subgroup-index (item-subgroup-index subgroup subgroups)))
       (print (list item-group group subgroup level group-index subgroup-index))
