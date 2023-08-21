@@ -11,4 +11,8 @@
    (tool botany logging mining)
    (resource botany logging mining)
    (miscellany)
-   (currency)))
+   (currency)
+   (quest-item)))
+
+(defentity quest-item (item)
+  (:item-group (quest-item)))

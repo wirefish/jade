@@ -588,7 +588,7 @@
 
 ;;; tulip-field
 
-(defentity white-tulip (item)
+(defentity white-tulip (quest-item)
   (:brief "a white tulip"
    :pose "draws your attention."
    :description "The tulip is quite lovely; you can see why Dhalia prizes them."
@@ -920,7 +920,8 @@
    :description "The seashell's polished surface is covered with an intricate
      pattern of white and orange whorls."
    :alts ("a shiny shell")
-   :stackable t))
+   :stackable t
+   :item-group (miscellany)))
 
 (defentity beach-portal ()
   (:brief "the beach"
