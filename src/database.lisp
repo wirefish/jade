@@ -126,6 +126,7 @@ failure."
                  avatar-id)
            nconc (list (from-string tutorial-id) t))))
 
+sorted
 (defun load-avatar (account-id)
   ;; TODO: also load aliases and settings
   (handler-case
@@ -140,6 +141,8 @@ failure."
                   (avatar-account-id avatar) account-id
                   (finished-quests avatar) (load-finished-quests avatar-id)
                   (tutorials-seen avatar) (load-tutorials-seen avatar-id))
+            (with-attributes (inventory) avatar
+              (setf inventory (sort inventory #'item<)))
             (values avatar (from-string location)))))
     (sqlite:sqlite-error (err)
       (format-log :warning "cannot load avatar: ~s" err)
