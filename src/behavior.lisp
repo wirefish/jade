@@ -82,18 +82,19 @@ satisfies `constraint'."
                      when constraint
                        collect (make-constraint-test 'self name constraint)))
         (param-names (mapcar #'car params))
-        (handler-body (gensym)))
-    `(lambda (self ,@param-names)
-       (declare (ignorable self ,@param-names))
+        (handler-body (gensym))
+        (more-handlers (gensym)))
+    `(lambda (self ,more-handlers ,@param-names)
+       (declare (ignorable self ,@param-names ,more-handlers))
        (block ,handler-body
          (labels (,@(when (or tests (tree-contains 'call-next-handler body))
-                      `((call-next-handler () (return-from ,handler-body :call-next-handler))))
+                      `((call-next-handler () (continue-event self ,more-handlers
+                                                              ,event ,@param-names))))
                   ,@(when (and (allow-phase-p event)
                                (tree-contains 'disallow-action body))
                       `((disallow-action () (return-from ,handler-body :disallow-action)))))
            ,@(when tests
-               `((unless (and ,@tests)
-                   (call-next-handler))))
+               `((unless (and ,@tests) 'constraints-not-satisfied)))
            ,@body)))))
 
 (defun normalize-parameters (params)
@@ -117,20 +118,22 @@ satisfies `constraint'."
 (defmethod observe-event (observer event &rest args)
   (declare (ignore args)))
 
+(defmethod continue-event (observer handlers event &rest args)
+  (loop for (handler . more-handlers) on handlers do
+    (handler-case
+        (let ((result (apply (event-handler-fn handler) observer more-handlers args)))
+          (unless (eq result 'constraints-not-satisfied)
+            (return-from continue-event (values result t))))
+      (error (e)
+        (format-log :warning "error in event handler ~a ~a ~a: ~a"
+                    (entity-type observer)
+                    event
+                    (event-handler-params handler)
+                    e))))
+  nil)
+
 (defmethod observe-event ((observer entity) event &rest args)
-  (let ((handlers (? observer 'behavior event)))
-    (loop for handler in handlers do
-      (handler-case
-          (let ((result (apply (event-handler-fn handler) observer args)))
-            (unless (eq result :call-next-handler)
-              (return-from observe-event (values result t))))
-        (error (e)
-          (format-log :warning "error in event handler ~a ~a ~a: ~a"
-                      (entity-type observer)
-                      event
-                      (event-handler-params handler)
-                      e))))
-    nil))
+  (apply #'continue-event observer (? observer 'behavior event) event args))
 
 (defun observers-allow (observers event &rest args)
   (dolist (observer observers)
