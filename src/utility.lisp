@@ -83,24 +83,6 @@ whose values are the result of applying `fn' to each."
   (loop for (k v) on plist by #'cddr
         nconc (list k (funcall fn v))))
 
-(defun insert-after (item predecessor list)
-  "Modifies `list' to insert `item' after `predecessor'. Returns the resulting
-list. If `predecessor' is null, `item' is inserted as the first element of the
-result. If `predecessor' is not present in `list', returns the unmodified list."
-  (if predecessor
-      (prog1 list
-        (when-let ((tail (member predecessor list)))
-          (setf (cdr tail) (cons item (cdr tail)))))
-      (cons item list)))
-
-(defun insert-after-if (item predecessor-test list)
-  "Modifies `list' to insert `item' after the first item for which calling
-`predecessor-test' evaluates to true. If no element meets the test, returns the
-unmodified list."
-  (when-let ((tail (member-if predecessor-test list)))
-    (setf (cdr tail) (cons item (cdr tail))))
-  list)
-
 (defun insert-sorted (item list predicate)
   "Returns the result of modifying `list' to insert `item' before the first
 element `x' for which (predicate item x) returns nil."
