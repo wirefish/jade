@@ -93,8 +93,8 @@ an adversary for a combat skill, or be the required rank of a resource for a
 gathering skill, etc."
   (if (<= current-rank difficulty)
       1
-      (let ((k (floor (/ (- current-rank difficulty) 4))))
-        (/ 1 (expt 2 k)))))
+      (let ((k (floor (/ (- current-rank difficulty) 5))))
+        (if (> k 6) 0 (/ 1 (expt 2 k))))))
 
 (defun increase-skill-rank (avatar label difficulty)
   (when-let* ((rank (skill-rank avatar label))
