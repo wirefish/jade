@@ -204,7 +204,8 @@ name and whose subsequent elements are arguments to that command."
     (loop for item in added-items
           do (sethash (to-string (entity-id item)) arg
                       (list (get-icon item)
-                            (describe-brief item :article nil))))
+                            (describe-brief item :article nil)
+                            (? item :item-sort-key))))
     (loop for item in removed-items
           do (sethash (to-string (entity-id item)) arg nil))
     (send-client-command avatar "updateInventory" arg)))

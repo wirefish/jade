@@ -193,12 +193,13 @@ MessageHandler.prototype.updateInventory = function(items) {
                 div.parentNode.removeChild(div);
         } else {
             // Add or update item.
-            const [icon, brief] = item;
+            const [icon, brief, sort_key] = item;
             if (div) {
                 div.children[1].innerHTML = brief;
             } else {
                 div = document.createElement('div');
                 div.id = 'inv_' + id;
+                div.setAttribute("jade_sort_key", sort_key);
 
                 var icon_div = document.createElement('div');
                 div.appendChild(icon_div);
