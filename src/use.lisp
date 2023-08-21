@@ -8,22 +8,18 @@
     (call-next-method)))
 
 (defmethod use (actor item target)
-  (notify-observers (list actor item target)
-                    :when-use actor item target))
+  (unless (nth-value 1 (observe-event item :when-use actor item target))
+    (show actor "You cannot use ~a." (describe-brief item :article :definite))))
 
 (defcommand use (actor "use" item "on" target)
   "Use an item in your inventory or environment."
-  ;; FIXME: inventory
+  ;; FIXME: inventory, target
   (if item
-      (let ((matches (find-matches-if (lambda (e) (reacts-to-event-p e :when-use))
-                                      item
-                                      (? (location actor) :contents))))
+      (let ((matches (find-matches item (? (location actor) :contents))))
         (case (length matches)
-          (0 (show actor "You don't see any usable items here that match \"~a\"."
+          (0 (show actor "You don't see any items here that match ~s."
                    (join-tokens item)))
-          (1 (let ((target nil)) ;; FIXME:
-               (when (eq (use actor (first matches) target) :call-next-handler)
-                 (show actor "Nothing happens."))))
+          (1 (use actor (first matches) target))
           (t (show actor "Do you want to use ~a?"
                    (format-list #'describe-brief matches "or")))))
       (show actor "What do you want to use?")))

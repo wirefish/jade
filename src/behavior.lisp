@@ -123,7 +123,7 @@ satisfies `constraint'."
       (handler-case
           (let ((result (apply (event-handler-fn handler) observer args)))
             (unless (eq result :call-next-handler)
-              (return-from observe-event result)))
+              (return-from observe-event (values result t))))
         (error (e)
           (format-log :warning "error in event handler ~a ~a ~a: ~a"
                       (entity-type observer)
