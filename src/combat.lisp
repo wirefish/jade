@@ -156,12 +156,14 @@ slots. This value is cached as the :armor trait."
   (* 2.0 (smoothstep (- att def) -20 20)))
 
 (defun roll-damage (actor attack)
-  (with-attributes (level base-damage damage-variance) attack
-    (let* ((actor-level (? actor :level))
+  (with-attributes (level base-damage damage-variance proficiency nonproficiency-penalty) attack
+    (let* ((proficient (or (null proficiency) (skill-rank actor proficiency)))
+           (actor-level (? actor :level))
            (level (if level (* 0.5 (+ actor-level level)) actor-level))
            (k (* base-damage damage-variance)))
       (* (1+ (* 0.25 (1- level)))
-         (random-float (- base-damage k) (+ base-damage k))))))
+         (random-float (- base-damage k) (+ base-damage k))
+         (if proficient 1.0 nonproficiency-penalty)))))
 
 (defun resolve-attack (actor attack target)
   "Computes the damage done by an instance of `actor' using `attack' against
