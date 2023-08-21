@@ -12,6 +12,7 @@ var map_icon_urls = {
     // Vehicle and structure icons.
     'boat': 'icons/sinagot.png',
     'house': 'icons/house.png',
+    'mill': 'icons/water-mill.png',
     'wagon': 'icons/old-wagon.png',
 };
 
@@ -24,6 +25,7 @@ var surface_styles = {
     'weeds': 'hsl(85, 40%, 40%)',
     'stone': 'hsl(0, 0%, 50%)',
     'water': 'hsl(224, 60%, 50%)',
+    'shallow_water': 'hsl(224, 60%, 50%)',
     'wood': 'hsl(20, 28%, 33%)',
     'sand': 'hsl(55, 38%, 53%)',
     'snow': 'hsl(0, 0%, 80%)',
