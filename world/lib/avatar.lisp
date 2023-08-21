@@ -35,4 +35,4 @@
 (defentity new-avatar (avatar)
   (:race reborn-spirit
    :attacks (fist foot)
-   :respawn-location 'jade.isle-of-dawn:hilltop))
+   :respawn-location 'jade.isle-of-dawn::hilltop))
