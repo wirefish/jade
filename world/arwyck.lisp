@@ -189,7 +189,7 @@
   (:done
     :summary "Present the ticket to the attendant."))
 
-(defentity yellow-ticket (item)
+(defentity yellow-ticket (quest-item)
   (:brief "a yellow ticket"
    :description "Tiny letters imprinted on the ticket read, \"May be exchanged
      for 30 silver coins. The issuer is not liable for any injury, death, or
@@ -997,7 +997,7 @@
   (:done
       :summary "Talk to Dilwar."))
 
-(defentity venom-extractor (item)
+(defentity venom-extractor (quest-item)
   (:brief "a venom extractor"
    :description "This contraption can be used to extract a vial of venom from fresh
      corpses of certain creatures."
