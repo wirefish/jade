@@ -964,7 +964,7 @@
   (:done
       :summary "Talk to the surly stevedore."))
 
-(defentity bundle-of-documents (item)
+(defentity bundle-of-documents (quest-item)
   (:brief "a bundle[s] of documents"
    :description "The documents are rather mundane shipping records. A scrawled
      note on top reads, \"Pay the messenger 10 silver. Q.M.\""
