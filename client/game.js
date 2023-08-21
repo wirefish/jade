@@ -181,6 +181,14 @@ MessageHandler.prototype.hideAura = function(key) {
     }
 }
 
+function findInventoryDivAfter(sort_key, item_divs) {
+    for (const div of item_divs) {
+        if (Number(div.getAttribute("jade_sort_key")) > sort_key)
+            return div;
+    }
+    return null;
+}
+
 MessageHandler.prototype.updateInventory = function(items) {
     var contents_div = document.getElementById('inventory_contents');
 
@@ -209,7 +217,9 @@ MessageHandler.prototype.updateInventory = function(items) {
                 div.appendChild(brief_div);
                 brief_div.innerHTML = brief;
 
-                contents_div.insertBefore(div, null);
+                contents_div.insertBefore(
+                    div,
+                    findInventoryDivAfter(sort_key, contents_div.children));
             }
         }
     }
