@@ -38,6 +38,9 @@
 (defun set-item-groups (groups)
   (setf *item-groups* groups))
 
+(defmacro define-item-groups (&body groups)
+  `(set-item-groups ',@groups))
+
 (defun find-item-group (g)
   (loop for group in *item-groups* for i from 1
         when (eq g (car group)) do (return-from find-item-group (values i (cdr group))))
