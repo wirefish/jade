@@ -102,14 +102,9 @@
         (sethash slot-name attributes new-value))
       (call-next-method)))
 
-(defun has-attributes (entity &rest names)
+(defun has-attributes (entity &rest attrs)
   (with-slots (attributes) entity
-    (loop for name in names do
-      (multiple-value-bind (value found) (gethash name attributes)
-        (declare (ignore value))
-        (unless found
-          (return-from has-attributes nil))))
-    t))
+    (every (lambda (attr) (nth-value 1 (gethash attr attributes))) attrs)))
 
 (defmacro with-attributes ((&rest attrs) entity &body body)
   "Executes `body' with variables bound to attributes of `entity'."
