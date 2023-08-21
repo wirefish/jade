@@ -233,7 +233,16 @@ all attributes."
 (defmethod describe-full ((entity entity))
   (or (? entity :description)
       (format nil "~a is unexceptional in every way."
-              (describe-brief entity :article :definite :capitalize t))))
+              (describe-brief entity :article :definite :capitalize t :quantity 1))))
 
 (defun get-icon (entity)
   (or (? entity :icon) (? entity :race :icon)))
+
+(defgeneric can-see (actor subject)
+  (:method (actor subject)
+    (not (? subject :hidden))))
+
+(defgeneric can-match (actor subject)
+  (:method (actor subject)
+    (and (can-see actor subject)
+         (not (? subject :unmatchable)))))
