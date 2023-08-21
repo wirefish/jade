@@ -104,6 +104,11 @@ name and whose subsequent elements are arguments to that command."
      "says"
      (format-text control-string args))))
 
+(defun say (speaker control-string &rest args)
+  (let ((msg (format-text control-string args)))
+    (for-avatars-in (avatar (location speaker))
+      (tell speaker avatar msg))))
+
 (defun announce (origin radius control-string &rest args)
   (let ((message (format-text control-string args)))
     (for-avatars-near (avatar origin radius)

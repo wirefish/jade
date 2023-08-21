@@ -81,6 +81,7 @@
            #:show-notice
            #:show-map
            #:tell
+           #:say
            #:announce
            #:show-near
 
