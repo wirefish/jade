@@ -15,7 +15,8 @@
    :base-health 10
    :attacks nil
    :traits nil
-   :attitude :neutral))  ; or :friendly, :hostile
+   :attitude :neutral ; or :friendly, :hostile
+   :corpse corpse))
 
 (defmethod transform-initval (class (name (eql :attacks)) value)
   "The `:attacks' attribute is a list of weapons/attacks which the combatant can
@@ -26,6 +27,34 @@ select during combat."
   "The `:loot' attribute describes a generator used to determine loot dropped
 when the combatant dies."
   (make-generator value))
+
+;;; A corpse is an entity that appears when a combatant dies.
+
+(defclass corpse (entity)
+  ((entity :initform nil :accessor corpse-entity)
+   (owners :initform nil :accessor corpse-owners)
+   (loot :initform nil :accessor corpse-loot)
+   (decay-timer :initform nil :accessor corpse-decay-timer)))
+
+(defentity corpse (&class corpse)
+  (:brief "a corpse of ~a"
+   :description "The corpse is in bad shape ... it might decay at any time."
+   :icon tombstone
+   :decay-time 60))
+
+(defmethod describe-brief ((corpse corpse) &key quantity (article :indefinite) capitalize)
+  (declare (ignore quantity article capitalize))
+  (format nil (call-next-method) (describe-brief (corpse-entity corpse))))
+
+(defmethod enter-world ((corpse corpse))
+  (call-next-method)
+  (setf (corpse-decay-timer corpse)
+        (with-delay ((? corpse :decay-time))
+          (despawn-entity corpse))))
+
+(defmethod exit-world ((corpse corpse))
+  (call-next-method)
+  (as:remove-event (corpse-decay-timer corpse)))
 
 ;;; Damage types. A few basic ones are defined here; the game world can call
 ;;; `add-damage-type' to add more.
@@ -47,6 +76,7 @@ when the combatant dies."
           (:piercing "piercing" "pierces")
           (:fire "fire" "burns")
           (:cold "cold" "freezes")
+          (:acid "acid" "erodes")
           (:electricity "electricity" "zaps")))
 
 (defun resistance-name (damage-type)
@@ -114,6 +144,8 @@ when the combatant dies."
     :legs 3/16
     :feet 2/16
     )))
+
+(assert (= 1 (apply #'+ (hash-table-values *armor-slots*))))
 
 (defun armor-defense (avatar)
   "Returns the total defense provided to `avatar' by all items worn in armor
@@ -217,8 +249,6 @@ slots. This value is cached as the :armor trait."
         (min (? actor :max-health)
              (+ (? actor :health) (base-health actor)))))
 
-;;;
-
 (defmethod enter-world ((actor combatant))
   (call-next-method)
   (update-cached-traits actor)
@@ -316,6 +346,31 @@ slots. This value is cached as the :armor trait."
 
 ;;;
 
+(defgeneric spawn-corpse (entity attackers))
+
+(defmethod spawn-corpse ((entity entity) attackers)
+  (when-let ((corpse (symbol-value-as 'corpse (? entity :corpse) nil)))
+    (let ((corpse (clone-entity corpse)))
+      (setf (corpse-entity corpse) entity)
+      (enter-world corpse)
+      (enter-location corpse (location entity) nil)
+      corpse)))
+
+(defmethod spawn-corpse ((combatant combatant) attackers)
+  (when-let ((corpse (call-next-method)))
+    (setf (corpse-owners corpse) attackers)
+    (when-let ((loot (? combatant :loot)))
+      (setf (corpse-loot corpse) (funcall loot)))
+    corpse))
+
+(defmethod spawn-corpse ((avatar avatar) attackers)
+  (when-let ((corpse (call-next-method)))
+    (setf (corpse-owners corpse) (list avatar))
+    ;; TODO: drop items?
+    corpse))
+
+;;;
+
 (defmethod kill :around ((actor combatant) (target combatant))
   (process-simple-event kill (actor target)
       (:observers (observer-list* target (location actor) (? (location actor) :contents)))
@@ -327,9 +382,14 @@ slots. This value is cached as the :armor trait."
 (defmethod kill ((actor combatant) (target combatant))
   (show-observers (? (location actor) :contents)
                   (lambda (e) (describe-death e actor target)))
-  ;; FIXME: create a 'death' portal to provide a better message.
-  (exit-location target (location target) nil :force t)
-  (exit-world target))
+  (spawn-corpse target (list actor)) ; FIXME: anyone who did damage
+  ;; FIXME:
+  (if (typep target 'avatar)
+      (progn
+        (setf (? target :health) 1)
+        (when-let ((dest (find-location (? target :respawn-location))))
+          (respawn-entity target dest)))
+      (despawn-entity target)))
 
 ;;;
 

@@ -186,5 +186,9 @@ starting and stopping simulation.")
     (setf (? entity :allocator) (make-allocator quantity))))
 
 (defun despawn-entity (entity)
-  (exit-location entity (location entity) nil)
+  (exit-location entity (location entity) nil :force t)
   (exit-world entity))
+
+(defun respawn-entity (entity location)
+  (exit-location entity (location entity) nil :force t)
+  (enter-location entity location nil))
