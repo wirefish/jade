@@ -99,7 +99,25 @@ result. If `predecessor' is not present in `list', returns the unmodified list."
 unmodified list."
   (when-let ((tail (member-if predecessor-test list)))
     (setf (cdr tail) (cons item (cdr tail))))
-  list))
+  list)
+
+(defun insert-sorted (item list predicate)
+  "Returns the result of modifying `list' to insert `item' before the first
+element `x' for which (predicate item x) returns nil."
+  (cond
+    ((null list) (list item))
+    ((funcall predicate item (car list))
+     (cons item list))
+    (t
+     (loop for tail on (cdr list) do
+       (cond
+         ((funcall predicate item (car tail))
+          (setf (cdr tail) (cons (car tail) (cdr tail))
+                (car tail) item)
+          (return list))
+         ((null (cdr tail))
+          (setf (cdr tail) (cons item nil))
+          (return list)))))))
 
 ;;; Hash table utilities.
 
