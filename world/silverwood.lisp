@@ -1639,6 +1639,8 @@
 
 (defentity canyon (location)
   (:name "Narrow Canyon"
+   :description "A swirling stream of cold water runs north to south through a
+     narrow, steep-walled canyon."
    :domain :outdoor
    :surface :shallow-water))
 
@@ -1652,5 +1654,16 @@
 (deflocation canyon-R16 (canyon)
   (:exits ((canyon-portal :north canyon-R15 :south canyon-R17))))
 
+(defentity crevice ()
+  (:brief "a narrow crevice"
+   :pose "leads into the cliff face."
+   :entry-message "You carefully follow a narrow ledge alongside the turbulent
+     water."))
+
 (deflocation canyon-R17 (canyon)
-  (:exits ((canyon-portal :north canyon-R16))))
+  (:name "Canyon's End"
+   :description "The narrow canyon comes to an abrupt end, enclosed on three sides by
+     steep cliff walls. The waters of the stream froth and churn amongst numerous huge
+     boulders before disappearing into a crevice in the south wall."
+   :exits ((canyon-portal :north canyon-R16)
+           (crevice :south nil)))) ; FIXME: jade.dripping-caverns::entrance
