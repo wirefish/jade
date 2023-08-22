@@ -768,6 +768,8 @@ const keyCommands = {
     "d": "go east",
     "r": "go up",
     "f": "go down",
+    "i": "go in",
+    "o": "go out",
 };
 
 window.onkeydown = function (e) {
