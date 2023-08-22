@@ -16,8 +16,8 @@
     :northwest (make-dir "northwest" "nw" :southeast '(-1 -1 0) (ash 1 7))
     :up (make-dir "up" "u" :down '(0 0 1) (ash 1 8))
     :down (make-dir "down" "d" :up '(0 0 -1) (ash 1 9))
-    :in (make-dir "in" nil :out '(0 0 0) (ash 1 10))
-    :out (make-dir "out" nil :in '(0 0 0) (ash 1 11))))
+    :in (make-dir "in" "enter" :out '(0 0 0) (ash 1 10))
+    :out (make-dir "out" "exit" :in '(0 0 0) (ash 1 11))))
 
 (defun direction-name (dir)
   (dir-name (gethash dir *directions*)))
@@ -48,17 +48,20 @@
   (make-exit :dir dir :dest dest :portal (apply #'clone-entity portal portal-args)))
 
 (defmethod describe-full ((exit exit))
-  (format nil "~a leads ~a."
-          (if-let ((portal (exit-portal exit)))
-            (describe-brief portal :article :definite :capitalize t)
-            "The exit")
-          (direction-name (exit-dir exit))))
+  (with-slots (portal dir) exit
+    (format nil
+            (or (? portal :description) "~a leads ~a.")
+            (if portal
+                (let ((article (or (? portal :look-article) :indefinite)))
+                  (describe-brief portal :article article :capitalize t))
+                "An exit")
+            (direction-name dir))))
 
 (defmethod observe-event ((observer exit) event &rest args)
   (apply #'observe-event (exit-portal observer) event args))
 
-(defmethod match-subject (tokens (subject exit))
-  (with-slots (dir portal) subject
+(defmethod match-subject (tokens (exit exit))
+  (with-slots (dir portal) exit
     (best-match-quality (match-subject tokens (direction-name dir))
                         (when-let ((abbrev (direction-abbrev dir)))
                           (match-subject tokens abbrev))

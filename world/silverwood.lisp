@@ -596,6 +596,7 @@
 
 (deflocation forest-Q06 (forest)
   (:icon mill
+   :contents (mill-exterior)
    :exits ((forest-portal :west forest-stream-P06 :north road-Q05 :south forest-Q07
                           :east forest-R06)
            (entry-doorway :in water-mill))))
@@ -1231,7 +1232,7 @@
 
 (defentity behind-waterfall-portal ()
   (:brief "a waterfall"
-   :pose "obscures the entrance to this small cave."))
+   :description "A waterfall obscures the entrance to this small cave."))
 
 (defentity bespectacled-frog ()
   (:brief "a bespectacled frog"
@@ -1288,7 +1289,7 @@
 
 (defentity waterfall-portal ()
   (:brief "a waterfall"
-   :pose "cascades down the rocky cliff."
+   :description "A waterfall cascades down the rocky cliff."
    :hidden t))
 
 (deflocation forest-stream-P00 (forest-stream)

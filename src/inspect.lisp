@@ -8,7 +8,7 @@
   (:documentation "Called when `actor' inspects `subject' using an optional `tool'."))
 
 (defmethod inspect :around (actor subject tool)
-  (let ((observers (list actor subject (entity-container subject) tool)))
+  (let ((observers (list actor subject tool)))
     (notify-observers observers :before-inspect actor subject tool)
     (call-next-method)
     (notify-observers observers :after-inspect actor subject tool)))
@@ -74,7 +74,9 @@ To look at items in your inventory or equipment, use the `inventory` command."
                  (describe-brief container))))
       ;; Look at specific things nearby.
       (t
-       (when-let ((matches (match actor subject :at-least-one (? location :contents)
+       (when-let ((matches (match actor subject :at-least-one
+                             (append (can-see actor (? location :contents))
+                                     (? location :exits))
                              :no-match "There is nothing here that matches ~s.")))
          (dolist (entity matches)
            (inspect actor entity tool)))))))
