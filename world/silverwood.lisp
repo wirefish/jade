@@ -165,11 +165,11 @@
   (:after-enter-world ()
     (with-random-interval (10 120)
       (whichever
-       (spawn-entity self 'mushroom-cluster)
-       (spawn-entity self 'maple-tree)
-       (spawn-entity self 'birch-tree)
-       (spawn-entity self 'large-spiderweb)
-       (spawn-entity self 'giant-spider)))))
+       (spawn-unique-entity self 'mushroom-cluster)
+       (spawn-unique-entity self 'maple-tree)
+       (spawn-unique-entity self 'birch-tree)
+       (spawn-unique-entity self 'large-spiderweb)
+       (spawn-unique-entity self 'giant-spider)))))
 
 (deflocation forest-E00 (forest)
   (:exits ((forest-portal :south forest-E01 :east forest-F00))))
