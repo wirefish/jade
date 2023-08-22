@@ -54,9 +54,8 @@ gathered with each attempt."
   (let ((location (location actor)))
     (with-slots (node) activity
       (push actor (resource-node-users node))
-      (show-observers (? location :contents)
-                      (action-message actor "begins to gather from ~a."
-                                      (describe-brief node)))
+      (show-message (? location :contents) actor "begins to gather from ~a."
+                    (describe-brief node))
       (notify-observers (list* location (? location :contents))
                         :before-gather actor node)
       (start-casting actor *gathering-duration*)
@@ -68,8 +67,7 @@ gathered with each attempt."
     (with-slots (node) activity
       (stop-casting actor)
       (gather actor node)
-      (show-observers (? location :contents)
-                      (action-message actor "finishes gathering."))
+      (show-message (? location :contents) actor "finishes gathering.")
       (notify-observers (list* location (? location :contents))
                         :after-gather actor node)
       (unless (deletef (resource-node-users node) actor)

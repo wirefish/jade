@@ -27,6 +27,7 @@
              (:file "generator")
              (:file "activity")
              (:file "behavior")
+             (:file "message")
              (:file "match")
              (:file "item")
              (:file "location")

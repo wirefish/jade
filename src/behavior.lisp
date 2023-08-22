@@ -153,30 +153,6 @@ satisfies `constraint'."
   (dolist (observer observers)
     (apply #'observe-event observer event args)))
 
-(defun action-message (actor verb &rest args)
-  "Returns a closure that when called with an entity, returns a string that
-appropriately describes to that entity an action taken by `actor', or nil if the
-entity cannot see `actor'."
-  (let* ((verb (parse-verb (apply #'format nil verb args)))
-         (self-message (format nil "You ~a" (verb-plural verb)))
-         (other-message (format nil "~a ~a"
-                               (describe-brief actor :capitalize t)
-                               (verb-singular verb))))
-    (lambda (observer)
-      (when (can-see observer actor)
-        (if (eq observer actor) self-message other-message)))))
-
-(defgeneric show-observers (observers message))
-
-(defmethod show-observers (observers (message string))
-  (dolist (observer observers)
-    (show observer message)))
-
-(defmethod show-observers (observers (message-generator function))
-  (dolist (observer observers)
-    (when-let ((message (funcall message-generator observer)))
-      (show observer message))))
-
 ;;;
 
 (defun reacts-to-event-p (observer event)

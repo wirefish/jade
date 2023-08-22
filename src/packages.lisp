@@ -45,11 +45,13 @@
            #:disallow-action
            #:call-next-handler
            #:observe-event
-           #:show-observers
            #:self
            #:&quest
            #:&race
            #:&dir
+
+           #:make-message
+           #:show-message
 
            #:item
            #:receive

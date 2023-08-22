@@ -338,9 +338,9 @@ slots. This value is cached as the :armor trait."
           ;; processed.
           (with-delay (0)
             (kill actor target))))
-      (show-observers (? (location actor) :contents)
-                      (lambda (e) (describe-attack e actor target
-                                                   current-attack damage crit))))
+      (show-message (? (location actor) :contents)
+                    (lambda (e) (describe-attack e actor target
+                                                 current-attack damage crit))))
     (setf attack-timer nil)
     (begin-attack actor target)))
 
@@ -374,8 +374,8 @@ slots. This value is cached as the :armor trait."
   (:method (observer actor target)))
 
 (defmethod kill ((actor combatant) (target combatant))
-  (show-observers (? (location actor) :contents)
-                  (lambda (e) (describe-death e actor target)))
+  (show-message (? (location actor) :contents)
+                (lambda (e) (describe-death e actor target)))
   (spawn-corpse target (list actor)) ; FIXME: anyone who did damage
   ;; FIXME:
   (if (typep target 'avatar)
@@ -429,9 +429,9 @@ slots. This value is cached as the :armor trait."
     (when attack-timer
       (cl-async:remove-event attack-timer))
     (when (> (? actor :health) 0)
-      (show-observers
-       (combatants battle)
-       (format nil "~a has left the battle." (describe-brief actor :capitalize t)))
+      (show-message (combatants battle)
+                    (format nil "~a has left the battle."
+                            (describe-brief actor :capitalize t)))
       (show actor "You are no longer in combat."))
     (setf current-target nil attack-timer nil battle nil)
     battle))

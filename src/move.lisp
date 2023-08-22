@@ -15,7 +15,7 @@ If `force' is true, do not allow observers to disallow the action."))
                    (observers-allow observers :allow-exit-location actor location exit))
                (exit-combat actor :force force))
       (notify-observers observers :before-exit-location actor location exit)
-      (show-observers (? location :contents) message)
+      (show-message (? location :contents) message)
       (call-next-method)
       (notify-observers observers :after-exit-location actor location exit)
       t)))
@@ -77,7 +77,7 @@ no allow phase."))
         (message (entry-message actor entry)))
     (notify-observers observers :before-enter-location actor location entry)
     (call-next-method)
-    (show-observers (cddr observers) message)  ; ignoring actor and entry
+    (show-message (nthcdr 3 observers) message)  ; ignoring actor, entry, location
     (notify-observers observers :after-enter-location actor location entry)))
 
 (defmethod enter-location (actor location entry)

@@ -80,11 +80,10 @@
   (let* ((portal (and exit (exit-portal exit)))
          (template (or (? portal :exit-message)
                        (? actor :exit-message)
-                       (if exit "heads ~a." "disappears!")))
-         (msg (format nil template
-                      (when exit (string-downcase (symbol-name (exit-dir exit))))
-                      (when portal (describe-brief portal :article :definite)))))
-    (action-message actor msg)))
+                       (if exit "heads ~a." "disappears!"))))
+    (make-message actor template
+                  (when exit (string-downcase (symbol-name (exit-dir exit))))
+                  (when portal (describe-brief portal :article :definite)))))
 
 (defun entry-message (actor entry)
   (let* ((portal (and entry (exit-portal entry)))
@@ -95,11 +94,10 @@
                              (:up "arrives from above.")
                              (:down "arrives from below.")
                              (t "arrives from the ~a."))
-                           "appears!")))
-         (msg (format nil template
-                      (when entry (string-downcase (symbol-name (exit-dir entry))))
-                      (when portal (describe-brief portal :article :definite)))))
-    (action-message actor msg)))
+                           "appears!"))))
+    (make-message actor template
+                  (when entry (string-downcase (symbol-name (exit-dir entry))))
+                  (when portal (describe-brief portal :article :definite)))))
 
 ;;; A region is an entity with the same name as the package in which it is
 ;;; defined (without the leading "jade."). It describes properties shared by all
