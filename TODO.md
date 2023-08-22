@@ -38,4 +38,4 @@
 * Only show quest icon if matching event is when-talk, after-give, not all
   events. Or based on attribute of entity that reacts.
 
-* Implement looking in a direction.
+* Fix #'exit-message and #'entry-message.

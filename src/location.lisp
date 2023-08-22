@@ -75,6 +75,14 @@
 ;;; construct messages seen by observers when some entity passes through the
 ;;; portal: :exit-verb, :entry-verb, and :transit-message.
 
+;; FIXME: select in this order:
+;; (? portal :transit-message)
+;; (? exit :exit-message)
+;; (? actor :exit-message)
+;; (if exit "heads dir" "disappears!")
+;;
+;; messages are formatted with brief and direction. similar for entry-message.
+
 (defun exit-message (actor exit)
   (action-message actor
                   (if exit
