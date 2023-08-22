@@ -1,5 +1,36 @@
 (in-package :jade)
 
+;;; General facility for explicitly specifying singular and plural forms of a
+;;; noun or verb.
+
+(defparameter *specifier-pattern* (cl-ppcre:create-scanner "\\[(?:([^|]*)\\|)?([^\\]]*)?\\]"))
+
+(defun explicit-singular-and-plural (s)
+  "Given string `s' that contains one or more explicit singular/plural
+specifiers, returns two string representing the singular and plural forms."
+  (labels ((matched-substring (s start end)
+             (when start (subseq s start end))))
+    (let ((pos 0) singular-parts plural-parts)
+      (loop while (< pos (length s)) do
+        (multiple-value-bind (spec-start spec-end reg-starts reg-ends)
+            (cl-ppcre:scan *specifier-pattern* s :start pos)
+          (unless spec-start
+            (loop-finish))
+          (let ((literal (subseq s pos spec-start)))
+            (push literal singular-parts)
+            (push literal plural-parts)
+            (when-let ((singular (matched-substring s (elt reg-starts 0) (elt reg-ends 0))))
+              (push singular singular-parts))
+            (when-let ((plural (matched-substring s (elt reg-starts 1) (elt reg-ends 1))))
+              (push plural plural-parts)))
+          (setf pos spec-end)))
+      (when (< pos (length s))
+        (let ((literal (subseq s pos)))
+          (push literal singular-parts)
+          (push literal plural-parts)))
+      (values (apply #'strcat (nreverse singular-parts))
+              (apply #'strcat (nreverse plural-parts))))))
+
 ;;; Noun phrases.
 
 (defun article-p (s)
@@ -34,21 +65,6 @@ at the appropriate indefinite article."
     (t
      (strcat s "s"))))
 
-(defun singular-and-plural (s)
-  (if-let ((start (position #\[ s)))
-    (let* ((sep (position #\| s :start start))
-           (end (position #\] s :start start))
-           (prefix (subseq s 0 start))
-           (suffix (subseq s (+ end 1))))
-      (if (null sep)
-          (values
-           (strcat prefix suffix)
-           (strcat prefix (subseq s (+ start 1) end) suffix))
-          (values
-           (strcat prefix (subseq s (+ start 1) sep) suffix)
-           (strcat prefix (subseq s (+ sep 1) end) suffix))))
-    (values s (guess-plural-noun s))))
-
 (defstruct noun article singular plural)
 
 (defun parse-noun (s)
@@ -68,7 +84,9 @@ examples showing the resulting article, singular, and plural:
   (if (upper-case-p (char s 0))
       (make-noun :singular s)
       (bind ((article noun (split-article s))
-             (singular plural (singular-and-plural noun)))
+             (singular plural (if (position #\[ s)
+                                  (explicit-singular-and-plural noun)
+                                  (values noun (guess-plural-noun noun)))))
         (make-noun :article (or article (guess-article noun))
                    :singular singular
                    :plural plural))))
@@ -125,8 +143,8 @@ examples showing the resulting article, singular, and plural:
 
 (defun parse-verb (s)
   (if (position #\[ s)
-      (bind ((singular plural (singular-and-plural s)))
-        (make-verb :singular singular :plural plural))
+      (bind ((singular plural (explicit-singular-and-plural s)))
+        (make-verb :singular plural :plural singular))
       (let* ((sep (position-if-not #'alpha-char-p s))
              (prefix (subseq s 0 sep)))
         (make-verb :singular s
