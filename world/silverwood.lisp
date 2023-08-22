@@ -592,14 +592,15 @@
    :domain :indoor
    :surface :wood
    :contents (jopalinson termired)
-   :exits ((exit-doorway :out forest-Q06))))
+   :exits (((exit-doorway :description "~a leads outside.") :out forest-Q06))))
 
 (deflocation forest-Q06 (forest)
   (:icon mill
    :contents (mill-exterior)
    :exits ((forest-portal :west forest-stream-P06 :north road-Q05 :south forest-Q07
                           :east forest-R06)
-           (entry-doorway :in water-mill))))
+           ((entry-doorway :description "~a leads into the mill.")
+            :in water-mill))))
 
 (deflocation forest-R06 (forest)
   (:exits ((forest-portal :west forest-Q06 :north road-R05 :south forest-R07
