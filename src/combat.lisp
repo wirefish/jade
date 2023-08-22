@@ -40,7 +40,8 @@ when the combatant dies."
   (:brief "a corpse of ~a"
    :description "The corpse is in bad shape ... it might decay at any time."
    :icon tombstone
-   :decay-time 60))
+   :decay-time 60
+   :exit-message "decays."))
 
 (defmethod describe-brief ((corpse corpse) &key quantity (article :indefinite) capitalize)
   (declare (ignore quantity article capitalize))
