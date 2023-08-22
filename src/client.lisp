@@ -140,18 +140,23 @@ name and whose subsequent elements are arguments to that command."
     properties))
 
 (defun show-neighbors (avatar)
+  "Displays all properties for neighbors visible to `avatar'."
   (send-client-command
    avatar "setNeighbors"
    (loop for entity in (? (location avatar) :contents)
-         unless (or (eq entity avatar) (? entity :implicit) (? entity :implicit-neighbor))
+         unless (or (eq entity avatar) (? entity :implicit) (? entity :implicit-neighbor)
+                    (not (can-see avatar entity)))
            collect (neighbor-properties entity))))
 
 (defun update-neighbor (avatar neighbor &rest properties)
-  (send-client-command
-   avatar "updateNeighbor"
-   (if properties
-       (plist-hash-table (list* :key (entity-id neighbor) properties))
-       (neighbor-properties neighbor))))
+  "Updates specific properties of `neighbor' as seen by `avatar'. If
+`properties' is nil, updates all properties."
+  (when (can-see avatar neighbor)
+    (send-client-command
+     avatar "updateNeighbor"
+     (if properties
+         (plist-hash-table (list* :key (entity-id neighbor) properties))
+         (neighbor-properties neighbor)))))
 
 (defun remove-neighbor (avatar neighbor &optional message)
   (send-client-command avatar "removeNeighbor" (entity-id neighbor) message))
@@ -165,10 +170,10 @@ name and whose subsequent elements are arguments to that command."
      (update-client-state avatar :location-name (? location :name))
      (update-client-state avatar :location-description (? location :description))
      (loop for exit in (? location :exits)
-           when t  ; FIXME: (visiblep exit avatar)
+           when (can-see avatar exit)
              collect (exit-dir exit))
      (loop for obj in (? location :contents)
-           unless (or (eq obj avatar) (? obj :implicit))  ; FIXME: visibility?
+           unless (or (eq obj avatar) (? obj :implicit) (not (can-see avatar obj)))
              collect (list (entity-id obj) (describe-brief obj) (describe-pose obj))))))
 
 ;;;
@@ -277,7 +282,7 @@ name and whose subsequent elements are arguments to that command."
            (or (? origin :subregion) "")
            radius
            (loop for (x y z location) in map
-                 if (eql (? location :z-offset) z-offset)
+                 when (eql (? location :z-offset) z-offset)
                    collect (list x y
                                  (? location :name)
                                  (or (? location :icon) "")

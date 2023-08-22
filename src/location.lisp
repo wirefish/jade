@@ -64,6 +64,10 @@
                           (match-subject tokens abbrev))
                         (match-subject tokens portal))))
 
+(defmethod can-see (actor (exit exit))
+  (when-let ((portal (exit-portal exit)))
+    (can-see actor portal)))
+
 ;;; An entity that acts as a portal may define several attributes used to
 ;;; construct messages seen by observers when some entity passes through the
 ;;; portal: :exit-verb, :entry-verb, and :transit-message.

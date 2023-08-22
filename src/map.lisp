@@ -20,19 +20,12 @@ visited only if `cross-domains' is t."
                  (when (and (or up-down (= dz 0))
                             (or (/= dx 0) (/= dy 0))
                             (<= (max (abs (+ x dx)) (abs (+ y dy)) (abs (+ z dz))) radius))
-                   (let ((dest (and (or (null observer) t)  ; FIXME: check if visible
+                   (let ((dest (and (or (null observer) (can-see observer exit))
                                     (find-location (exit-dest exit)))))
                      (when (and dest (null (gethash (entity-label dest) visited)))
                        (recursive-walk (+ x dx) (+ y dy) (+ z dz) dest)))))))))
       (recursive-walk 0 0 0 origin)
       (nreverse result))))
-
-(defun exit-visible-p (exit observer)
-  ;; FIXME:
-  ;; (or (visiblep portal observer)
-  ;;     (let ((dest (find-location (destination portal))))
-  ;;       (eq dest (location observer)))))
-  t)
 
 ;;; Bits that define the state of a location, in addition to the bits defined
 ;;; for exit directions (see location.lisp).
@@ -68,11 +61,13 @@ visited only if `cross-domains' is t."
   0)
 
 (defun location-state (location avatar)
-  (let ((contents (? location :contents)))
+  (let ((contents (? location :contents))
+        (avatar-location (entity-label (location avatar))))
     (apply #'logior
            (location-quest-state-bit location avatar)
            (if (some (lambda (x) (typep x 'vendor)) contents) +vendor-map-bit+ 0)
            (if (some (lambda (x) (typep x 'trainer)) contents) +trainer-map-bit+ 0)
            (loop for exit in (? location :exits)
-                 if (exit-visible-p exit avatar)
+                 when (or (can-see avatar exit)
+                          (eq (exit-dest exit) avatar-location))
                    collect (direction-map-bit (exit-dir exit))))))

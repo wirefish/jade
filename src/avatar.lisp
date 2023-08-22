@@ -88,6 +88,12 @@
   (best-match-quality (call-next-method)
                       (match-subject tokens (? subject :race))))
 
+(defmethod can-see ((avatar avatar) (item item))
+  (and (call-next-method)
+       (let ((quest (? item :quest)))
+         (or (null quest)
+             (assoc quest (active-quests avatar))))))
+
 ;;;
 
 (defmacro for-avatars-in ((var location) &body body)
