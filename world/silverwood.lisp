@@ -173,7 +173,8 @@
   (:exits ((forest-portal :south forest-E01 :east forest-F00))))
 
 (deflocation forest-F00 (forest)
-  (:exits ((forest-portal :west forest-E00 :south forest-F01 :east forest-G00))))
+  (:exits ((forest-portal :west forest-E00 :south forest-F01 :east forest-G00)
+           (narrow-track :north jade.copper-mine::entrance))))
 
 (deflocation forest-G00 (forest)
   (:exits ((forest-portal :west forest-F00 :south forest-G01 :east forest-H00))))
