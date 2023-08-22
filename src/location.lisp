@@ -71,39 +71,35 @@
   (when-let ((portal (exit-portal exit)))
     (can-see actor portal)))
 
-;;; An entity that acts as a portal may define several attributes used to
-;;; construct messages seen by observers when some entity passes through the
-;;; portal: :exit-verb, :entry-verb, and :transit-message.
-
-;; FIXME: select in this order:
-;; (? portal :transit-message)
-;; (? exit :exit-message)
-;; (? actor :exit-message)
-;; (if exit "heads dir" "disappears!")
-;;
-;; messages are formatted with brief and direction. similar for entry-message.
+;;; Generate messages seen by the actor and observers when an actor enters or
+;;; exits a location. If a portal or actor specifies :entry-message or
+;;; :exit-message, it will be used as a control-string for a call to format with
+;;; two arguments: the direction name and the brief portal description.
 
 (defun exit-message (actor exit)
-  (action-message actor
-                  (if exit
-                      (with-slots (dir portal) exit
-                        (format nil
-                                (or (? portal :exit-verb) "heads ~a.")
-                                (direction-name dir)))
-                      "disappears!")))
+  (let* ((portal (and exit (exit-portal exit)))
+         (template (or (? portal :exit-message)
+                       (? actor :exit-message)
+                       (if exit "heads ~a." "disappears!")))
+         (msg (format nil template
+                      (when exit (string-downcase (symbol-name (exit-dir exit))))
+                      (when portal (describe-brief portal :article :definite)))))
+    (action-message actor msg)))
 
 (defun entry-message (actor entry)
-  (action-message actor
-                  (if entry
-                      (with-slots (dir portal) entry
-                        (format nil
-                                (or (? portal :entry-verb)
-                                    (case dir
-                                      (:up "arrives from above.")
-                                      (:down "arrives from below.")
-                                      (t "arrives from the ~a.")))
-                                (direction-name dir)))
-                      "appears!")))
+  (let* ((portal (and entry (exit-portal entry)))
+         (template (or (? portal :entry-message)
+                       (? actor :entry-message)
+                       (if entry
+                           (case (exit-dir entry)
+                             (:up "arrives from above.")
+                             (:down "arrives from below.")
+                             (t "arrives from the ~a."))
+                           "appears!")))
+         (msg (format nil template
+                      (when entry (string-downcase (symbol-name (exit-dir entry))))
+                      (when portal (describe-brief portal :article :definite)))))
+    (action-message actor msg)))
 
 ;;; A region is an entity with the same name as the package in which it is
 ;;; defined (without the leading "jade."). It describes properties shared by all

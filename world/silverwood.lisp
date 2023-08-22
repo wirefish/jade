@@ -1377,13 +1377,13 @@
 
 (defentity cabin-outside-door (entry-doorway)
   (:brief "a gaily painted door"
-   :exit-verb "heads into the cabin."
-   :entry-verb "comes from inside the cabin."))
+   :exit-message "heads into the cabin."
+   :entry-message "comes from inside the cabin."))
 
 (defentity cabin-inside-door (exit-doorway)
   (:brief "a gaily painted door"
-   :exit-verb "leaves the cabin."
-   :entry-verb "enters the cabin."))
+   :exit-message "leaves the cabin."
+   :entry-message "enters the cabin."))
 
 (defentity old-sword ()
   (:brief "a single-edged sword"

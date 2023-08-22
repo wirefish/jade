@@ -7,11 +7,13 @@
 
 (defentity entry-doorway ()
   (:brief "a doorway"
-   :description "~a leads into a building."))
+   :description "~a leads into a building."
+   :exit-message "heads ~a through ~a."))
 
 (defentity exit-doorway ()
   (:brief "a doorway"
-   :description "~a leads out of the building."))
+   :description "~a leads out of the building."
+   :exit-message "heads ~a through ~a."))
 
 (defentity stairway ()
   (:brief "a stairway"))

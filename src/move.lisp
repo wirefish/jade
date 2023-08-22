@@ -15,7 +15,7 @@ If `force' is true, do not allow observers to disallow the action."))
                    (observers-allow observers :allow-exit-location actor location exit))
                (exit-combat actor :force force))
       (notify-observers observers :before-exit-location actor location exit)
-      (show-observers (cons actor (cddr observers)) message) ; ignoring exit
+      (show-observers (? location :contents) message)
       (call-next-method)
       (notify-observers observers :after-exit-location actor location exit)
       t)))

@@ -49,23 +49,29 @@ gathered with each attempt."
 (defparameter *gathering-duration* 3)  ; FIXME: from node?
 
 (defmethod begin-activity (actor (activity gathering))
-  (with-slots (node) activity
-    (push actor (resource-node-users node))
-    (let ((msg (action-message actor "begins to gather from ~a." (describe-brief node))))
-      (show-observers (observer-list* actor (location actor) (? (location actor) :contents))
-                      msg :before-gather actor))
-    (start-casting actor *gathering-duration*)
-    (with-delay (*gathering-duration*)
-      (finish-activity actor activity))))
+  (let ((location (location actor)))
+    (with-slots (node) activity
+      (push actor (resource-node-users node))
+      (show-observers (? location :contents)
+                      (action-message actor "begins to gather from ~a."
+                                      (describe-brief node)))
+      (notify-observers (list* location (? location :contents))
+                        :before-gather actor node)
+      (start-casting actor *gathering-duration*)
+      (with-delay (*gathering-duration*)
+        (finish-activity actor activity)))))
 
 (defmethod finish-activity (actor (activity gathering))
-  (with-slots (node) activity
-    (stop-casting actor)
-    (gather actor node)
-    (let ((msg (action-message actor "finishes gathering.")))
-      (show-observers (? (location actor) :contents) msg :after-gather actor))
-    (unless (deletef (resource-node-users node) actor)
-      (despawn-entity node))))
+  (let ((location (location actor)))
+    (with-slots (node) activity
+      (stop-casting actor)
+      (gather actor node)
+      (show-observers (? location :contents)
+                      (action-message actor "finishes gathering."))
+      (notify-observers (list* location (? location :contents))
+                        :after-gather actor node)
+      (unless (deletef (resource-node-users node) actor)
+        (despawn-entity node)))))
 
 (defmethod cancel-activity (actor (activity gathering))
   (stop-casting actor)
