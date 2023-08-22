@@ -150,10 +150,12 @@ The state associated with a quest phase can take one of three forms:
             (active-quests avatar)))
     (update-quests avatar label)))
 
-(defun remove-quest-items (avatar label &key npc (message "~a is destroyed."))
+(defparameter *default-remove-message* (parse-verb "is destroyed."))
+
+(defun remove-quest-items (avatar label &key npc (message *default-remove-message*))
   "Removes all items associated with the quest named by `label' from the inventory
 of `avatar'. If `npc' is not nil, makes it appear that items are given to `npc';
-otherwise, `message' is used to construct feedback to the player."
+otherwise, `message' is a verb used to construct feedback to the player."
   (when-let ((items (remove-items-if avatar :inventory
                                      (lambda (i) (eq (? i :quest) label)))))
     (update-inventory avatar nil items)
@@ -162,7 +164,12 @@ otherwise, `message' is used to construct feedback to the player."
           (show avatar "You give ~a to ~a."
                 brief
                 (describe-brief npc :article :definite))
-          (show avatar message brief)))))
+          (let ((multiple (or (> (length items) 1)
+                              (> (? (first items) :quantity) 1))))
+            (show avatar
+                  "~@(~a~) ~a"
+                  brief
+                  (if multiple (verb-plural message) (verb-singular message))))))))
 
 (defun advance-quest-state (state &optional arg1 arg2)
   "Returns two values: the new state, and t if the new state indicates the phase

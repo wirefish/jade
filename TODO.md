@@ -33,9 +33,5 @@
 
 * Badge chat pane icon when new chat appears.
 
-* Fix verb in remove-quest-items.
-
 * Only show quest icon if matching event is when-talk, after-give, not all
   events. Or based on attribute of entity that reacts.
-
-* Fix #'exit-message and #'entry-message.
