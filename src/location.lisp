@@ -155,11 +155,9 @@ starting and stopping simulation.")
 
 (defmethod transform-initval (class (name (eql :exits)) value)
   (labels ((transform-exit-group (group)
-             (bind (((portal-spec &rest dirs-dests) group)
-                    (portal-name (if (listp portal-spec) (first portal-spec) portal-spec))
-                    (portal-args (when (listp portal-spec) (rest portal-spec))))
+             (bind (((portal-spec &rest dirs-dests) group))
                (loop for (dir dest) on dirs-dests by #'cddr
-                     collect (apply #'register-exit dir dest portal-name portal-args)))))
+                     collect (apply #'register-exit dir dest (ensure-list portal-spec))))))
     (loop for group in value
           nconc (transform-exit-group group))))
 
