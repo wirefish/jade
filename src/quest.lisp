@@ -152,7 +152,7 @@ The state associated with a quest phase can take one of three forms:
 
 (defparameter *default-remove-message* (parse-verb "is destroyed."))
 
-(defun remove-quest-items (avatar label &key npc (message *default-remove-message*))
+(defun consume-quest-items (avatar label &key npc (message *default-remove-message*))
   "Removes all items associated with the quest named by `label' from the inventory
 of `avatar'. If `npc' is not nil, makes it appear that items are given to `npc';
 otherwise, `message' is a verb used to construct feedback to the player."
@@ -204,7 +204,7 @@ complete, advances to the next phase. Returns the index of the new phase, or
                     (update-quests avatar label)
                     next-phase)
                   (progn
-                    (remove-quest-items avatar label :npc actor)
+                    (consume-quest-items avatar label :npc actor)
                     (deactivate-quest avatar label)
                     (sethash label (finished-quests avatar) (get-universal-time))
                     (push label (dirty-quests avatar))
@@ -296,7 +296,7 @@ complete, advances to the next phase. Returns the index of the new phase, or
 (defun drop-quest (actor quest)
   (with-slots (label name) quest
     (deactivate-quest actor label)
-    (remove-quest-items actor label)
+    (consume-quest-items actor label)
     (show-notice actor "You are no longer on the quest ~s." name)
     (show-map actor)))
 
