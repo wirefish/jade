@@ -175,6 +175,8 @@ starting and stopping simulation.")
 ;;;
 
 (defun spawn-entity (location label &rest args)
+  "Creates a new entity by calling clone-entity with `label' and `args' and
+places the entity in `location'."
   (let* ((proto (symbol-value-as 'entity label))
          (allocator (? proto :allocator)))
     (when (or (null allocator) (funcall allocator :acquire))
@@ -184,10 +186,14 @@ starting and stopping simulation.")
         entity))))
 
 (defun spawn-unique-entity (location label &rest attributes)
+  "Like spawn-entity, but will not create an entity if a similar one already
+exists in `location'."
   (unless (contains-isa location :contents label)
     (apply #'spawn-entity location label attributes)))
 
 (defun limit-spawn-quantity (label quantity)
+  "Assigns a limit to the number of entities with prototype `label' that
+spawn-entity can cause to exist at the same time."
   (when-let ((entity (symbol-value-as 'entity label)))
     (setf (? entity :allocator) (make-allocator quantity))))
 
