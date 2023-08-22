@@ -5,6 +5,9 @@
   :license "MIT"
   :depends-on ("cl-ppcre" "cl-async" "cl-base64" "ironclad" "sqlite")
   :serial t
+  :build-operation "program-op"
+  :build-pathname "build/jade-server"
+  :entry-point "jade::run-server"
   :components
   ((:module "src" :components
             ((:file "packages")

@@ -325,8 +325,9 @@ request."
        (as:exit-event-loop)))))
 
 (defun run-server ()
-  (clrhash *avatars*)
-  (run-event-loop))
+  (let ((*package* (find-package :jade)))
+    (clrhash *avatars*)
+    (run-event-loop)))
 
 (defun stop-server ()
   (as:trigger-notifier (as:make-notifier #'as:exit-event-loop)))

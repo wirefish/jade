@@ -74,3 +74,11 @@ $(ICONDIR)/%: client/icons/% | $(ICONDIR)
 	cp $< $@
 $(ICONDIR):
 	@mkdir -p $@
+
+.PHONY: server
+
+server:
+	sbcl --eval '(asdf:load-asd "jade.asd")' \
+	--eval '(ql:quickload :jade)' \
+	--eval '(asdf:make :jade)' \
+	--eval '(quit)'
