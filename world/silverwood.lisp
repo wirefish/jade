@@ -1377,11 +1377,13 @@
 
 (defentity cabin-outside-door (entry-doorway)
   (:brief "a gaily painted door"
+   :description "~a leads into the cabin."
    :exit-message "heads into the cabin."
    :entry-message "comes from inside the cabin."))
 
 (defentity cabin-inside-door (exit-doorway)
   (:brief "a gaily painted door"
+   :description "~a leads out of the cabin."
    :exit-message "leaves the cabin."
    :entry-message "enters the cabin."))
 
