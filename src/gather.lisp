@@ -16,7 +16,9 @@
   (:required-skill nil
    :required-rank 1
    :required-tool-level 1
-   :resources nil))
+   :resources nil
+   :entry-message "catches your attention."
+   :exit-message "is depleted."))
 
 (defmethod transform-initval ((class (eql 'resource-node)) (name (eql :resources)) value)
   "The `:resources' attribute describes a generator used to determine resources
