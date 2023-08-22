@@ -31,7 +31,11 @@
 
 * Add chat channels.
 
-* Badge chat pane icon when new chat appears.
+* Add a badge to the chat pane icon when new chat appears.
 
 * Only show quest icon if matching event is when-talk, after-give, not all
   events. Or based on attribute of entity that reacts.
+
+* Automatically compute :offers-quests from event handler bodies? Could also
+  compute :advances-quests as a list of quest and phases from which a body may
+  call advance-quest?
