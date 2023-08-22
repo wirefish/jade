@@ -60,12 +60,26 @@ leaf node of `tree'. The results are returned in depth-first order."
       (nreverse results))))
 
 (defun tree-contains (value tree &key (test #'eql))
+  "Returns true if `tree' contains a leaf node that matches `value' subject to
+`test'."
     (labels ((recurse (node)
                (etypecase node
                  (atom (when (funcall test node value)
                          (return-from tree-contains t)))
                  (list (dolist (child node) (recurse child))))))
       (recurse tree)))
+
+(defun match-in-tree (pattern tree &key (test #'eql))
+  "Returns nodes in `tree' for which calling `test' with the node and `pattern' as
+arguments returns true. Matches are returned in depth-first order."
+  (let (matches)
+    (labels ((recurse (node)
+               (when (funcall test node pattern)
+                 (push node matches))
+               (when (typep node 'list)
+                 (dolist (child node) (recurse child)))))
+      (recurse tree)
+      (nreverse matches))))
 
 (defun split-list (list n)
   "Splits `list' into two lists and returns the results as two values. If `n' is
