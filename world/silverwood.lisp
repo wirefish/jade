@@ -1232,14 +1232,41 @@
 
 (defentity bespectacled-frog ()
   (:brief "a bespectacled frog"
-   :pose "sits on a mossy rock with a frown on its face. The frog, not the rock."
+   :pose "sits on a mossy rock with a frown on its face. The frog, not the rock.
+     Rocks don't have faces."
    :description "The frog is both abnormally large and apparently quite
      near-sighted.")
 
-  (:when-talk (actor self topic)
+  (:after-enter-location ((actor avatar) location entry)
+    (with-delay (1)
+      (show actor "The frog shakes its head as your approach.")))
+
+  (:when-talk (actor self (topic nil))
     (tell self actor "What is it with explorers like you, always looking for
       secret spaces behind waterfalls? I just wanted to be alone and contemplate
-      life. Is that too much to ask?")))
+      life. Is that too much to ask?
+
+      Now that you've disturbed me, you may as well take advantage of my
+      expertise. I know quite a bit about the happenings in the local area. What
+      do you want to know about?")
+    (maybe-show-tutorial actor 'talk-topics "You can discuss something specific
+      with the frog by specifying a topic with the `talk` command. For example,
+      `talk to frog about flies`."))
+
+  (:when-talk (actor self (topic "flies" "fly"))
+    (tell self actor "Ahh, flies ... I can never get enough! The sheer ecstasy
+      of catching them with my tongue, their subtle texture ... urglglgl ...
+
+      Ahem. That is not a topic I need to discuss further. Perhaps ask about
+      something else?"))
+
+  (:when-talk (actor self (topic "kobold" "copper"))
+    (tell self actor "I have seen kobolds lurking around the northwestern corner
+      of the forest. They have a mine in that area, said to be rich with copper
+      deposits. If you are a miner, you might find it worth visiting."))
+
+  (:when-talk (actor self topic)
+    (tell self actor "I'm afraid I don't know anything about that.")))
 
 (deflocation behind-the-waterfall ()
   (:name "Behind the Waterfall"
