@@ -94,6 +94,8 @@
 
 (defentity mushroom-cluster (botany-node)
   (:brief "a cluster of small mushrooms"
+   :description "The mushroom cluster grows at the base of a nearby tree. It
+     contains mostly small brown mushrooms."
    :icon mushroom-6
    :resources ((1.0 small-brown-mushroom :quantity (random-integer 1 2))
                (0.2 small-white-mushroom)
