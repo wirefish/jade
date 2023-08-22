@@ -42,7 +42,8 @@
   "Use an item in your inventory or environment."
   ;; FIXME: inventory, target
   (if item
-      (let ((matches (find-matches item (? (location actor) :contents))))
+      (let* ((candidates (can-see actor (remove actor (? (location actor) :contents))))
+             (matches (find-matches item candidates)))
         (case (length matches)
           (0 (show actor "You don't see any items here that match ~s."
                    (join-tokens item)))

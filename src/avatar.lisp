@@ -89,6 +89,7 @@
                       (match-subject tokens (? subject :race))))
 
 (defmethod can-see ((avatar avatar) (item item))
+  ;; FIXME: narrow to specific quest phase?
   (and (call-next-method)
        (let ((quest (? item :quest)))
          (or (null quest)

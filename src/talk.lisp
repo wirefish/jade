@@ -24,7 +24,7 @@
 (defcommand talk (actor "talk" "to" target "about" topic)
   "Talk to someone (or something!) at your location. You may optionally specify a
 particular topic of interest."
-  (let* ((candidates (remove actor (? (location actor) :contents)))
+  (let* ((candidates (can-see actor (remove actor (? (location actor) :contents))))
          (targets (if target
                       (find-matches target candidates)
                       (delete-if-not #'talkative candidates))))

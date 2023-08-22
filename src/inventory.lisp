@@ -154,8 +154,8 @@ example, `equip gold ring on left finger`."
   ;; FIXME: slot. also deal with things like :either-finger, :both-hands, etc.
   (if item
       (bind ((item quantity (split-quantity item))
-             (matches quality (find-matches-if (lambda (x) (? x :equippable-slot)) item
-                                               (? actor :inventory))))
+             (matches quality (find-matches-if (lambda (x) (? x :equippable-slot))
+                                               item (? actor :inventory))))
         (cond
           ((null matches)
            (show actor "You are not carrying anything equippable that matches \"~a\"."
@@ -208,8 +208,11 @@ from `container'."))
     (check-encumbrance actor)
     removed))
 
-(defun find-containers (tokens candidates)
-  (find-matches-if (lambda (x) (has-attributes x :contents)) tokens candidates))
+(defun find-containers (actor tokens)
+  (find-matches-if (lambda (x)
+                     (and (has-attributes x :contents)
+                          (can-see actor x)))
+                   tokens (? (location actor) :contents)))
 
 (defcommand take (actor ("take" "get") thing ("from" "in" "on" "off") place)
   "Take an item from your environment and place it into your inventory. If *place*
@@ -217,19 +220,21 @@ is provided, it describes an object in your location that contains the items you
 want to take. Otherwise, you take items from your location."
   (if thing
       (let ((containers (if place
-                            (find-containers place (? (location actor) :contents))
+                            (find-containers actor place)
                             (list (location actor)))))
         (case (length containers)
-          (0 (show actor "You don't see a container that matches \"~a\"." (join-tokens place)))
+          (0 (show actor "You don't see a container that matches ~s." (join-tokens place)))
           (1 (bind ((container (first containers))
                     (tokens quantity (split-quantity thing))
-                    (targets quality (find-matches tokens (? container :contents))))
+                    (targets quality (find-matches
+                                      tokens
+                                      (can-see actor (? container :contents)))))
                (cond
                  ((null targets)
                   (if (eq container (location actor))
-                      (show actor "You don't see anything that matches \"~a\"."
+                      (show actor "You don't see anything that matches ~s."
                             (join-tokens thing))
-                      (show actor "You don't see anything that matches \"~a\" ~a the ~a."
+                      (show actor "You don't see anything that matches ~s ~a the ~a."
                             (join-tokens thing)
                             "in" ; FIXME: (contents-location container)
                             (describe-brief container :article nil))))

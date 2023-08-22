@@ -97,7 +97,7 @@
 (defun match-vendor-item (actor tokens vendor)
     (bind ((tokens quantity (split-quantity tokens))
            (quantity (or quantity 1))
-           (items (find-matches tokens (? vendor :sells))))
+           (items (find-matches tokens (can-see actor (? vendor :sells)))))
       (case (length items)
         (0
          (show actor "~a doesn't sell anything that matches ~s."

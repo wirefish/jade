@@ -91,28 +91,25 @@ element of `subjects'."
 (defmethod match-subject (tokens (subject cons))
   (match-subject tokens (cdr subject)))
 
-(defun find-matches (tokens &rest subject-lists)
+(defun find-matches (tokens subjects)
   "Returns a list of subjects that represent the best matches between `tokens'
-and subjects in `subject-lists'. If any match is exact, only exact matches are
+and elements of `subjects'. If any match is exact, only exact matches are
 returned. Otherwise, all partial matches are returned. The secondary value
 indicates the best match quality and is one of `:exact', `:partial', or `nil'."
   (let (exact-matches partial-matches)
-    (dolist (subjects subject-lists)
-      (dolist (subject subjects)
-        (case (match-subject tokens subject)
-          (:exact
-           (push subject exact-matches))
-          (:partial
-           (when (not exact-matches)
-             (push subject partial-matches))))))
+    (dolist (subject subjects)
+      (case (match-subject tokens subject)
+        (:exact
+         (push subject exact-matches))
+        (:partial
+         (when (not exact-matches)
+           (push subject partial-matches)))))
     (values (or exact-matches partial-matches)
             (cond
               (exact-matches :exact)
               (partial-matches :partial)))))
 
-(defun find-matches-if (pred tokens &rest subject-lists)
+(defun find-matches-if (pred tokens subjects)
   "Like `find-matches' but considers only those subjects for which `pred' does not
 return `nil'."
-  (apply #'find-matches
-         tokens
-         (mapcar (curry #'remove-if-not pred) subject-lists)))
+  (find-matches tokens (remove-if-not pred subjects)))

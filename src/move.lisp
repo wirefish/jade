@@ -113,14 +113,15 @@ no allow phase."))
 for more information."
   (let* ((location (entity-container actor))
          (matches (find-matches direction
-                                (? location :contents)
-                                (? location :exits))))
+                                (append (can-see actor (? location :contents))
+                                        (? location :exits)))))
     (case (length matches)
       (0 (show actor "You can't go that way."))
       (1 (traverse-portal actor location (first matches)))
       (otherwise (show actor "Do you want to go ~a?"
                        (format-list #'describe-brief matches "or"))))))
 
+;; Define aliases for moving in specific directions.
 (maphash-keys #'(lambda (dir)
                   (let ((command (format nil "go ~a" (direction-name dir))))
                     (make-alias (direction-name dir) command)

@@ -24,7 +24,7 @@ information."
                      (setf current-target (first targets))
                      (show actor "You begin attacking ~a." (describe-brief current-target))
                      (begin-attack actor current-target))))))
-          (let* ((candidates (remove actor (? (location actor) :contents)))
+          (let* ((candidates (can-see actor (remove actor (? (location actor) :contents))))
                  (targets (if target
                               (find-matches target candidates)
                               (delete-if-not (lambda (e)
@@ -34,7 +34,7 @@ information."
             (cond
               ((null targets)
                (show actor (if target
-                               (format nil "You don't see anything matching \"~a\" to attack."
+                               (format nil "You don't see anything matching ~s to attack."
                                        (join-tokens target))
                                "You don't see anything to attack.")))
               ((or (= (length targets) 1) (eql quantity 1))

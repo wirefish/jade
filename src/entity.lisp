@@ -238,11 +238,12 @@ all attributes."
 (defun get-icon (entity)
   (or (? entity :icon) (? entity :race :icon)))
 
-(defgeneric can-see (actor subject)
-  (:method (actor subject)
-    (not (? subject :hidden))))
+;;;
 
-(defgeneric can-match (actor subject)
-  (:method (actor subject)
-    (and (can-see actor subject)
-         (not (? subject :unmatchable)))))
+(defgeneric can-see (actor subject))
+
+(defmethod can-see (actor (subject entity))
+  (not (? subject :hidden)))
+
+(defmethod can-see (actor (subjects list))
+  (remove-if-not (lambda (x) (can-see actor x)) subjects))

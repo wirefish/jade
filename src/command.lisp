@@ -104,37 +104,38 @@ used instead. This can be useful when `tokens' is known to be present.
 
 If an action is a function, it is called with at most one argument, as described
 above."
-  (cond
-    (subjects
-     (bind ((matches quality (if tokens
-                                 (find-matches tokens subjects)
-                                 (and (eq no-tokens t) subjects))))
-       (case (length matches)
-         (0
-          (if tokens
-              (when no-match
-                (match-action actor no-match (join-tokens tokens)))
-              (when no-tokens
-                (match-action actor no-tokens)))
+  (let ((subjects (can-see actor subjects)))
+    (cond
+      (subjects
+       (bind ((matches quality (if tokens
+                                   (find-matches tokens subjects)
+                                   (and (eq no-tokens t) subjects))))
+         (case (length matches)
+           (0
+            (if tokens
+                (when no-match
+                  (match-action actor no-match (join-tokens tokens)))
+                (when no-tokens
+                  (match-action actor no-tokens)))
+            nil)
+           (1
+            (values (if (eq policy :exactly-one) (first matches) matches) quality))
+           (t
+            (if (eq policy :at-least-one)
+                (values matches quality)
+                (prog1 nil
+                  (when multi-match
+                    (match-action actor multi-match
+                                  (format-list #'describe-brief matches "or")))))))))
+      (t
+       (cond
+         ((or tokens (null no-subjects))
+          (when no-match
+            (match-action actor no-match (join-tokens tokens)))
           nil)
-         (1
-          (values (if (eq policy :exactly-one) (first matches) matches) quality))
          (t
-          (if (eq policy :at-least-one)
-              (values matches quality)
-              (prog1 nil
-                (when multi-match
-                  (match-action actor multi-match
-                                (format-list #'describe-brief matches "or")))))))))
-    (t
-     (cond
-       ((or tokens (null no-subjects))
-        (when no-match
-          (match-action actor no-match (join-tokens tokens)))
-        nil)
-       (t
-        (match-action actor no-subjects)
-        nil)))))
+          (match-action actor no-subjects)
+          nil))))))
 
 (defun match-quantity (actor tokens subjects &rest match-keyword-args)
   (bind ((tokens quantity (split-quantity tokens))

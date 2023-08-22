@@ -78,42 +78,37 @@ gathered with each attempt."
   "Gather resources from a nearby source. In order to succeed you must know the
 associated gathering skill at the required rank and have an appropriate
 gathering tool equipped."
-  (let* ((nodes (remove-if-not (lambda (x) (typep x 'resource-node))
-                               (? (location actor) :contents)))
-         (nodes (if source (find-matches source nodes) nodes)))
-    (case (length nodes)
-      (0
-       (show actor "You don't see anything to gather from~@[ that matches ~s~]."
-             (and source (join-tokens source))))
-      (1
-       (let* ((node (first nodes))
-              (skill (symbol-value-as 'skill (? node :required-skill) nil))
-              (rank (skill-rank actor (skill-label skill)))
-              (tool (? actor :equipment :tool)))
-         (cond
-           ((null skill)
-            (format-log :warning "~s requires invalid skill ~s"
-                        (entity-type node) (? node :required-skill))
-            (show actor "You cannot gather from ~a."
-                  (describe-brief node :article :definite)))
-           ((find actor (resource-node-users node))
-            (show actor "You cannot gather from ~a again."
-                  (describe-brief node :article :definite)))
-           ((null rank)
-            (show actor "You need to learn ~a before gathering from ~a."
-                  (skill-name skill) (describe-brief node :article :definite)))
-           ((< rank (? node :required-rank))
-            (show actor "Your rank in ~a is too low to gather from ~a."
-                  (skill-name skill) (describe-brief node :article :definite)))
-           ((or (null tool) (not (entity-isa tool (skill-required-tool skill))))
-            (show actor "You do not have the right type of tool equipped to gather from ~a."
-                  (describe-brief node :article :definite)))
-           ((< (? tool :level) (? node :required-tool-level))
-            (show actor "Your ~a is not high enough level to use on ~a."
-                  (describe-brief tool :article nil)
-                  (describe-brief node :article :definite)))
-           (t
-            (begin-activity actor (make-instance 'gathering :node node))))))
-      (t
-       (show actor "Do you want to gather from ~a?"
-             (format-list #'describe-brief nodes))))))
+  (when-let ((node (match actor source :exactly-one
+                     (remove-if-not (lambda (x) (typep x 'resource-node))
+                                    (? (location actor) :contents))
+                     :no-tokens t
+                     :no-subjects "You don't see anything here to gather from."
+                     :no-match "You don't see anything to gather from that matches ~s."
+                     :multi-match "Do you want to gather from ~a?")))
+    (let* ((skill (symbol-value-as 'skill (? node :required-skill) nil))
+           (rank (skill-rank actor (skill-label skill)))
+           (tool (? actor :equipment :tool)))
+      (cond
+        ((null skill)
+         (format-log :warning "~s requires invalid skill ~s"
+                     (entity-type node) (? node :required-skill))
+         (show actor "You cannot gather from ~a."
+               (describe-brief node :article :definite)))
+        ((find actor (resource-node-users node))
+         (show actor "You cannot gather from ~a again."
+               (describe-brief node :article :definite)))
+        ((null rank)
+         (show actor "You need to learn ~a before gathering from ~a."
+               (skill-name skill) (describe-brief node :article :definite)))
+        ((< rank (? node :required-rank))
+         (show actor "Your rank in ~a is too low to gather from ~a."
+               (skill-name skill) (describe-brief node :article :definite)))
+        ((or (null tool) (not (entity-isa tool (skill-required-tool skill))))
+         (show actor "You do not have the right type of tool equipped to gather from ~a."
+               (describe-brief node :article :definite)))
+        ((< (? tool :level) (? node :required-tool-level))
+         (show actor "Your ~a is not high enough level to use on ~a."
+               (describe-brief tool :article nil)
+               (describe-brief node :article :definite)))
+        (t
+         (begin-activity actor (make-instance 'gathering :node node)))))))
