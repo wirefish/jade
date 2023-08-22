@@ -61,6 +61,8 @@ specific event."
   "Returns an expression that evaluates to true if the value of `param'
 satisfies `constraint'."
   (cond
+    ((eq (first constraint) nil)
+     `(null ,param))
     ((eq (first constraint) 'self)
      `(eq ,param ,observer))
     ((eq (first constraint) '&quest)
@@ -74,6 +76,8 @@ satisfies `constraint'."
      `(eq (exit-dir ,param) ,(second constraint)))
     ((symbolp (first constraint))
      `(entity-isa ,param ',(first constraint)))
+    ((stringp (first constraint))
+     `(apply #'match-subjects ,param ',constraint))
     (t
      (error "invalid constraint ~a" constraint))))
 
