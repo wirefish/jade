@@ -39,7 +39,10 @@
   events. Or based on attribute of entity that reacts.
 
 * Generally handle visible/matchable in: neighbors, show-location, all matching
-  for commands, ...
+  for commands. generic can-see, can-match for (avatar entity).
 
-* Sort inventory pane by group/subgroup/level. Keep inventory sorted? Use the
-  item-sort-key as the primary key, name/singular as secondary key.
+* change find-matches to take the actor and use can-match to filter candidates.
+
+* change show-location, neighbors to use can-see.
+
+* swap spawn-entity param order
