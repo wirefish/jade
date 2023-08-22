@@ -126,7 +126,6 @@ failure."
                  avatar-id)
            nconc (list (from-string tutorial-id) t))))
 
-sorted
 (defun load-avatar (account-id)
   ;; TODO: also load aliases and settings
   (handler-case
