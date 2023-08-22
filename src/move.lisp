@@ -96,10 +96,6 @@ no allow phase."))
 
 ;;; Combine exit-location and enter-location.
 
-(defun find-exit (location direction)
-  (find-if #'(lambda (exit) (eq (exit-dir exit) direction))
-           (? location :exits)))
-
 (defun find-entry (location exit)
   (find-exit location (direction-opposite (exit-dir exit))))
 

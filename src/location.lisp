@@ -164,7 +164,9 @@ starting and stopping simulation.")
     (when (typep c 'location) c)))
 
 (defun find-exit (location dir)
-  (find-if (lambda (exit) (eq (exit-dir exit) dir)) (? location :exits)))
+  "Returns the exit in `location' with direction `dir', if any."
+  (find-if (lambda (exit) (eq (exit-dir exit) dir))
+           (? location :exits)))
 
 ;;;
 
