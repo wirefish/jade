@@ -38,11 +38,4 @@
 * Only show quest icon if matching event is when-talk, after-give, not all
   events. Or based on attribute of entity that reacts.
 
-* Generally handle visible/matchable in: neighbors, show-location, all matching
-  for commands. generic can-see, can-match for (avatar entity).
-
-* change find-matches to take the actor and use can-match to filter candidates.
-
-* change show-location, neighbors to use can-see.
-
-* swap spawn-entity param order
+* Implement looking in a direction.
