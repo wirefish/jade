@@ -300,7 +300,7 @@ complete, advances to the next phase. Returns the index of the new phase, or
     (show-notice actor "You are no longer on the quest ~s." name)
     (show-map actor)))
 
-(defcommand quest (actor ("quest" "qu") :word subcommand :rest quest-name)
+(defcommand quest (actor ("quest" "qu") &word subcommand quest-name)
   "Display information about your active quests. This command has several
 subcommands:
 

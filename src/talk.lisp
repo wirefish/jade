@@ -62,7 +62,7 @@ particular topic of interest."
           (show observer "You say, ~s" message)
           (show observer "~a says, ~s" actor-description message)))))
 
-(defcommand say (actor ("say") :rest message)
+(defcommand say (actor ("say") &raw message)
   "Say something to everyone in your location."
   (say actor (join-words message)))
 

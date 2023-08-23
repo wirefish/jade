@@ -12,8 +12,8 @@
           (format-command-alts (command-verbs command))
           (mapcar #'(lambda (clause)
                       (destructuring-bind (name &rest preps) clause
-                        (case preps
-                          ((nil :word :rest :raw) (format nil "*~(~a~)*" name))
+                        (case (first preps)
+                          ((nil &word &rest &raw) (format nil "*~(~a~)*" name))
                           (t (format nil "~a *~(~a~)*" (format-command-alts preps) name)))))
                   (command-clauses command))))
 
@@ -31,27 +31,65 @@
 (defun find-command (verb)
   (gethash verb *commands*))
 
+;;;
+
+(defun parse-grammar (terms)
+  "Turns a command grammar into a list of lists, where each sublist contains the
+parameter name followed by either &word, &rest, or zero or more prepositions.
+Throws an error if the grammar is invalid."
+  (labels ((require-symbol (term)
+             (if (and term (symbolp term))
+                 term
+                 (error "symbol expected at ~a" term)))
+           (require-preps (term)
+             (let ((preps (ensure-list term)))
+               (if (every #'stringp preps)
+                   preps
+                   (error "string or list of strings expected at ~a" term))))
+           (parse (terms prev)
+             (when-let ((term (first terms)))
+               (cond
+                 ((eq prev '&rest)
+                  (error "grammar cannot define clauses after a &rest clause"))
+                 ((or (eq term '&word) (eq term '&rest))
+                  (unless (or (eq prev t) (eq prev '&word))
+                    (error "~a clause cannot follow a prepositional clause" term))
+                  (cons (list (require-symbol (second terms)) term)
+                        (parse (cddr terms) term)))
+                 ((symbolp term)
+                  (unless (or (eq prev t) (eq prev '&word))
+                    (error "only the first prepositional clause may have no prepositions"))
+                  (cons (list term)
+                        (parse (cdr terms) nil)))
+                 (t
+                  (cons (cons (require-symbol (second terms)) (require-preps term))
+                        (parse (cddr terms) nil)))))))
+    (parse terms t)))
+
+(defun parse-verbs (verbs)
+  (let ((verbs (ensure-list verbs)))
+    (if (every #'stringp verbs)
+        verbs
+        (error "command verbs must be a string or list of strings"))))
+
 (defmacro defcommand (name (actor verbs &rest clauses) &body body)
-  (bind ((verbs (if (listp verbs) verbs (list verbs)))
-         (clauses (when clauses
-                    (loop for (preps param) on (if (and (symbolp (car clauses))
-                                                        (not (keywordp (car clauses))))
-                                                   (cons nil clauses)
-                                                   clauses)
-                          by #'cddr
-                          collect (cons param (etypecase preps
-                                                (keyword preps)
-                                                (list preps)
-                                                (string (list preps)))))))
-         (params (cons actor (mapcar #'car clauses)))
-         (body nil doc (parse-body body :documentation t)))
-    `(register-command
-      ',verbs ',clauses
-      (lambda ,params
-        ,(or doc "No documentation provided.")
-        (declare (ignorable ,@params))
-        (block ,name
-          ,@body)))))
+  (handler-case
+      (bind ((verbs (parse-verbs verbs))
+             (clauses (parse-grammar clauses))
+             (params (cons actor (mapcar #'car clauses)))
+             (body nil doc (parse-body body :documentation t)))
+        `(register-command
+          ',verbs ',clauses
+          (lambda ,params
+            ,(or doc "No documentation provided.")
+            (declare (ignorable ,@params))
+            (block ,name
+              ,@body))))
+    (error (e)
+      (format-log :warning "error defining command ~a: ~a" e)
+      nil)))
+
+;;;
 
 (defun get-primary-command-verbs ()
   (sort (remove-duplicates (loop for command being the hash-values in *commands*
@@ -145,6 +183,22 @@ above."
 
 ;;;
 
+(defun find-token (token-string start end items)
+  (some (lambda (item)
+          (string-equal token-string item :start1 start :end1 end))
+        items))
+
+(defun find-next-preposition* (clauses tokens)
+  (when-let ((token-string (car tokens))
+             (all-preps (flatten
+    (loop for (start end) on (cdr tokens) by #'cddr for i from 0
+          when (some (lambda (clause)
+                       (let ((preps (cdr clause)))
+                         (when (listp preps)
+                           (find-token token-string start end preps))))
+                     clauses)
+            return i)))
+
 (defun find-next-preposition (clauses tokens)
   (position-if #'(lambda (token)
                    (some #'(lambda (clause)
@@ -156,21 +210,19 @@ above."
 
 (defun parse-clauses (clauses tokens)
   (loop
-    for (clause . later-clauses) on clauses for i from 0
+    for (clause . later-clauses) on clauses
     collect
-    (let ((preps (cdr clause)))
-      (cond
-        ((null tokens) nil)
-        ((eq preps :word) (pop tokens))
-        ((eq preps :rest) (prog1 tokens (setf tokens nil)))
-        (t
-         (let ((has-prep (find (car tokens) preps :test #'string-equal)))
-           (when (or has-prep (= i 0))
-             (let ((next-prep (find-next-preposition later-clauses tokens)))
-               (unless (eql next-prep 0)
-                 (prog1
-                     (subseq tokens (if has-prep 1 0) next-prep)
-                   (setf tokens (if next-prep (subseq tokens next-prep) nil))))))))))))
+    (cond
+      ((null tokens) nil)
+      ((eq (second clause) '&word) (pop tokens))
+      ((eq (second clause) '&rest) (prog1 tokens (setf tokens nil)))
+      (t
+       (let ((prep (find (car tokens) (rest clause) :test #'string-equal))
+             (next-prep (find-next-preposition later-clauses tokens)))
+         (unless (eql next-prep 0)
+           (prog1
+               (subseq tokens (if prep 1 0) next-prep)
+             (setf tokens (if next-prep (subseq tokens next-prep) nil)))))))))
 
 (defun process-input (avatar input)
   "Processes input from a player."
