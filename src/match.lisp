@@ -20,7 +20,8 @@
         collect (subseq (first tokens) start end)))
 
 (defun remove-first-token (tokens)
-  (cons (car tokens) (cdddr tokens)))
+  (when-let (tail (cdddr tokens))
+    (cons (car tokens) tail)))
 
 (defun remaining-input (tokens)
   (when-let ((start (second tokens)))
