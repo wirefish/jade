@@ -1,6 +1,32 @@
-;;;; Functions that match tokenized user input against in-game objects.
+;;;; Functions that tokenize user input and match it against in-game objects.
 
 (in-package :jade)
+
+;;; Tokenizing
+
+(defparameter *token-pattern* (cl-ppcre:create-scanner "[#\\w'\"-]+|[!?,.]+"))
+
+(defun tokenize-input (input)
+  (when-let ((tokens (cl-ppcre:all-matches *token-pattern* input)))
+    (cons input tokens)))
+
+(defun first-token-as-string (tokens)
+  (when-let ((start (second tokens))
+             (end (third tokens)))
+    (subseq (first tokens) start end)))
+
+(defun all-tokens-as-strings (tokens)
+  (loop for (start end) on (rest tokens) by #'cddr
+        collect (subseq (first tokens) start end)))
+
+(defun remove-first-token (tokens)
+  (cons (car tokens) (cdddr tokens)))
+
+(defun remaining-input (tokens)
+  (when-let ((start (second tokens)))
+    (subseq (first tokens) start)))
+
+;;; Matching
 
 (defgeneric match-subject (tokens subject)
   (:documentation "Evaluates a match between `tokens', which is a sequence of

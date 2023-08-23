@@ -145,15 +145,6 @@ above."
 
 ;;;
 
-(defun split-verb (input)
-  (cl-ppcre:split "\\s+" input :limit 2))
-
-(defun tokenize-input (input)
-  "Returns a list containing the sequence of whitespace-delimited tokens in a user
-input string. Any sequence of one or more punctuation characters is considered
-its own token, even if not delimited by whitespace."
-  (cl-ppcre:all-matches-as-strings "[#\\w'\"-]+|[!?,.]+" input))
-
 (defun find-next-preposition (clauses tokens)
   (position-if #'(lambda (token)
                    (some #'(lambda (clause)
@@ -181,23 +172,17 @@ its own token, even if not delimited by whitespace."
                      (subseq tokens (if has-prep 1 0) next-prep)
                    (setf tokens (if next-prep (subseq tokens next-prep) nil))))))))))))
 
-(defun run-command (actor command tokens)
-  (with-slots (clauses body) command
-    (apply body actor (parse-clauses clauses tokens))))
-
 (defun process-input (avatar input)
   "Processes input from a player."
-  (when-let ((input (string-trim '(#\Space #\Tab) input)))
-    (bind (((verb &optional rest) (split-verb input))
-           (verb (string-downcase verb))
-           (tokens (cons verb (tokenize-input rest)))
-           (alias (gethash verb *aliases*)))
-      (when alias
+  (when-let ((tokens (tokenize-input input)))
+    (let ((verb (string-downcase (first-token-as-string tokens))))
+      (when-let ((alias (gethash verb *aliases*)))
         (setf tokens alias
-              verb (first tokens)))
+              verb (string-downcase (first-token-as-string tokens))))
+      (setf tokens (remove-first-token tokens))
       (if-let ((command (find-command verb)))
         (with-slots (clauses body) command
           (if (eq :raw (-> clauses first cdr))
-              (funcall body avatar rest)
-              (apply body avatar (parse-clauses clauses (rest tokens)))))
+              (funcall body avatar (remaining-input tokens))
+              (apply body avatar (parse-clauses clauses (all-tokens-as-strings tokens)))))
         (show-error avatar "Unknown command ~s. Type \"help\" for help." verb)))))
