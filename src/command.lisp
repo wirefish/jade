@@ -183,22 +183,6 @@ above."
 
 ;;;
 
-(defun find-token (token-string start end items)
-  (some (lambda (item)
-          (string-equal token-string item :start1 start :end1 end))
-        items))
-
-(defun find-next-preposition* (clauses tokens)
-  (when-let ((token-string (car tokens))
-             (all-preps (flatten
-    (loop for (start end) on (cdr tokens) by #'cddr for i from 0
-          when (some (lambda (clause)
-                       (let ((preps (cdr clause)))
-                         (when (listp preps)
-                           (find-token token-string start end preps))))
-                     clauses)
-            return i)))
-
 (defun find-next-preposition (clauses tokens)
   (position-if #'(lambda (token)
                    (some #'(lambda (clause)
