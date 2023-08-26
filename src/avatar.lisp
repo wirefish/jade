@@ -22,7 +22,7 @@
    (pending-offer :initform nil :accessor pending-offer)
    (karma :initform 0 :accessor karma)
    (skills :initform (make-hash-table) :accessor skills)
-   (client-state :initform (make-hash-table) :accessor client-state)))
+   (client-state :initform (make-hash-table :test #'equalp) :accessor client-state)))
 
 (defentity avatar (combatant &class avatar)
   (:energy 100
@@ -220,6 +220,9 @@ the same character as compared by char-equal."
     name))
 
 ;;;
+
+(defun reset-client-state (avatar)
+  (clrhash (client-state avatar)))
 
 (defun clear-client-state (avatar &rest keys)
   (with-slots (client-state) avatar

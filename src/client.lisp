@@ -124,9 +124,16 @@ name and whose subsequent elements are arguments to that command."
      :max-xp (lambda (a) (xp-required-for-level (1+ (? a :level))))))
 
 (defun update-avatar (avatar &rest keys)
-  (let ((attributes (loop for key in (or keys (hash-table-keys *avatar-attributes*))
-                          nconc (list key (funcall (gethash key *avatar-attributes*) avatar)))))
-    (send-client-command avatar "updateAvatar" (plist-hash-table attributes))))
+  (with-slots (client-state) avatar
+    (let (updates)
+      (loop for key in (or keys (hash-table-keys *avatar-attributes*)) do
+        (let ((value (funcall (gethash key *avatar-attributes*) avatar))
+              (client-key (cons :avatar key)))
+          (unless (eql value (gethash client-key client-state))
+            (sethash client-key client-state value)
+            (push (cons key value) updates))))
+      (when updates
+        (send-client-command avatar "updateAvatar" (alist-hash-table updates))))))
 
 ;;; Manage the neighbors panel.
 
@@ -303,6 +310,7 @@ name and whose subsequent elements are arguments to that command."
 (defun update-ui (avatar &key for-location)
   "Updates all client UI elements. Elements normally updated when entering a
 location are updated only if `for-location' is true."
+  (reset-client-state avatar)
   (update-avatar avatar)
   (update-equipment avatar)
   (update-inventory avatar (? avatar :inventory))
