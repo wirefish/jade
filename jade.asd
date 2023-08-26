@@ -59,7 +59,7 @@
 
    (:module "world" :components
             ((:module "lib" :components
-                      ((:file "item-groups")
+                      ((:file "definitions")
                        (:file "currency")
                        (:file "clothing")
                        (:file "weapons")
