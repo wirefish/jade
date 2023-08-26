@@ -36,7 +36,9 @@
 (defun parse-grammar (terms)
   "Turns a command grammar into a list of lists, where each sublist contains the
 parameter name followed by either &word, &rest, or zero or more prepositions.
-Throws an error if the grammar is invalid."
+Clause ordering is constrained: any &word clauses must appear first, then either
+a single &rest clause or zero or more prepositional clauses may appear. Throws
+an error if the grammar is invalid."
   (labels ((require-symbol (term)
              (if (and term (symbolp term))
                  term
@@ -52,19 +54,19 @@ Throws an error if the grammar is invalid."
                  ((eq prev '&rest)
                   (error "grammar cannot define clauses after a &rest clause"))
                  ((or (eq term '&word) (eq term '&rest))
-                  (unless (or (eq prev t) (eq prev '&word))
+                  (unless (or (null prev) (eq prev '&word))
                     (error "~a clause cannot follow a prepositional clause" term))
                   (cons (list (require-symbol (second terms)) term)
                         (parse (cddr terms) term)))
                  ((symbolp term)
-                  (unless (or (eq prev t) (eq prev '&word))
+                  (unless (or (null prev) (eq prev '&word))
                     (error "only the first prepositional clause may have no prepositions"))
                   (cons (list term)
-                        (parse (cdr terms) nil)))
+                        (parse (cdr terms) t)))
                  (t
                   (cons (cons (require-symbol (second terms)) (require-preps term))
-                        (parse (cddr terms) nil)))))))
-    (parse terms t)))
+                        (parse (cddr terms) t)))))))
+    (parse terms nil)))
 
 (defun parse-verbs (verbs)
   (let ((verbs (ensure-list verbs)))
