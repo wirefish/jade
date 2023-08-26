@@ -96,7 +96,7 @@
            #:advance-quest
            #:quest-phase
 
-           #:add-damage-type
+           #:define-damage-types
            ))
 
 (defpackage :jade.lib

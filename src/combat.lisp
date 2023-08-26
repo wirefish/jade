@@ -58,28 +58,29 @@ when the combatant dies."
   (call-next-method)
   (as:remove-event (corpse-decay-timer corpse)))
 
-;;; Damage types. A few basic ones are defined here; the game world can call
-;;; `add-damage-type' to add more.
+;;; Damage types. The game world code should use `define-damage-types' to define them.
 
 (defstruct damage-type
   name verb resistance)
 
 (defparameter *damage-types* (make-hash-table))
 
-(defun add-damage-type (key name verb &optional resistance)
-  (let ((resistance (or resistance
-                        (format-symbol :keyword "~a-RESISTANCE" key))))
-    (sethash key *damage-types*
-             (make-damage-type :name name :verb verb :resistance resistance))))
+(defun add-damage-type (key name verb resistance)
+  (sethash key *damage-types*
+           (make-damage-type :name name :verb verb :resistance resistance)))
 
-(mapcar (lambda (x) (apply #'add-damage-type x))
-        '((:crushing "crushing" "crushes")
-          (:slashing "slashing" "slashes")
-          (:piercing "piercing" "pierces")
-          (:fire "fire" "burns")
-          (:cold "cold" "freezes")
-          (:acid "acid" "erodes")
-          (:electricity "electricity" "zaps")))
+(defmacro define-damage-types (&body damage-types)
+  "Defines damage types. Each element of `damage-types' is a list containing a
+symbol to represent the type, a string to name the type, and a verb to describe
+the effect of the type. For example, (fire \"fire\" \"burns\")."
+  (let* ((keys (mapcar #'first damage-types))
+         (resistances (mapcar (lambda (key)
+                                (format-symbol (symbol-package key) "~a-RESISTANCE" key))
+                              keys)))
+    `(progn
+       ,@(loop for (key name verb) in damage-types for resistance in resistances
+               collect `(add-damage-type ',key ,name ,verb ',resistance))
+       (export '(,@keys ,@resistances)))))
 
 (defun resistance-name (damage-type)
   (format nil "~a resistance" (damage-type-name damage-type)))

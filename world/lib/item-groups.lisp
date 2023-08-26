@@ -16,3 +16,14 @@
 
 (defentity quest-item (item)
   (:item-group (quest-item)))
+
+;;; Define the available damage types.
+
+(define-damage-types
+  (crushing "crushing" "crushes")
+  (slashing "slashing" "slashes")
+  (piercing "piercing" "pierces")
+  (fire "fire" "burns")
+  (cold "cold" "freezes")
+  (acid "acid" "erodes")
+  (electricity "electricity" "zaps"))
