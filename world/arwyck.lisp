@@ -1553,8 +1553,42 @@
    :exits ((cobbled-road :east wall-street-2)
            (entry-doorway :north lodge-workshop :west front-desk))))
 
+(defentity ujjuk (skinning-trainer)
+  (:name "Ujjuk"
+   :pose "stands behind a table, sifting through a stack of tanned hides."
+   :description "Ujjuk is a rather muscular dwarf with a bristling black beard.")
+
+  (:when-talk (actor self topic)
+    (show actor "Ujjuk looks up from his work.")
+    (with-delay (1)
+      (tell self actor "Ah, greetings! Have ya come to learn about skinning?
+        Skins and hides can be quite valuable, an' are vital when makin' various
+        types of armor an' other goods. I can teach ya the basics, an' Kikkra
+        'ere can sell ya a skinnin' knife to get ya going. Type `learn` and I'll
+        give ya the details."))))
+
+(defentity kikkra (vendor)
+  (:name "Kikkra"
+   :pose "carefully scrapes a fresh hide with a sharp knife."
+   :description "Kikkra is a very slender humanoid with feathers sprouting from
+     its head and very avian facial features."
+   :sells (copper-skinning-knife bronze-skinning-knife))
+
+  (:when-talk (actor self topic)
+    (tell self actor "Awk! Hello there! I have skinning knives to sell; type
+      `buy` to see my inventory!")))
+
+(deflocation skinning-shop ()
+  (:name "The Hideaway"
+   :description "This shop is the local hub for those interested in skinning."
+   :domain :indoor
+   :surface :wood
+   :contents (ujjuk kikkra)
+   :exits ((exit-doorway :north wall-street-2))))
+
 (deflocation wall-street-2 (wall-street)
-  (:exits ((cobbled-road :west wall-street-1 :east wall-street-3))))
+  (:exits ((cobbled-road :west wall-street-1 :east wall-street-3)
+           (entry-doorway :south skinning-shop))))
 
 (defentity wall-street-sign ()
   (:brief "a directional sign"
