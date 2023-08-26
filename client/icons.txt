@@ -15,12 +15,13 @@ dagger          $weapons/Knives_03.png
 mace            $weapons/Bluntweapons_05.png
 maul            $weapons/Bluntweapons_03.png
 sword           $weapons/Swords_04.png
+shortsword      $weapons/Swords_01.png
 scimitar        $weapons/Swords_10.png
 greatsword      $weapons/Swords_07.png
 axe             $weapons/Axes_01.png
-battleaxe       $weapons/Axes_04.png
+battle_axe      $weapons/Axes_04.png
 spear           $weapons/Spears_01.png
-# TODO: wand
+wand            $weapons/Staves_01.png
 staff           $weapons/Staves_01.png
 
 # Clothing
