@@ -194,7 +194,15 @@ from `container'."))
          t)))))
 
 (defmethod take (actor quantity item container slot)
-  (remove-item container slot item quantity))
+  (let ((removed (remove-item container slot item quantity)))
+    ;; If the item is being removed from a location, update the neighbors for
+    ;; all avatars at that location.
+    (when (eq container (location actor))
+      (for-avatars-in (avatar container)
+        (if (eq removed item)
+            (remove-neighbor avatar item)
+            (update-neighbor avatar item :brief))))
+    removed))
 
 (defmethod take ((actor avatar) quantity item container slot)
   (let ((removed (call-next-method)))
