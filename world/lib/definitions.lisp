@@ -17,7 +17,10 @@
 (defentity quest-item (item)
   (:item-group (quest-item)))
 
-;;; Define the available damage types.
+;;; Define the available damage types. Each definition is a symbol used to
+;;; denote the damage type follwed by its name and a verb that describes its
+;;; effect. The corresponding resistance is automatically defined by appending
+;;; -resistance to the key, e.g. cold -> cold-resistance.
 
 (define-damage-types
   (crushing "crushing" "crushes")
