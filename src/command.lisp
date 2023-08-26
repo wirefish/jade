@@ -194,21 +194,29 @@ above."
                          clauses))
                tokens))
 
-(defun parse-clauses (clauses tokens)
-  (loop
-    for (clause . later-clauses) on clauses
-    collect
-    (cond
-      ((null tokens) nil)
-      ((eq (second clause) '&word) (pop tokens))
-      ((eq (second clause) '&rest) (prog1 tokens (setf tokens nil)))
-      (t
-       (let ((prep (find (car tokens) (rest clause) :test #'string-equal))
-             (next-prep (find-next-preposition later-clauses tokens)))
-         (unless (eql next-prep 0)
-           (prog1
-               (subseq tokens (if prep 1 0) next-prep)
-             (setf tokens (if next-prep (subseq tokens next-prep) nil)))))))))
+(defun parse-clauses (grammar tokens)
+  (let (clauses)
+    ;; Handle any &word clauses.
+    (loop while (eq (second (first grammar)) '&word) do
+      (let ((token (first-token-as-string tokens)))
+        (push token clauses)
+        (setf tokens (remove-first-token tokens))
+        (pop grammar)))
+    ;; Handle any &rest clause.
+    (when (eq (second (first grammar)) '&rest)
+      (push (remaining-input tokens) clauses)
+      (setf grammar nil))
+    ;; Handle any prepositional clauses.
+    (setf tokens (all-tokens-as-strings tokens))
+    (loop for (clause . later-clauses) on grammar
+          collect
+          (let ((prep (find (car tokens) (rest clause) :test #'string-equal))
+                (next-prep (find-next-preposition later-clauses tokens)))
+            (push (unless (eql next-prep 0)
+                    (prog1 (subseq tokens (if prep 1 0) next-prep)
+                      (setf tokens (if next-prep (subseq tokens next-prep) nil))))
+                  clauses)))
+    (nreverse clauses)))
 
 (defun process-input (avatar input)
   "Processes input from a player."
@@ -220,7 +228,5 @@ above."
       (setf tokens (remove-first-token tokens))
       (if-let ((command (find-command verb)))
         (with-slots (clauses body) command
-          (if (eq :raw (-> clauses first cdr))
-              (funcall body avatar (remaining-input tokens))
-              (apply body avatar (parse-clauses clauses (all-tokens-as-strings tokens)))))
+          (apply body avatar (parse-clauses clauses tokens)))
         (show-error avatar "Unknown command ~s. Type \"help\" for help." verb)))))
