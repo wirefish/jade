@@ -8,7 +8,7 @@
   (:icon staff
    :speed 3
    :base-damage 2
-   :damage-type :crushing
+   :damage-type crushing
    :damage-variance 0.25
    :attack-verb "hits"))
 
@@ -21,19 +21,19 @@
 (defentity fist (natural-weapon)
   (:brief nil
    :speed 2
-   :damage-type :crushing
+   :damage-type crushing
    :attack-verb "punches"))
 
 (defentity foot (natural-weapon)
   (:brief nil
    :speed 2
-   :damage-type :crushing
+   :damage-type crushing
    :attack-verb "kicks"))
 
 (defentity bite (natural-weapon)
   (:brief nil
    :speed 2
-   :damage-type :piercing
+   :damage-type piercing
    :attack-verb "bites"))
 
 ;;; Equippable weapons fall into one of three categories: light, one-handed, or
@@ -70,7 +70,7 @@
    :icon dagger
    :item-group (weapon dagger)
    :speed 2
-   :damage-type :piercing
+   :damage-type piercing
    :attack-verb "pokes"
    :proficiency dagger-proficiency
    :mastery dagger-mastery
@@ -91,7 +91,7 @@
    :icon staves-01
    :item-group (weapon wand)
    :speed 2.5
-   :damage-type :arcane
+   :damage-type arcane
    :attack-verb "zaps"
    :proficiency wand-proficiency
    :mastery dagger-mastery
@@ -111,7 +111,7 @@
    :icon mace
    :item-group (weapon mace)
    :speed 3.5
-   :damage-type :crushing
+   :damage-type crushing
    :damage-variance 0.2
    :attack-verb "smashes"
    :proficiency mace-proficiency
@@ -132,7 +132,7 @@
    :icon maul
    :item-group (weapon maul)
    :speed 5
-   :damage-type :crushing
+   :damage-type crushing
    :damage-variance 0.2
    :attack-verb "smashes"
    :proficiency maul-proficiency
@@ -153,7 +153,7 @@
    :icon sword
    :item-group (weapon sword)
    :speed 3
-   :damage-type :slashing
+   :damage-type slashing
    :damage-variance 0.3
    :attack-verb "slashes"
    :proficiency sword-proficiency
@@ -185,7 +185,7 @@
    :icon greatsword
    :item-group (weapon greatsword)
    :speed 5
-   :damage-type :slashing
+   :damage-type slashing
    :damage-variance 0.3
    :attack-verb "slashes"
    :proficiency greatsword-proficiency
@@ -206,7 +206,7 @@
    :icon axe
    :item-group (weapon axe)
    :speed 3.5
-   :damage-type :slashing
+   :damage-type slashing
    :damage-variance 0.33
    :attack-verb "slashes"
    :proficiency axe-proficiency
@@ -227,7 +227,7 @@
    :icon battleaxe
    :item-group (weapon battle-axe)
    :speed 5
-   :damage-type :slashing
+   :damage-type slashing
    :damage-variance 0.33
    :attack-verb "slashes"
    :proficiency battle-axe-proficiency
@@ -248,7 +248,7 @@
    :icon spear
    :item-group (weapon spear)
    :speed 4.5
-   :damage-type :piercing
+   :damage-type piercing
    :attack-verb "pierces"
    :proficiency spear-proficiency
    :mastery spear-mastery
@@ -268,7 +268,7 @@
    :icon staff
    :item-group (weapon staff)
    :speed 4
-   :damage-type :arcane
+   :damage-type arcane
    :attack-verb "zaps"
    :proficiency staff-proficiency
    :mastery staff-mastery

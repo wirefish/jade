@@ -836,7 +836,7 @@
 (defentity lashling-tendril (natural-weapon)
   (:brief "a thorny tendril"
    :speed 5
-   :damage-type :slashing
+   :damage-type slashing
    :damage-range (2 6)
    :attack-verb "whips"))
 

@@ -26,4 +26,5 @@
   (fire "fire" "burns")
   (cold "cold" "freezes")
   (acid "acid" "erodes")
-  (electricity "electricity" "zaps"))
+  (electricity "electricity" "zaps")
+  (arcane "arcane power" "damages"))
