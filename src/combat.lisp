@@ -34,7 +34,6 @@ when the combatant dies."
 (defclass corpse (resource-node)
   ((entity :initform nil :accessor corpse-entity)
    (owners :initform nil :accessor corpse-owners)
-   (loot :initform nil :accessor corpse-loot)
    (decay-timer :initform nil :accessor corpse-decay-timer)))
 
 (defentity corpse (&class corpse)
@@ -362,8 +361,6 @@ slots. This value is cached as the :armor trait."
 (defmethod spawn-corpse ((combatant combatant) attackers)
   (when-let ((corpse (call-next-method)))
     (setf (corpse-owners corpse) attackers)
-    (when-let ((loot (? combatant :loot)))
-      (setf (corpse-loot corpse) (funcall loot)))
     corpse))
 
 ;;;

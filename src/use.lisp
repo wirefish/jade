@@ -31,11 +31,10 @@
              (describe-brief corpse :article :definite))))))
 
 (defmethod use ((avatar avatar) (corpse corpse) target)
-  (with-slots (loot) corpse
-    (if-let ((items (remove-if-not (lambda (x) (can-see avatar x)) loot)))
-      (receive avatar nil items)
-      (show avatar "You find nothing of value.")))
-  )
+  (if-let ((items (when-let ((loot (? (corpse-entity corpse) :loot)))
+                    (remove-if-not (lambda (x) (can-see avatar x)) (funcall loot)))))
+    (receive avatar nil items)
+    (show avatar "You find nothing of value.")))
 
 ;;
 (defcommand use (actor "use" item "on" target)
