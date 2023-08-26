@@ -244,6 +244,39 @@ MessageHandler.prototype.updateEquipment = function(equipment) {
     }
 }
 
+function createDiv(id, num_children) {
+    var div = document.createElement('div');
+    div.id = id;
+    for (var i = 0; i < num_children; ++i) {
+        var child = document.createElement('div');
+        div.appendChild(child);
+    }
+    return div;
+}
+
+MessageHandler.prototype.updateCombat = function(traits, damage_types) {
+    if (traits) {
+        var parent = document.getElementById('combat_traits');
+        for (const [name, value] of traits) {
+            const div_id = 'trait_' + name;
+            var div = document.getElementById(div_id);
+            if (div) {
+                div.children[1].innerHTML = value;
+            } else {
+                div = createDiv(div_id, 2);
+                div.children[0].innerHTML = name.capitalize();
+                div.children[1].innerHTML = value;
+                parent.appendChild(div);
+            }
+        }
+    }
+
+    if (damage_types) {
+        for (const [key, name, affinity, resistance] of damage_types) {
+        }
+    }
+}
+
 MessageHandler.prototype.updateSkills = function(karma, ...skills) {
     document.getElementById('unspent_karma').innerHTML = `Unspent karma: ${karma}`;
 
@@ -277,18 +310,11 @@ MessageHandler.prototype.updateSkills = function(karma, ...skills) {
             }
 
             // Create a new entry.
-            div = document.createElement('div');
-            div.id = div_id;
-
-            var name_div = document.createElement('div');
-            name_div.innerHTML = name;
-            name_div.onclick = function () { sendInput(`skill ${name}`); };
-            div.appendChild(name_div);
-
-            var rank_div = document.createElement('div');
+            div = createDiv(div_id, 3);
+            div.children[0].innerHTML = name;
+            div.children[0].onclick = function () { sendInput(`skill ${name}`); };
             if (max_rank > 0)
-                rank_div.innerHTML = `${rank} / ${max_rank}`;
-            div.appendChild(rank_div);
+                div.children[1].innerHTML = `${rank} / ${max_rank}`;
 
             document.getElementById('skills_pane').insertBefore(div, next_div);
         }

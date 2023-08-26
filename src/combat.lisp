@@ -84,13 +84,12 @@ when the combatant dies."
 (defun resistance-name (damage-type)
   (format nil "~a resistance" (damage-type-name damage-type)))
 
-;;; Combat traits.
-;;;
-;;; In addition to those described here, damage types and their resistances are
-;;; also considered combat traits and are cached in the same way. Each point in
-;;; a damage type (here called an "affinity") increases effective attack level
-;;; for related attacks by one percent. Similarly, each point in a resistance
-;;; increases effective defense level for related attacks by one percent.
+;;; Combat traits. Each trait's value is computed based on equipment, race, etc.
+;;; and is cached in a combatant's `cached-traits' slot. Each trait has a
+;;; specific effect as defined by the functions below.
+
+(defparameter *combat-traits*
+  '(:vitality :precision :ferocity))
 
 (defun softcap (n k)
   (if (<= n k)
@@ -99,16 +98,25 @@ when the combatant dies."
         (+ k (/ x (1+ (/ x k)))))))
 
 (defun health-bonus (combatant)
+  "Each point of :vitality increases maximum health by 1%."
   (1+ (softcap (* 0.01 (gethash :vitality (cached-traits combatant) 0))
                1.0)))
 
 (defun critical-chance-bonus (combatant)
+  "Each point of :precision increases critical hit chance by 0.2%."
   (softcap (* 0.002 (gethash :precision (cached-traits combatant) 0))
            0.5))
 
 (defun critical-damage-bonus (combatant)
+  "Each point of :ferocity increases critical hit damage by 1%."
   (softcap (* 0.01 (gethash :ferocity (cached-traits combatant) 0))
            1.0))
+
+;;; In addition to those described above, damage types and their resistances are
+;;; also considered combat traits and are cached in the same way. Each point in
+;;; a damage type (here called an "affinity") increases effective attack level
+;;; for related attacks by one percent. Similarly, each point in a resistance
+;;; increases effective defense level for related attacks by one percent.
 
 (defun affinity-bonus (combatant damage-type)
   (softcap (* 0.01 (gethash damage-type (cached-traits combatant) 0))
@@ -118,18 +126,6 @@ when the combatant dies."
   (let ((resistance (damage-type-resistance (gethash damage-type *damage-types*))))
     (softcap (* 0.01 (gethash resistance (cached-traits combatant) 0))
              1.0)))
-
-(defparameter *combat-traits*
-  (plist-hash-table
-   (list
-    ;; Each point of vitality increases maximum health by one percent.
-    :vitality (list "vitality" #'health-bonus)
-    ;; Each point of precision increases the chance of scoring a critical hit by
-    ;; 0.1 percent.
-    :precision (list "precision" #'critical-chance-bonus)
-    ;; Each point of ferocity increases the effect of a critical hit by
-    ;; 0.1 percent.
-    :ferocity (list "ferocity" #'critical-damage-bonus)))) ; TODO: add more
 
 ;;; Armor.
 

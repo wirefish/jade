@@ -227,6 +227,15 @@ name and whose subsequent elements are arguments to that command."
                                  (list (get-icon item)
                                        (describe-brief item :article nil)))))))))
 
+;;; Manage the combat pane.
+
+(defun update-combat (avatar &optional traits)
+  (with-slots (cached-traits) avatar
+    (send-client-command
+     avatar "updateCombat"
+     (mapcar (lambda (trait) (list trait (gethash trait cached-traits 0))) *combat-traits*)
+     nil)))
+
 ;;; Manage the skills pane.
 
 (defun update-skills (avatar &rest labels)
@@ -297,6 +306,7 @@ location are updated only if `for-location' is true."
   (update-avatar avatar)
   (update-equipment avatar)
   (update-inventory avatar (? avatar :inventory))
+  (update-combat avatar)
   (update-skills avatar)
   (update-quests avatar)
   (when for-location

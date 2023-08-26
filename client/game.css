@@ -529,49 +529,55 @@ a:link {
     text-align: center;
 }
 
-.combat_value {
-    flex: 0 0 40%;
-    line-height: 1.5;
+#combat_traits {
+    width: 100%;
 }
 
-.combat_value > div {
-    display: inline-block;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+#combat_traits > div {
+    display: flex;
+    margin-top: 3px;
+    padding: 3px;
 }
 
-.combat_value > div:nth-child(1) {
-    width: 75%;
-    text-align: left;
+#combat_traits > div:nth-child(even) {
+    background-color: #353538;
 }
 
-.combat_value > div:nth-child(2) {
-    width: 25%;
+#combat_traits > div > div:nth-child(1) {
+    flex: 0 0 75%;
+}
+
+#combat_traits > div > div:nth-child(2) {
+    flex: 0 0 25%;
     text-align: right;
 }
 
-#block:after, #dodge:after, #critical_chance:after, #critical_damage:after {
-    content: "%"
-}
-
-#resources {
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: space-between;
+#damage_types {
     width: 100%;
 }
 
-#resources .combat_value {
-    font-size: 12pt;
-    flex: 0 0 28%;
+#damage_types > div {
+    display: flex;
+    margin-top: 3px;
+    padding: 3px;
 }
 
-.combat_values {
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: space-between;
-    width: 100%;
+#damage_types > div:nth-child(even) {
+    background-color: #353538;
+}
+
+#damage_types > div > div:nth-child(1) {
+    flex: 0 0 50%;
+}
+
+#damage_types > div > div:nth-child(2) {
+    flex: 0 0 25%;
+    text-align: right;
+}
+
+#damage_types > div > div:nth-child(3) {
+    flex: 0 0 25%;
+    text-align: right;
 }
 
 /* The skills pane shows unspent karma and current/max rank in known skills. */
