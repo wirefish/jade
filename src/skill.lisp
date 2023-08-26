@@ -133,15 +133,43 @@ gathering skill, etc."
       (:observers (? (location avatar) :contents))
     (call-next-method)))
 
-(defmethod learn-skill (avatar skill trainer)
-  ;; FIXME: deduct karma and price.
-  (setf (gethash (skill-label skill) (skills avatar)) 1)
-  (update-skills avatar (skill-label skill))
-  (if trainer
-      (show-notice avatar "~a teaches you ~a."
-                   (describe-brief trainer :article :definite :capitalize t)
-                   (skill-name skill))
-      (show-notice avatar "You learn ~a." (skill-name skill))))
+(defmethod learn-skill :around ((avatar avatar) skill trainer)
+  (with-slots (price karma name) skill
+    (cond
+      ((and price
+            (not (find-item-isa avatar :inventory (entity-type price) (? price :quantity))))
+       (show avatar "You do not have ~a required to learn ~a."
+             (describe-brief price)
+             name))
+      ((and (> karma 0) (< (karma avatar) karma))
+       (show avatar "You do not have ~d karma required to learn ~a."
+             karma name))
+      (t (call-next-method)))))
+
+(defun pay-for-skill (buyer skill trainer)
+  (when-let ((price (skill-price skill)))
+    (let* ((stack (find-item-isa buyer :inventory (entity-type price)))
+           (paid (remove-item buyer :inventory stack (? price :quantity))))
+      (show buyer "You pay ~a to ~a."
+            (describe-brief paid)
+            (describe-brief trainer))
+      (if (eq paid stack)
+          (update-inventory buyer nil (list stack))
+          (update-inventory buyer (list stack) nil)))))
+
+(defmethod learn-skill ((avatar avatar) skill trainer)
+  (with-slots (price karma name) skill
+    ;; Note that the :around method checked that avatar has the required
+    ;; currency and karma.
+    (pay-for-skill avatar skill trainer)
+    (when (> karma 0)
+      (decf (karma avatar) karma)
+      (show avatar "Your karma is reduced by ~d." karma))
+    (setf (gethash (skill-label skill) (skills avatar)) 1)
+    (update-skills avatar (skill-label skill))
+    (show-notice avatar "~a teaches you ~a."
+                 (describe-brief trainer :article :definite :capitalize t)
+                 (skill-name skill))))
 
 ;;;
 
@@ -159,6 +187,30 @@ best match `tokens'."
          (loop for trainer in trainers
                collect (mapcar #'(lambda (skill) (cons trainer skill))
                                (teachable-skills trainer)))))
+
+(defclass learn-offer ()
+  ((skill :initarg :skill)
+   (trainer :initarg :trainer)))
+
+(defmethod extend-offer (avatar (offer learn-offer))
+  (with-slots (skill trainer) offer
+    (with-slots (price karma) skill
+      (show-notice
+       avatar
+       "~a has offered to teach you ~a for ~{~a~^ and ~}. Type `accept` to learn the skill."
+       (describe-brief trainer :article :definite :capitalize t)
+       (skill-name skill)
+       (remove nil (list (when price (describe-brief price))
+                         (when (> karma 0) (format nil "~d karma" karma))))))))
+
+(defmethod accept-offer (actor (offer learn-offer))
+  (with-slots (skill trainer) offer
+    (learn-skill actor skill trainer)))
+
+(defmethod reject-offer (actor (offer learn-offer))
+  (with-slots (skill) offer
+    (show-notice actor "You have rejected the offer to learn ~a."
+                 (skill-name skill))))
 
 (defcommand learn (actor "learn" skill-name)
   "When no *skill-name* is given, list the skills taught by nearby trainers.
@@ -188,7 +240,8 @@ Otherwise, try to learn the specified skill."
                         (describe-brief (symbol-value (skill-required-race skill)))
                         (skill-name skill)))
                  (t
-                  (learn-skill actor skill trainer)))))
+                  (extend-offer actor (make-instance 'learn-offer
+                                                     :skill skill :trainer trainer))))))
             (t
              (show actor "Do you want to learn ~a?"
                    (format-list #'skill-name (mapcar #'cdr matches) "or")))))
@@ -225,7 +278,7 @@ Otherwise, try to learn the specified skill."
   (match avatar tokens :exactly-one (mapcar #'symbol-value (hash-table-keys (skills avatar)))
    :no-tokens "Which skill do you want to unlearn?"
    :no-subjects "You haven't learned any skills."
-   :no-match "You haven't learn any skill matching ~s."
+   :no-match "You haven't learned any skill matching ~s."
    :multi-match "Do you want to unlearn ~a?"))
 
 (defcommand unlearn (actor "unlearn" skill-name)

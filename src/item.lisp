@@ -147,11 +147,18 @@ represents `count' of the same item. Returns nil if entity cannot be split."
         (decf (? item :quantity) count)))))
 
 (defun remove-item (container slot item &optional (quantity t))
-  (if (or (eq quantity t) (= quantity (? item :quantity)))
-      (progn
-        (deletef (? container slot) item)
-        item)
-      (split-item item quantity)))
+  "Attemps to remove `quantity' of `item' from slot `slot' of `container'. If
+`quantity' is t or equal to the actual quantity of item, removes the entire
+stack. If `quantity' is less than the actual quantity of `item', splits the
+desired quantity and returns the resulting new entity. If `quantity' is greater
+than the actual quantity of `item', does nothing and returns nil."
+  (let ((item-quantity (? item :quantity)))
+    (cond
+      ((or (eq quantity t) (= quantity item-quantity))
+       (deletef (? container slot) item)
+       item)
+      ((< quantity item-quantity)
+       (split-item item quantity)))))
 
 (defun remove-items-if (container slot pred)
   (bind ((kept removed (loop for item in (? container slot)
