@@ -181,8 +181,10 @@ is complete."
        (values n (>= n 1))))
     (list
      (let ((entry (assoc arg1 state)))
-       (incf (cdr entry) arg2)
-       (values state (every (lambda (x) (>= x 1)) state))))))
+       (if arg2
+         (incf (cdr entry) arg2)
+         (setf (cdr entry) 1))
+       (values state (every (lambda (x) (>= (cdr x) 1)) state))))))
 
 (defun advance-quest (actor avatar label &optional arg1 arg2)
   "Updates an avatar's state for an active quest and, if the current phase becomes

@@ -456,7 +456,7 @@
      auburn hair hangs down to his shoulders."
    :sells (copper-shortsword bronze-shortsword)) ; FIXME: add more
 
-  (:when-talk ((actor &quest talking-shop active) self topic)
+  (:when-talk ((actor &quest talking-shop :active) self topic)
     (tell self actor "Ah, yes, I heard about Mirabel. Those bastards stole a few
       blades from me, perhaps a week past.
 
@@ -468,8 +468,7 @@
 
       That being said, I've never had particular problems with the Hand before.
       So maybe this is something different.")
-    ;; FIXME: (advance-quest self actor 'talking-shop 'sword-vendor)
-    )
+    (advance-quest self actor 'talking-shop 'sword-vendor))
 
   (:when-talk (actor self topic)
     (tell self actor "Welcome to my shop! I have a variety of swords for sale.
@@ -881,7 +880,7 @@
     (with-delay (1)
       (show actor "The priest pauses for a moment, collecting his thoughts.")
 
-      (with-delay (3)
+      (with-delay (1)
         (tell self actor "It began slowly at first, nearly half a century ago.
           The gods had always lent their power to their faithful servants.
           Members of the priesthood wielded magic as powerful as that of any
@@ -918,11 +917,11 @@
 (defentity east-guard (guard)
   (:pose "leans against the wall of the gatehouse.")
 
-  (:when-talk ((actor &quest at-the-gates :actor) self topic)
+  (:when-talk ((actor &quest at-the-gates :active) self topic)
     (tell self actor "Mirabel's boy? Yes, he passed through in the dead of
       night, maybe three weeks past. As shady as ever, that one. He was with two
       others who looked even worse.")
-    (advance-quest self actor 'at-the-gates 'guard)) ; FIXME:
+    (advance-quest self actor 'at-the-gates 'east-guard))
 
   (:when-talk (actor self topic)
     (tell self actor "East of here is Mistmarsh. It's a dangerous area. Don't
@@ -1249,7 +1248,7 @@
   (:active
       :summary "Talk to shopkeepers around Arwyck who may have information about
         the recent spate of thefts."
-      :initial-state '((sword-vendor . 0) (dagger-vendor . 0) (spear-vendor . 0)))
+      :initial-state ((sword-vendor . 0) (dagger-vendor . 0) (spear-vendor . 0)))
 
   (:done
       :summary "Report your findings to Mirabel."))
@@ -1276,7 +1275,7 @@
 
   (:when-talk ((actor &quest talking-shop :done) self topic)
     (show actor "You share your findings with Mirabel.")
-    (with-delay (2)
+    (with-delay (1)
       (tell self actor "Thank you for your help. If my peers are correct, these
         thefts are the work of a new player in town. I can't help but think my
         wayward son may be involved.
@@ -1303,7 +1302,7 @@
 
   (:active
     :summary "Ask the gate guards in Arwyck if they've seen Mirabel's son."
-    :initial-state) ; FIXME: guards
+    :initial-state ((east-guard . 0) (west-guard . 0) (south-guard . 0)))
 
   (:done
     :summary "Report your findings to Mirabel."))
@@ -1328,7 +1327,7 @@
 
   (:when-talk ((actor &quest at-the-gates :done) self topic)
     (show actor "Mirabel considers for a moment.")
-    (with-delay (2)
+    (with-delay (1)
       (tell self actor "So, he's back, and he brought friends. This can't be
         good.
 
@@ -1715,7 +1714,7 @@
     (tell self actor "Ah, that boy was always a pain in my arse. I can't blame
       his mother. She's a good woman and did her best. Have I seen him lately?
       No, he hasn't passed through my gate, that's for certain.")
-    (advance-quest self actor 'at-the-gates 'south-gate))
+    (advance-quest self actor 'at-the-gates 'south-guard))
 
   (:when-talk (actor self topic)
     (tell self actor "To the south you'll find Perenvale. It's a nice place to
@@ -1746,7 +1745,7 @@
 
   (:when-talk ((actor &quest the-key-is-the-key :find-kijian) self topic)
     (show actor "You explain the situation to Kijian.")
-    (with-delay (2)
+    (with-delay (1)
       (tell self actor "So Mirabel needs to unlock a door, eh? Well of course
         I'm happy to help. I can make a key to open that lock, but while I work
         I'll need you to do something for me.
@@ -2024,7 +2023,7 @@
     (show actor "The guard spits into the dirt.")
     (tell self actor "I know of him. Always a troublemaker. But I haven't seen
       him in ages, thank the gods.")
-    (advance-quest self actor 'at-the-gates 'west-gate))
+    (advance-quest self actor 'at-the-gates 'west-guard))
 
   (:when-talk (actor self topic)
     (tell self actor "Be wary in the forest to the west, traveler. Those spiders
