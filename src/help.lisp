@@ -13,12 +13,13 @@
       (when stream
         (read-stream-content-into-string stream)))))
 
-(defcommand help (actor "help" topic)
+(defcommand help (actor "help" &word topic subtopic)
   "The help command can be used to get information on a variety of general topics
 or details about a specific command. For information on a specific topic or
 command, type `help` followed by the subject of interest; for example, `help
 movement`."
-  (setf topic (or (first (gethash (first topic) *aliases*)) (first topic)))
+  (when-let ((alias (gethash topic *aliases*)))
+    (setf topic (first-token-as-string alias)))
   (cond
     ((or (null topic) (string= topic "help"))
      ;; Display the help message defined by the help command itself followed by

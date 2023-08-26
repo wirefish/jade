@@ -391,7 +391,7 @@ location."
 
 ;;; For testing:
 
-(defcommand create (avatar "create" :raw thing)
+(defcommand create (avatar "create" &rest thing)
   "Materialize items in your inventory. Cheater!"
   (bind ((args (read-from-string (format nil "(~a)" thing)))
          (proto (symbol-value-or-nil (first args))))

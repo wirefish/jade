@@ -62,9 +62,9 @@ particular topic of interest."
           (show observer "You say, ~s" message)
           (show observer "~a says, ~s" actor-description message)))))
 
-(defcommand say (actor ("say") &raw message)
+(defcommand say (actor ("say") &rest message)
   "Say something to everyone in your location."
-  (say actor (join-words message)))
+  (say actor message))
 
 ;;; TODO: Yell something that can be heard at your location and nearby locations.
 
