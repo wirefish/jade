@@ -120,7 +120,7 @@
      weapons you may buy.
 
      Trainers are represented on the map by an upward-pointing arrow icon. Use
-     the `guild` command near a trainer to learn more."
+     the `learn` command near a trainer to see what they can teach you."
    :exits ((plaza-portal :west bayside-plaza-1 :east bayside-plaza-3)
            (rutted-path :north west-dock))))
 
@@ -282,8 +282,8 @@
 
       As a miner you can extract ore, raw gemstones, and other valuable
       resources from deposits scattered around the world. If this sounds useful,
-      I'd love to welcome you to our guild! Type `guild info` for more
-      information or `guild join` to sign up.
+      I'd love to welcome you to our ranks! Type `learn` to see what skills I
+      can teach you.
 
       If you decide mining's for you, Hermetch over there sells the tools
       you'll need to begin your mining career.")))
@@ -608,8 +608,7 @@
       dedicated to the practice of the martial arts. It is my job to train those
       who are interested in learning to defend themselves with good steel.
 
-      Type `guild info` to learn more about my guild. If you want to join, type
-      `guild join`.")))
+      Type `learn` and I will show you the skills I can teach you.")))
 
 (deflocation armory-training-hall ()
   (:name "Training Hall"
@@ -754,9 +753,9 @@
    :teaches nil) ; FIXME: from mage-trainer
 
   (:when-talk (actor self topic)
-    (tell self actor "Hello! I'm glad for the interruption. I am supposed to be
-      studying this scroll, but the mating rituals of the southern blue-tailed
-      cockatrice are really not my cup of tea.
+    (tell self actor "Hello! I'm glad for the interruption. I've been tasked
+      with studying this scroll, but the mating rituals of the southern
+      blue-tailed cockatrice are really not my cup of tea.
 
       I am the local representative of the College of Arcanists, a guild for
       those who wish to study magic. I am just an apprentice myself, but I can
@@ -1171,9 +1170,8 @@
       everyone likes to spend their days reading musty old scrolls. I'd rather
       be out in the streets, where the action is!
 
-      I can teach you some of the basic skills favored by my guild. Type `guild
-      info` for more information, or type `learn` to see what you can learn from
-      me.")))
+      I can teach you some of the basic skills favored by my guild. Type `learn`
+      to see what you can learn from me.")))
 
 (deflocation warehouse-office (warehouse)
   (:name "Office"
@@ -1921,9 +1919,10 @@
 
   (:when-talk (actor self topic)
     (tell self actor "Come for some sweet corn? Or perhaps a few tomatoes? Well,
-      you're out of luck: they're not for sale. But if you want to `learn` about
-      botany, then you've come to the right place. I represent the Botanists'
-      Guild in these parts. Type `guild info` to learn more.")))
+      you're out of luck: they're not for sale. But if you want to know more
+      about botany, then you've come to the right place. I represent the
+      Botanists' Guild in these parts; type `learn` to see what I can teach
+      you.")))
 
 (defentity bonnos (vendor)
   (:name "Bonnos"
