@@ -43,7 +43,7 @@ present, display a more detailed description of matching items."
         (progn
           (if (> (hash-table-count equipment) 0)
               (show actor "You have the following items equipped: ~a."
-                    (format-list #'describe-brief (hash-table-values equipment)))
+                    (format-list #'describe-brief (remove nil (equipped-items actor))))
               (show actor "You do not have any items equipped."))
           (if inventory
               (show actor "You are carrying ~a." (format-list #'describe-brief inventory))

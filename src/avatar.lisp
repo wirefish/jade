@@ -168,10 +168,9 @@
   "Descriptions of slots in which an avatar can equip an item.")
 
 (defun equipped-items (avatar &rest slots)
-  (when-attributes (equipment) avatar
-    (if slots
-        (loop for slot in slots collect (gethash slot equipment))
-        (hash-table-values equipment))))
+  (with-attributes (equipment) avatar
+    (loop for slot in (or slots *equipment-slots*)
+          collect (gethash slot equipment))))
 
 ;;; The `:race' attribute is an entity that defines some base attributes of the
 ;;; avatar.
