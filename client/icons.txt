@@ -54,17 +54,20 @@ copper_ring     $armor/Rings_01.png
 small_pack      $inventory/Bag_Small.png
 pouch           $loot/Pouch.png
 
+# Botany
+sickle          $resources/Sickle.png
+
+# Logging
+logging_axe     $resources/Axe.png
+
 # Mining
 pickaxe         $resources/Pickaxe.png
 copper_ore      $resources/Metal_2_Ore.png
 turquoise       $loot/Turquoise.png
 sapphire_small  $loot/Sapphire_Small.png
 
-# Botany
-sickle          $resources/Sickle.png
-
-# Logging
-axe             $resources/Axe.png
+# Skinning
+skinning_knife  $weapons/Knives_07.png
 
 # Fishing
 

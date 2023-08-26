@@ -16,7 +16,7 @@
 (defentity logging-axe (item)
   (:brief "~a ~a logging axe"
    :description "The ~*~a logging axe is a basic logging tool."
-   :icon axe
+   :icon logging-axe
    :equippable-slot :tool))
 
 (defentity copper-logging-axe (logging-axe)

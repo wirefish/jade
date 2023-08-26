@@ -28,9 +28,10 @@ select during combat."
 when the combatant dies."
   (make-generator value))
 
-;;; A corpse is an entity that appears when a combatant dies.
+;;; A corpse is an entity that appears when a combatant dies. It can act as a
+;;; resource node for e.g. a skinning skill, as well as drop loot when used.
 
-(defclass corpse (entity)
+(defclass corpse (resource-node)
   ((entity :initform nil :accessor corpse-entity)
    (owners :initform nil :accessor corpse-owners)
    (loot :initform nil :accessor corpse-loot)
@@ -41,6 +42,7 @@ when the combatant dies."
    :description "The corpse is in bad shape ... it might decay at any time."
    :icon tombstone
    :decay-time 60
+   :entry-message nil
    :exit-message "decays."))
 
 (defmethod describe-brief ((corpse corpse) &key quantity (article :indefinite) capitalize)
