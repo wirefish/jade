@@ -1,3 +1,5 @@
+# Core
+
 * Add aura icons.
 
 * Make exits just entities? That way they can react to events. Add exit-message
@@ -7,9 +9,9 @@
 
 * Selling to vendors.
 
-* Pay and refund cost when learning and unlearning skills.
+* Refund karma cost when unlearning skills.
 
-* Make (un)learning a skill an offer, ala buying/selling.
+* Make unlearning a skill an offer.
 
 * Handle light and two-handed weapons in (un)equip.
 
@@ -21,7 +23,8 @@
 * When an entity who reacts to quests enters/exits a location, do a partial map
   update for all avatars in map range of that location.
 
-* Deal with quest state that is a plist (or alist?) properly.
+* Simplify quest phase initial-state: default 0, default advance amount is 1, if
+  a list of symbols, state is an alist associating each with 0.
 
 * Let NPCs have a race so they can be matched properly.
 
@@ -45,3 +48,20 @@
 
 * Maybe precompute the list of preps in reverse order by clause to simplify
   finding the end of the current clause.
+
+* Unify pay-for-item and pay-for-skill and associated checks.
+
+# Game World
+
+* Gathering: botany (plants -> ingredients/reagents), logging (trees ->
+  logs), mining (deposits -> ore), skinning (corpses -> hides), fishing.
+
+* Pre-crafting: milling (logs -> planks), smelting (ore -> ingots), tanning
+  (hides -> leather).
+
+* Crafting: alchemy, carpentry, leatherworking, blacksmithing ->
+  (weaponsmithing, armorsmithing), cooking, jewelcrafting, ...
+
+* Three categories of magic. Druidic: healing, protection, nature/lightning
+  damage. Arcane: cantrips, "magical" damage e.g. magic missile. Elemental:
+  earth/air/fire/water themed protection and damage.
