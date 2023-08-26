@@ -1,14 +1,15 @@
 (in-package :jade.lib)
 
+(defentity mining-resource (resource)
+  (:required-skill mining
+   :item-group (resource mining)))
+
 ;;; Ore.
 
-(defentity ore (resource)
+(defentity ore (mining-resource)
   (:brief "a chunk[s] of ~*~a ore"
    :description "The ore is a small piece of ~*~a-bearing rock. It can be
-     smelted to obtain ~:*~a in its pure form."
-   :stackable t
-   :required-skill mining
-   :item-subgroup :metal))
+     smelted to obtain ~:*~a in its pure form."))
 
 (defentity copper-ore (ore)
   (:material "copper"
@@ -33,6 +34,8 @@
 (defentity gold-ore (ore)
   (:material "gold"
    :required-rank 50))
+
+;;; TODO: Other mining resources: stone, raw gemstones, etc.
 
 ;;; Tools.
 
