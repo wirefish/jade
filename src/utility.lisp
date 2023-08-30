@@ -69,14 +69,14 @@ leaf node of `tree'. The results are returned in depth-first order."
                  (list (dolist (child node) (recurse child))))))
       (recurse tree)))
 
-(defun match-in-tree (pattern tree &key (test #'eql))
-  "Returns nodes in `tree' for which calling `test' with the node and `pattern' as
-arguments returns true. Matches are returned in depth-first order."
+(defun find-all-in-tree-if (pred tree)
+  "Returns nodes in `tree' that satisfy `pred'. Results are returned in depth-first
+order."
   (let (matches)
     (labels ((recurse (node)
-               (when (funcall test node pattern)
+               (when (funcall pred node)
                  (push node matches))
-               (when (typep node 'list)
+               (when (listp node)
                  (dolist (child node) (recurse child)))))
       (recurse tree)
       (nreverse matches))))
