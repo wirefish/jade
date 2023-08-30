@@ -2,9 +2,6 @@
 
 * Add aura icons.
 
-* Make exits just entities? That way they can react to events. Add exit-message
-  and entry-message.
-
 * Fix command parsing to allow unambiguous prefixes.
 
 * Selling to vendors.
@@ -42,12 +39,6 @@
 * Automatically compute :offers-quests from event handler bodies? Could also
   compute :advances-quests as a list of quest and phases from which a body may
   call advance-quest?
-
-* Get rid of &raw, make &rest do that since you can always use a prep clause
-  with no preps in the same position.
-
-* Maybe precompute the list of preps in reverse order by clause to simplify
-  finding the end of the current clause.
 
 * Unify pay-for-item and pay-for-skill and associated checks.
 
