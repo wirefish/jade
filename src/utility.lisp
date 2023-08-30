@@ -218,9 +218,9 @@ two values for the same key. Returns `output'."
 (defun maybe-ignore (var)
   (typecase var
     (null (car (push (gensym "IGNORED") *ignored-bindings*)))
-    (keyword (error "cannot use bind value to keyword: ~a" var))
+    (keyword (error "cannot bind value to keyword ~s" var))
     (symbol var)
-    (otherwise (error "invalid variable in binding: ~a" var))))
+    (otherwise (error "bound variable must be a symbol, not ~s" var))))
 
 (defgeneric expand-binding (arg1 arg2 &rest args)
   (:method ((arg1 symbol) arg2 &rest args)
