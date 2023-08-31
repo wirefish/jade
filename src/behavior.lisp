@@ -110,14 +110,21 @@ satisfies `constraint'."
 ;;;
 
 (defun actor-quest-constraint (params)
+  "When the first (actor) parameter in `params' has a &quest constraint, returns
+two values: the quest label and phase."
   (when-let ((constraint (rest (first params))))
     (when (eq (first constraint) '&quest)
       (values-list (rest constraint)))))
 
 (defun find-calls (fn body)
+  "Returns forms that appear to be a call to the function named `fn' in `body'."
   (find-all-in-tree-if (lambda (x) (and (listp x) (eq (first x) fn))) body))
 
 (defun cache-offered-quests (entity event params body)
+  "Finds all calls to the offer-quest function in `body' and pushes the labels
+of the associated quests into the :offers-quests attribute of `entity'. Also
+checks that the call is associated with an actor constraint that the quest is
+available."
   (declare (ignore event))
   (bind ((actor-quest actor-phase (actor-quest-constraint params)))
     (loop for offer in (find-calls 'offer-quest body)
@@ -129,6 +136,10 @@ satisfies `constraint'."
                           quest))))))
 
 (defun cache-advanced-quests (entity event params body)
+  "Finds all calls to the advance-quest function in `body' and pushes lists
+of (event quest-label quest-phase) into the :advances-quests attribute of
+`entity', where `quest-phase' is obtained from the required matching quest
+constraint for the first (actor) parameter in `params'."
   (bind ((actor-quest actor-phase (actor-quest-constraint params)))
     (loop for advance in (find-calls 'advance-quest body)
           do
