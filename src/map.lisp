@@ -36,16 +36,26 @@ visited only if `cross-domains' is t."
 (defconstant +vendor-map-bit+ (ash 1 15))
 (defconstant +trainer-map-bit+ (ash 1 16))
 
+(defparameter *map-quest-events* '(:when-talk :after-give))
+
+(defun advances-quest-phase (entity quest-label phase-label)
+  (some (lambda (x)
+          (when (and (eq (second x) quest-label) (eq (third x) phase-label))
+            (first x)))
+        (? entity :advances-quests)))
+
 (defun location-quest-state-bit (location avatar)
   (when-let ((candidates (loop for entity in (? location :contents)
                                when (entity-behavior entity)
                                  collect entity)))
-    ;; Check if any candidate reacts to the actor's current phase of any active
-    ;; quest.
+    ;; Check if any candidate advances any quest from the actor's current active
+    ;; phase in that quest.
     (loop for (label phase-index . state) in (active-quests avatar) do
-      (when-let ((quest (symbol-value-or-nil label)))
+      (when-let ((quest (symbol-value-as 'quest label nil)))
         (let ((phase-label (quest-phase-label (quest-get-phase quest phase-index))))
-          (when (some (lambda (x) (reacts-to-quest-phase x label phase-label))
+          (when (some (lambda (x)
+                        (when-let ((event (advances-quest-phase x label phase-label)))
+                          (position event *map-quest-events*)))
                       candidates)
             (return-from location-quest-state-bit
               (if (= phase-index (1- (length (quest-phases quest))))
@@ -55,7 +65,7 @@ visited only if `cross-domains' is t."
     (loop for entity in candidates do
       (when-let ((quest-labels (? entity :offers-quests)))
         (loop for label in quest-labels do
-          (when-let ((quest (symbol-value-or-nil label)))
+          (when-let ((quest (symbol-value-as 'quest label nil)))
             (when (can-accept-quest avatar quest)
               (return-from location-quest-state-bit +available-map-bit+)))))))
   0)

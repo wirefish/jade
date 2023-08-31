@@ -107,15 +107,55 @@ satisfies `constraint'."
                     (list (gensym) 'self)
                     (ensure-list param))))
 
+;;;
+
+(defun actor-quest-constraint (params)
+  (when-let ((constraint (rest (first params))))
+    (when (eq (first constraint) '&quest)
+      (values-list (rest constraint)))))
+
+(defun find-calls (fn body)
+  (find-all-in-tree-if (lambda (x) (and (listp x) (eq (first x) fn))) body))
+
+(defun cache-offered-quests (entity event params body)
+  (declare (ignore event))
+  (bind ((actor-quest actor-phase (actor-quest-constraint params)))
+    (loop for offer in (find-calls 'offer-quest body)
+          do
+             (let ((quest (second (third offer))))
+               (if (and (eq quest actor-quest) (eq actor-phase :available))
+                   (pushnew quest (? entity :offers-quests))
+                   (error "cannot offer quest ~a without matching :available constraint"
+                          quest))))))
+
+(defun cache-advanced-quests (entity event params body)
+  (bind ((actor-quest actor-phase (actor-quest-constraint params)))
+    (loop for advance in (find-calls 'advance-quest body)
+          do
+             (let ((quest (second (fourth advance))))
+               (if (eq quest actor-quest)
+                   (pushnew (list event quest actor-phase)
+                            (? entity :advances-quests) :test #'equal)
+                   (error "cannot advance quest ~a without matching actor constraint"
+                          quest))))))
+
+(defun postprocess-handler (entity event params body)
+  (cache-advanced-quests entity event params body)
+  (cache-offered-quests entity event params body))
+
 (defmacro defbehavior (label &body clauses)
   (with-gensyms (entity)
     `(let ((,entity (symbol-value ',label)))
        ,@(loop for (event params . body) in (reverse clauses)
-               collect
+               nconc
                (let ((params (normalize-parameters params)))
-                 `(push-event-handler
-                   ,entity ',event ',params ,(make-handler-fn event params body))))
+                 (list
+                  `(push-event-handler
+                    ,entity ',event ',params ,(make-handler-fn event params body))
+                  `(postprocess-handler ,entity ',event ',params ',body))))
        ,entity)))
+
+;;;
 
 (defgeneric observe-event (observer event &rest args))
 

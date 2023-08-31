@@ -534,8 +534,7 @@
    :pose "stands in the stall, organizing her wares."
    :description "Dhalia is a human woman of indeterminate age. She wears
      silver-rimmed spectacles and an impeccably-tailored dress decorated with a
-     floral pattern."
-   :offers-quests (get-some-clothes))
+     floral pattern.")
 
   (:when-talk ((actor &quest get-some-clothes :available) self topic)
     (tell self actor "Greetings! Did our mutual kobold friend send you my way? It
@@ -601,9 +600,9 @@
     (show actor "It would be rude to pick the tulip right now.")
     (disallow-action))
 
-  (:after-take (actor self container)
+  (:after-take ((actor &quest get-some-clothes :active) self container)
     (with-delay (15)
-      nil)
+      nil) ; FIXME: respawn
     (advance-quest self actor 'get-some-clothes)))
 
 (defentity tulip-field-portal ()
