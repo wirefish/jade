@@ -40,7 +40,8 @@ movement`."
          ((= (length commands) 1)
           (show-help actor (command-help (cdar commands))))
          ((> (length commands) 1)
-          (show actor "Do you want help with ~a?" (format-list #'car commands "or")))
+          (show actor "Do you want help with ~a?"
+                (format-list (lambda (x) (format nil "`help:~a`" (car x))) commands "or")))
          (t
           (if-let ((help-text (read-help-file topic)))
             (show-help actor help-text)
