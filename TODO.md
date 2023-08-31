@@ -18,9 +18,6 @@
 * When an entity who reacts to quests enters/exits a location, do a partial map
   update for all avatars in map range of that location.
 
-* Simplify quest phase initial-state: default 0, default advance amount is 1, if
-  a list of symbols, state is an alist associating each with 0.
-
 * Let NPCs have a race so they can be matched properly.
 
 * Add intro for new player.
