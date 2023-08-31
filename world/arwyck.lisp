@@ -138,8 +138,7 @@
   (:brief "a young laborer"
    :pose "scrubs the cobbles nearby."
    :description "The laborer is a boy of perhaps fourteen summers. He is on his
-     knees, scrubbing the cobbles with an old wire brush."
-   :offers-quests (dance-monkey))
+     knees, scrubbing the cobbles with an old wire brush.")
 
   (:when-talk ((actor &quest dance-monkey :available) self topic)
     (show actor "The boy looks up from his work.")
@@ -218,8 +217,7 @@
 (defentity attendant (humanoid)
   (:brief "an attendant"
    :description "The attendant is extremely tall and thin. He wears a long,
-     striped coat and a comically tall tophat."
-   :offers-quests (ticket-please))
+     striped coat and a comically tall tophat.")
 
   (:when-talk ((actor &quest ticket-please :available) self topic)
     (tell self actor "You look like one of those reborn heroes who keep popping
@@ -796,8 +794,7 @@
   (:brief "a street urchin"
    :pose "sits alongside the road."
    :description "The urchin is a young girl, perhaps eight years old. Her
-     clothes are little more than dirty rags."
-   :offers-quests (i-need-bread))
+     clothes are little more than dirty rags.")
 
   (:when-talk ((actor &quest i-need-bread :available) self topic)
     (tell self actor "You seem like you have many important things to do, so I
@@ -1004,7 +1001,8 @@
   (:allow-use (actor self (target jade.mistmarsh::giant-centipede-corpse))
     t)
 
-  (:when-use (actor self (target jade.mistmarsh::giant-centipede-corpse))
+  (:when-use ((actor &quest get-some-venom :active) self
+              (target jade.mistmarsh::giant-centipede-corpse))
     (show actor "You stick the needle of the venom extractor into the corpse and
       pull the trigger. The device sucks a small amount of venom into an
       internal chamber.")
@@ -1014,8 +1012,7 @@
   (:brief "Dilwar"
    :pose "stares at the smoking remains of a shattered bowl, lost in thought."
    :description "The alchemist is a rotund, red-faced man with wisps of white
-     hair that float over his head like smoke."
-   :offers-quests (jade.silverwood::moss-results get-some-venom))
+     hair that float over his head like smoke.")
 
   (:when-talk ((actor &quest get-some-venom :available) self topic)
     (tell self actor "Can't you see I'm busy here?")
@@ -1218,9 +1215,7 @@
   (:name "Mirabel"
    :pose "sweeps broken glass from the floor."
    :description "Mirabel is a middle-aged woman with chestnut hair in a tight
-     bun."
-   :offers-quests (talking-shop at-the-gates scare-the-scarecrow
-                                the-key-is-the-key the-end-of-evend))
+     bun.")
 
   (:when-talk ((actor &quest the-end-of-evend :finished) self topic)
     (tell self actor "Hello again, ~a. I hope you're staying out of trouble. I'm
@@ -1961,8 +1956,7 @@
 (defentity miranda (humanoid)
   (:name "Miranda Mathers"
    :description "Miranda is a stout middle-aged woman. She wears practical
-     clothing that has seen numerous repairs over the years."
-   :offers-quests (find-my-son))
+     clothing that has seen numerous repairs over the years.")
 
   (:when-talk ((actor &quest find-my-son :available) self topic)
     (tell self actor "I know we've never met, but I have nobody else to turn to.

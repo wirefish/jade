@@ -1439,8 +1439,7 @@
    :description "The hermit is an elderly woman, her skin deeply wrinkled from
      many years of wind and sun. She is stooped and walks only with great
      effort, but her eyes and mind are as sharp as ever. An old scar runs down
-     the left side of her face."
-   :offers-quests (find-spiderwebs))
+     the left side of her face.")
 
   (:when-talk ((actor &quest find-spiderwebs :available) self topic)
     (tell self actor "Ah, a visitor. Few people come to my little house these

@@ -102,8 +102,7 @@
   (:brief "an officious kobold"
    :pose "sites at a low table in the shade of a large umbrella."
    :description "The kobold is a tiny humanoid with reptilian features, sparse
-     wiry hair, and knobbly gray skin. It is, however, impeccably groomed."
-   :offers-quests (choose-a-race))
+     wiry hair, and knobbly gray skin. It is, however, impeccably groomed.")
 
   (:when-talk ((actor &quest choose-a-race :available) self topic)
     (tell self actor "Hello, friend! As you may have noticed, your current body
@@ -662,8 +661,7 @@
    :description "The mistress of names is a short, slender woman of
      indeterminate age. Her long auburn hair is bound in a loose ponytail. She
      wears a pair of horn-rimmed spectacles and her clothing is rumpled and
-     ink-stained."
-   :offers-quests (choose-a-name))
+     ink-stained.")
 
   (:when-talk ((actor &quest choose-a-name :finished) self topic)
     (tell self actor "Ah, ~a. I just love the sound of your name! It simply
@@ -766,8 +764,7 @@
    :pose "stands nearby."
    :description "The guard wears a long chainmail shirt and carries a
      double-bladed axe. His bristly red beard spills out across his ample
-     belly."
-   :offers-quests (kill-some-plants))
+     belly.")
 
   (:when-talk ((actor &quest kill-some-plants :finished) self topic)
     (tell self actor "Good to see you again, plant-slayer."))
@@ -974,8 +971,7 @@
    :pose "sits behind the desk."
    :description "The dockmaster is a grizzled man with a short salt-and-pepper
      beard. His left eye is covered with a leather patch, but his right eye
-     harbors a dangerous gleam."
-   :offers-quests (special-delivery))
+     harbors a dangerous gleam.")
 
   (:when-talk ((actor &quest special-delivery :available) self topic)
     (tell self actor "You there. I've an errand that needs doing if you've a
