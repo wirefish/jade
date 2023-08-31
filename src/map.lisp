@@ -38,7 +38,10 @@ visited only if `cross-domains' is t."
 
 (defparameter *map-quest-events* '(:when-talk :after-give))
 
-(defun advances-quest-phase (entity quest-label phase-label)
+(defun quest-advance-event (entity quest-label phase-label)
+  "Returns the event that can trigger `entity' to advance the quest named by
+`quest-label' for an avatar whose current phase for that quest is named by
+`phase-label'."
   (some (lambda (x)
           (when (and (eq (second x) quest-label) (eq (third x) phase-label))
             (first x)))
@@ -54,7 +57,7 @@ visited only if `cross-domains' is t."
       (when-let ((quest (symbol-value-as 'quest label nil)))
         (let ((phase-label (quest-phase-label (quest-get-phase quest phase-index))))
           (when (some (lambda (x)
-                        (when-let ((event (advances-quest-phase x label phase-label)))
+                        (when-let ((event (quest-advance-event x label phase-label)))
                           (position event *map-quest-events*)))
                       candidates)
             (return-from location-quest-state-bit
