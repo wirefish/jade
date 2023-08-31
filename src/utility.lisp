@@ -48,17 +48,6 @@ new tree with the same structure."
                (list (mapcar #'recurse node)))))
     (recurse tree)))
 
-(defun keep-leaves (fn tree)
-  "Returns a list of the non-null results of calling unary function `fn' on each
-leaf node of `tree'. The results are returned in depth-first order."
-  (let (results)
-    (labels ((recurse (node)
-               (etypecase node
-                 (atom (when-let ((x (funcall fn node))) (push x results)))
-                 (list (dolist (child node) (recurse child))))))
-      (recurse tree)
-      (nreverse results))))
-
 (defun tree-contains (value tree &key (test #'eql))
   "Returns true if `tree' contains a leaf node that matches `value' subject to
 `test'."
