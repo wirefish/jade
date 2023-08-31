@@ -51,8 +51,8 @@ visited only if `cross-domains' is t."
   (when-let ((candidates (loop for entity in (? location :contents)
                                when (entity-behavior entity)
                                  collect entity)))
-    ;; Check if any candidate advances any quest from the actor's current active
-    ;; phase in that quest.
+    ;; Check if any candidate can advance a quest from the actor's current
+    ;; active phase in that quest.
     (loop for (label phase-index . state) in (active-quests avatar) do
       (when-let ((quest (symbol-value-as 'quest label nil)))
         (let ((phase-label (quest-phase-label (quest-get-phase quest phase-index))))
