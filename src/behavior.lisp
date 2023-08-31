@@ -68,7 +68,7 @@ satisfies `constraint'."
     ((eq (first constraint) '&quest)
      (destructuring-bind (quest &optional phase) (rest constraint)
        (if phase
-           `(eq (quest-phase ,param ',quest) ',phase)
+           `(eq (current-quest-phase ,param ',quest) ',phase)
            `(eq (quest-label ,param) ',quest))))
     ((eq (first constraint) '&race)
      `(eq (? ,param :race 'label) ',(second constraint)))

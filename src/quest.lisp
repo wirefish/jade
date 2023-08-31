@@ -118,7 +118,10 @@ The state associated with a quest phase can take one of two forms:
     (and (typep offer 'quest-offer)
          (eq quest-label (quest-label (slot-value offer 'quest))))))
 
-(defun quest-phase (avatar quest-label)
+(defun current-quest-phase (avatar quest-label)
+  "Returns the current phase of the quest named by `quest-label' for `avatar'.
+This can be a phase defined by the quest itself if it is active, or one of the
+synthetic phases -- :unavailable, :available, :offered, or :finished."
   (cond
     ((not (typep avatar 'avatar))
      nil)
