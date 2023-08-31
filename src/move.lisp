@@ -124,7 +124,7 @@ for more information."
 ;; Define aliases for moving in specific directions.
 (maphash-keys #'(lambda (dir)
                   (let ((command (format nil "go ~a" (direction-name dir))))
-                    (make-alias (direction-name dir) command)
+                    (add-command-alias (direction-name dir) command)
                     (when-let ((abbrev (direction-abbrev dir)))
-                      (make-alias abbrev command))))
+                      (add-command-alias abbrev command))))
               *directions*)

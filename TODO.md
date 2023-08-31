@@ -2,8 +2,6 @@
 
 * Add aura icons.
 
-* Fix command parsing to allow unambiguous prefixes.
-
 * Selling to vendors.
 
 * Refund karma cost when unlearning skills.

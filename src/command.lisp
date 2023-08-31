@@ -2,6 +2,8 @@
 
 (defstruct command verbs clauses body)
 
+;;;
+
 (defun format-command-alts (alts)
   (if (second alts)
       (format nil "~a (or ~{~a~^, ~})" (first alts) (rest alts))
@@ -21,15 +23,49 @@
   (strcat (command-syntax command)
           (documentation (command-body command) t)))
 
-(defvar *commands* (make-hash-table :test #'equal))
+;;;
 
-(defun register-command (verbs clauses body)
+;; A hash table mapping from each command's name to the command struct itself.
+(defvar *commands* (make-hash-table))
+
+;; A mapping from aliases to the resulting input string.
+(defvar *aliases* (make-hash-table :test #'equal))
+
+;; A sorted vector of (verb . command) for all verbs associated with each
+;; command.
+(defparameter *sorted-commands* nil)
+
+(defun add-command (name verbs clauses body)
   (let ((command (make-command :verbs verbs :clauses clauses :body body)))
-    (dolist (verb verbs)
-      (setf (gethash verb *commands*) command))))
+    (setf *sorted-commands* nil)
+    (setf (gethash name *commands*) command)))
 
-(defun find-command (verb)
-  (gethash verb *commands*))
+(defun add-command-alias (alias command)
+  (setf (gethash alias *aliases*) (tokenize-input command)))
+
+(defun require-sorted-commands ()
+  "If *sorted-commands* is nil, rebuilds it using all currently known commands."
+  (unless *sorted-commands*
+    (setf *sorted-commands*
+          (sort (loop for name being the hash-keys in *commands* using (hash-value command)
+                      nconc (loop for verb in (command-verbs command)
+                                  collect (cons verb command)))
+                #'string< :key #'car))))
+
+(defun match-commands (verb)
+  "Given an input token `verb', returns all of the matching commands."
+  (require-sorted-commands)
+  (when-let ((matches (member-if (lambda (s) (string>= s verb)) *sorted-commands* :key #'car)))
+    (remove-duplicates
+     (cond
+       ((string= (caar matches) verb)
+        (list (car matches)))
+       (t
+        (let ((end (position-if-not (lambda (s) (string-starts-with s verb)) matches :key #'car)))
+          (if end
+              (subseq matches 0 end)
+              matches))))
+     :key #'cdr)))
 
 ;;;
 
@@ -80,8 +116,8 @@ an error if the grammar is invalid."
              (clauses (parse-grammar clauses))
              (params (cons actor (mapcar #'car clauses)))
              (body nil doc (parse-body body :documentation t)))
-        `(register-command
-          ',verbs ',clauses
+        `(add-command
+          ',name ',verbs ',clauses
           (lambda ,params
             ,(or doc "No documentation provided.")
             (declare (ignorable ,@params))
@@ -90,18 +126,6 @@ an error if the grammar is invalid."
     (error (e)
       (format-log :warning "error defining command ~a: ~a" e)
       nil)))
-
-;;;
-
-(defun get-primary-command-verbs ()
-  (sort (remove-duplicates (loop for command being the hash-values in *commands*
-                                 collect (first (command-verbs command))))
-        #'string<))
-
-(defvar *aliases* (make-hash-table :test #'equal))
-
-(defun make-alias (alias command)
-  (setf (gethash alias *aliases*) (tokenize-input command)))
 
 ;;; Functions that may be helpful when implementing commands.
 
@@ -226,7 +250,10 @@ above."
         (setf tokens alias
               verb (string-downcase (first-token-as-string tokens))))
       (setf tokens (remove-first-token tokens))
-      (if-let ((command (find-command verb)))
-        (with-slots (clauses body) command
-          (apply body avatar (parse-clauses clauses tokens)))
+      (if-let ((commands (match-commands verb)))
+        (if (> (length commands) 1)
+            (show-error avatar "Ambiguous command. Do you mean ~a?"
+                        (format-list #'car commands "or"))
+            (with-slots (clauses body) (cdar commands)
+              (apply body avatar (parse-clauses clauses tokens))))
         (show-error avatar "Unknown command ~s. Type \"help\" for help." verb)))))
