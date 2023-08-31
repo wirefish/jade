@@ -25,9 +25,7 @@ removed when the avatar cancels or finishes a quest.
 In the :finished phase, the time of completion is stored in the avatar's
 finished-quests table.
 
-The state associated with a quest phase can take one of three forms:
-
-- nil, in which case the phase is complete whenever it is advanced.
+The state associated with a quest phase can take one of two forms:
 
 - a number, in which case the phase is complete when advancing causes its value
   to become >= 1.
@@ -58,7 +56,7 @@ The state associated with a quest phase can take one of three forms:
 (defclass quest-phase ()
   ((label :initarg :label :initform nil :reader quest-phase-label)
    (summary :initarg :summary :initform nil :reader quest-phase-summary)
-   (initial-state :initarg :initial-state :initform nil :reader quest-phase-initial-state
+   (initial-state :initarg :initial-state :initform 0 :reader quest-phase-initial-state
                   :documentation "The state stored upon entering this phase.")))
 
 (defun quest-get-phase (quest index)
@@ -74,22 +72,22 @@ The state associated with a quest phase can take one of three forms:
     `(let ((,quest (make-instance
                     'quest
                     :label ',label
-                    ,@(loop for (key value) on attributes by #'cddr
-                            nconc (list key `(transform-initval 'quest ,key ',value)))
+                    ,@(transform-attributes 'quest attributes)
                     :phases
                     (list
                      ,@(loop for (label . attributes) in phases
                              collect `(make-instance
                                        'quest-phase
                                        :label ',label
-                                       ,@(loop for (key value) on attributes by #'cddr
-                                               nconc (list key
-                                                           `(transform-initval 'quest
-                                                                               ,key
-                                                                               ',value)))))))))
+                                       ,@(transform-attributes 'quest-phase attributes)))))))
        (set ',label ,quest)
        (export ',label)
        ,quest)))
+
+(defmethod transform-initval ((class (eql 'quest-phase)) (name (eql :initial-state)) value)
+  (if (listp value)
+      (mapcar (lambda (k) (cons k 0)) value)
+      value))
 
 ;;;
 
@@ -175,15 +173,12 @@ otherwise, `message' is a verb used to construct feedback to the player."
   "Returns two values: the new state, and t if the new state indicates the phase
 is complete."
   (typecase state
-    (null (values nil t))
     (number
-     (let ((n (+ arg1 state)))
+     (let ((n (+ (or arg1 1) state)))
        (values n (>= n 1))))
     (list
      (let ((entry (assoc arg1 state)))
-       (if arg2
-         (incf (cdr entry) arg2)
-         (setf (cdr entry) 1))
+       (incf (cdr entry) (or arg2 1))
        (values state (every (lambda (x) (>= (cdr x) 1)) state))))))
 
 (defun advance-quest (actor avatar label &optional arg1 arg2)
