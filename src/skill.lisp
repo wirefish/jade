@@ -69,8 +69,7 @@
     `(let ((,skill (make-instance
                     'skill
                     :label ',label
-                    ,@(loop for (key value) on attributes by #'cddr
-                            nconc (list key `(transform-initval 'skill ,key ',value))))))
+                    ,@(transform-attributes 'skill attributes))))
        (set ',label ,skill)
        (export ',label)
        ,skill)))

@@ -65,6 +65,10 @@
   (:method (class name expr)
     expr))
 
+(defun transform-attributes (class attributes)
+  (loop for (key value) on attributes by #'cddr
+        nconc (list key `(transform-initval ',class ,key ',value))))
+
 ;;; Define a named entity that can be used as a prototype for other entities.
 
 (defmacro defentity (name (&rest proto-spec) attributes &body behavior)
@@ -77,10 +81,10 @@
                          (proto `(type-of (symbol-value ',proto)))
                          (t `(quote entity))))
               (,entity (create-named-entity
-                       ',name ',proto ,class
-                       ,@(loop for (key value) on attributes by #'cddr
-                               nconc (list key
-                                           `(transform-initval ,class ,key ',value))))))
+                        ',name ',proto ,class
+                        ,@(loop for (key value) on attributes by #'cddr
+                                nconc (list key
+                                            `(transform-initval ,class ,key ',value))))))
          ,@(when behavior `((defbehavior ,name ,@behavior)))
          ,entity))))
 
