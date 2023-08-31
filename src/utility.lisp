@@ -70,8 +70,7 @@ leaf node of `tree'. The results are returned in depth-first order."
       (recurse tree)))
 
 (defun find-all-in-tree-if (pred tree)
-  "Returns nodes in `tree' that satisfy `pred'. Results are returned in depth-first
-order."
+  "Returns all nodes in `tree' that satisfy `pred', in depth-first order."
   (let (matches)
     (labels ((recurse (node)
                (when (funcall pred node)

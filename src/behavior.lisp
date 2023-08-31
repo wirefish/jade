@@ -82,6 +82,9 @@ satisfies `constraint'."
      (error "invalid constraint ~a" constraint))))
 
 (defun make-handler-fn (event params body)
+  "Constructs a lambda expression that implements a handler for `event' by
+checking any constraints in `params' and executing `body' if all constraints are
+satisfied."
   (let ((tests (loop for (name . constraint) in params
                      when constraint
                        collect (make-constraint-test 'self name constraint)))
@@ -111,13 +114,14 @@ satisfies `constraint'."
 
 (defun actor-quest-constraint (params)
   "When the first (actor) parameter in `params' has a &quest constraint, returns
-two values: the quest label and phase."
+two values: the quest label and phase specified in the constraint."
   (when-let ((constraint (rest (first params))))
     (when (eq (first constraint) '&quest)
       (values-list (rest constraint)))))
 
 (defun find-calls (fn body)
-  "Returns forms that appear to be a call to the function named `fn' in `body'."
+  "Returns all forms that appear to be a call to the function named `fn' in
+`body', in depth-first order."
   (find-all-in-tree-if (lambda (x) (and (listp x) (eq (first x) fn))) body))
 
 (defun cache-offered-quests (entity event params body)
