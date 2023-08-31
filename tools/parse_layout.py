@@ -123,8 +123,8 @@ class Layout:
         block = blocks[0]
 
         self.cols = 0
-        for line in block:
-            if len(line) % 2 == 0:
+        for i, line in enumerate(block):
+            if i % 2 == 0 and len(line) % 2 == 0:
                 raise RuntimeError(f"length of map line must be odd: \"{line}\"")
                 return
             self.cols = max(self.cols, (len(line) + 1) // 2)
@@ -288,7 +288,7 @@ class Layout:
             row = rows[2 + j * 2]
             for i in range(0, self.cols):
                 letter = row[2 + i * 2]
-                if letter != " ":
+                if letter != " " and letter != ".":
                     groups[letter].append([i, j])
 
         num_locations = 0
