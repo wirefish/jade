@@ -216,3 +216,9 @@ than the actual quantity of `item', does nothing and returns nil."
             (setf (? container slot) (insert-sorted item (? container slot) #'item<))
             (push item (? container slot)))
         item)))
+
+(defmacro for-contents ((var container &key type (slot :contents)) &body body)
+  `(dolist (,var (? ,container ,slot))
+     ,@(if type
+           `((when (entity-isa ,var ',type) ,@body))
+           body)))
