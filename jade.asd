@@ -54,6 +54,7 @@
              (:file "meditate")
              (:file "attack")
              (:file "use")
+             (:file "loot")
 
              (:file "server")
              ))
