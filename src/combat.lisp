@@ -251,9 +251,12 @@ slots. This value is cached as the :armor trait."
       (call-next-method))))
 
 (defmethod regenerate ((actor combatant))
-  (setf (? actor :health)
-        (min (? actor :max-health)
-             (+ (? actor :health) (base-health actor)))))
+  (with-attributes (health max-health) actor
+    (when (< health max-health)
+      (setf health (min max-health (+ health (base-health actor))))
+      (for-avatars-in (avatar (location actor))
+        (when (not (eq avatar actor))
+          (update-neighbor avatar actor :health health))))))
 
 (defmethod enter-world ((actor combatant))
   (call-next-method)

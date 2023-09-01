@@ -113,12 +113,11 @@
 
 ;;; Regeneration.
 
-(defmethod regenerate ((actor avatar))
+(defmethod regenerate ((avatar avatar))
   (call-next-method)
-  (setf (? actor :energy) (min (? actor :max-energy)
-                               (+ (? actor :energy) 10)))
-  ;; FIXME: update neighbors. check for change.
-  (update-avatar actor :health :energy))
+  (with-attributes (energy max-energy) avatar
+    (setf energy (min max-energy (+ energy 10)))
+    (update-avatar avatar :health :energy)))
 
 ;;; Experience.
 
