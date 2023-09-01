@@ -87,6 +87,9 @@
   (or (? avatar :name)
       (describe-brief (? avatar :race) :article article :capitalize capitalize)))
 
+(defmethod get-icon ((avatar avatar))
+  (or (call-next-method) (? avatar :race :icon)))
+
 (defmethod match-subject (tokens (subject avatar))
   (best-match-quality (call-next-method)
                       (match-subject tokens (? subject :race))))

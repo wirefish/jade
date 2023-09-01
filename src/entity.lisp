@@ -244,8 +244,10 @@ all attributes."
       (format nil "~a is unexceptional in every way."
               (describe-brief entity :article :definite :capitalize t :quantity 1))))
 
-(defun get-icon (entity)
-  (or (? entity :icon) (? entity :race :icon)))
+(defgeneric get-icon (entity))
+
+(defmethod get-icon ((entity entity))
+  (? entity :icon))
 
 ;;;
 
