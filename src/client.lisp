@@ -290,7 +290,7 @@ name and whose subsequent elements are arguments to that command."
 (defun show-map (avatar &key (radius 3))
   (let* ((origin (entity-container avatar))
          (z-offset (? origin :z-offset))
-         (map (walk-map origin radius :observer avatar)))
+         (map (walk-map origin radius :observer avatar :min-exit-size +small+)))
     (apply #'send-client-command
            avatar "showMap"
            (? origin :name)

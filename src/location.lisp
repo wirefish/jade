@@ -71,6 +71,11 @@
   (when-let ((portal (exit-portal exit)))
     (can-see actor portal)))
 
+(defmethod entity-size ((exit exit))
+  (if-let ((portal (exit-portal exit)))
+    (entity-size portal)
+    +gigantic+))
+
 ;;; Generate messages seen by the actor and observers when an actor enters or
 ;;; exits a location. If a portal or actor specifies :entry-message or
 ;;; :exit-message, it will be used as a control-string for a call to format with

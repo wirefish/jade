@@ -48,7 +48,8 @@
   (:brief "the cave"))
 
 (defentity tiny-passage ()
-  (:brief "a tiny hole in the wall"))
+  (:brief "a tiny hole in the wall"
+   :size +tiny+))
 
 (defentity narrow-opening ()
   (:brief "a narrow opening"))

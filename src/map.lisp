@@ -1,6 +1,6 @@
 (in-package :jade)
 
-(defun walk-map (origin radius &key observer up-down cross-domains)
+(defun walk-map (origin radius &key observer up-down cross-domains min-exit-size)
   "Returns a list that contains, for every location reachable from `origin' within
 `radius' steps, a list (dx dy dz location) where `dx', `dy', and `dz' are the
 position of `location' relative to `origin'. If `observer' is non-nil, only
@@ -19,7 +19,8 @@ visited only if `cross-domains' is t."
                (destructuring-bind (dx dy dz) (direction-offset (exit-dir exit))
                  (when (and (or up-down (= dz 0))
                             (or (/= dx 0) (/= dy 0))
-                            (<= (max (abs (+ x dx)) (abs (+ y dy)) (abs (+ z dz))) radius))
+                            (<= (max (abs (+ x dx)) (abs (+ y dy)) (abs (+ z dz))) radius)
+                            (or (not min-exit-size) (>= (entity-size exit) min-exit-size)))
                    (let ((dest (and (or (null observer) (can-see observer exit))
                                     (find-location (exit-dest exit)))))
                      (when (and dest (null (gethash (entity-label dest) visited)))

@@ -10,15 +10,21 @@ If `force' is true, do not allow observers to disallow the action."))
 
 (defmethod exit-location :around (actor location exit &key force)
   (let ((observers (observer-list* actor exit location (? location :contents)))
-        (message (exit-message actor exit)))
-    (when (and (or force
-                   (observers-allow observers :allow-exit-location actor location exit))
-               (exit-combat actor :force force))
-      (notify-observers observers :before-exit-location actor location exit)
-      (show-message (? location :contents) message)
-      (call-next-method)
-      (notify-observers observers :after-exit-location actor location exit)
-      t)))
+        (portal (and exit (exit-portal exit))))
+    (cond
+      ((not (exit-combat actor :force force))
+       nil)
+      ((and (not force) portal (> (entity-size actor) (entity-size portal)))
+       (show actor "You are too large to fit through ~a."
+             (describe-brief portal :article :definite))
+       nil)
+      ((or force
+           (observers-allow observers :allow-exit-location actor location exit))
+       (notify-observers observers :before-exit-location actor location exit)
+       (show-message (? location :contents) (exit-message actor exit))
+       (call-next-method)
+       (notify-observers observers :after-exit-location actor location exit)
+       t))))
 
 (defmethod exit-location (actor location exit &key force)
   (declare (ignore force))

@@ -43,6 +43,9 @@
 (defmethod transform-initval (class (name (eql :race)) value)
   (symbol-value value))
 
+(defmethod entity-size ((avatar avatar))
+  (or (? avatar :size) (? avatar :race :size) +medium+))
+
 ;;; Encoding and decoding for avatar slots and attributes.
 
 (defmethod encoded-slots ((entity avatar))

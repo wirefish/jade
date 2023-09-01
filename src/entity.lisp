@@ -209,6 +209,11 @@ all attributes."
 (defmethod transform-initval (class (name (eql :size)) value)
   (symbol-value value))
 
+(defgeneric entity-size (entity))
+
+(defmethod entity-size ((entity entity))
+  (or (? entity :size) +medium+))
+
 ;;;
 
 (defgeneric describe-brief (entity &key quantity article capitalize)
