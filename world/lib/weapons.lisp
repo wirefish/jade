@@ -167,7 +167,7 @@
 
 (defentity shortsword (sword)
   (:brief "~a ~a shortsword"
-   :description "This weapon was a wide but relatively short blade."
+   :description "This weapon has a wide but relatively short blade."
    :icon shortsword
    :speed 2.5))
 

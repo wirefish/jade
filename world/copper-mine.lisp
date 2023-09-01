@@ -33,6 +33,40 @@
 
 |#
 
+;;; kobolds
+
+(defentity kobold (combatant)
+  (:icon kobold))
+
+(defentity kobold-pickaxe (weapon)
+  (:brief "a rusty pickaxe"
+   :level 2
+   :speed 3
+   :base-damage 4
+   :damage-type piercing))
+
+(defentity kobold-miner (kobold)
+  (:brief "a kobold miner"
+   :description "The kobold wears a dented helmet topped with an unlit candle.
+     It carries a rusty pickaxe."
+   :level 2
+   :attacks (kobold-pickaxe)))
+
+(limit-spawn-quantity 'kobold-miner 15)
+
+(defentity kobold-shortsword (shortsword)
+  (:level 3
+   :material "rusty"))
+
+(defentity kobold-guard (kobold)
+  (:brief "a kobold guard"
+   :description "The kobold guard wears a brigandine made from the hide of some
+     unknown creature. It carries a rusty shortsword."
+   :level 3
+   :attacks (kobold-shortsword)))
+
+(limit-spawn-quantity 'kobold-guard 5)
+
 ;;; portal prototypes
 
 (defentity mine-portal (continuing-portal)
@@ -137,7 +171,13 @@
    :description "This low, narrow tunnel is dimly lit by strange luminescent
      crystals embedded in the walls."
    :domain :underground
-   :surface :stone))
+   :surface :stone)
+
+  (:after-enter-world ()
+    (with-random-interval (10 120)
+      (whichever
+       (spawn-unique-entity self 'kobold-miner)
+       (spawn-unique-entity self 'kobold-guard)))))
 
 (deflocation mine-Q00 (mine)
   (:exits ((mine-portal :south mine-Q01))))
