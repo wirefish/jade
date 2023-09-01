@@ -1,0 +1,74 @@
+!! region
+
+copper-mine
+:name "Abandoned Copper Mine"
+:description "This mine once yielded plentiful copper ore, but was abandoned
+  years ago due to the increasing dangers in the nearby woods. It has since been
+  overrun by kobolds."
+:climate :underground
+:level-range (1 10)
+
+!! map
+
+. . . . m-m-m-m . . . . . . . . M . . . . . .
+        | | | |                 |
+. . . m-m-m-m-m-m . . M-M-M . . M . . V . . .
+      | | | | | |     |    \    |     |
+. . . m-m-m-p-m-m . . M . . M-M M . C-V . . .
+      | | |           |       | |     |
+. . . m-m-m . . . M-M-M . M-M-M-M . . V . . .
+          |       |   |  /      |     |
+. . . M-M-M-M . . M . M-M . . . M . . G . . .
+     /      |     |   |         |     |
+. M-M . . . M . . M . M . M-M-M-M . . M-M-M .
+    |       |     |      /    |       |   |
+. . M M-M-M-M-M-M-M-M-M-M . . M . . . M . M .
+    |       |     |      \    |           |
+. . M . . . M . . M . . . M-M-M-M-M . . . M .
+     \     /      |               |      /
+. . . M-M-M . . . M . . . . M-M-M-M-M-M-M . .
+        |         |         |
+. . . . M . . . . M . . . . M-M-M . . . . . .
+
+!! location
+
+M mine
+:name "Mine"
+:domain :underground
+:surface :stone
+
+G guard-station mine
+:name "Guard Station"
+
+V vaulted-hall mine
+:name "Vaulted Hall"
+
+C cell mine
+:name "Putrid Cell"
+
+m mushroom-cave
+:name "Mushroom Cave"
+:domain :underground
+:surface :dirt
+
+p murky-pool
+:name "Murky Pool"
+:domain :underground
+:surface :water
+
+!! portal
+
+MM MG GV mine-portal continuing-portal
+:brief "the mine"
+
+VV hall-portal continuing-portal
+:brief "the hall"
+
+VC cell-door
+:brief "an iron door"
+
+mm mp cave-portal continuing-portal
+:brief "the cave"
+
+Mm tiny-passage
+:brief "a tiny hole in the wall"
