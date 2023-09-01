@@ -389,16 +389,18 @@
      | South: Wall Street
      | East: Mistmarsh"))
 
-(defentity square-spiritstone () ; FIXME: spiritstone
+(defentity square-spiritstone (spiritstone)
   (:pose "stands on a small pedestal in the center of the square."))
 
 (deflocation square-c (square)
   (:contents (square-spiritstone square-sign)
    :exits ((square-portal :west square-w :east square-e
                           :north square-n :south square-s))
-   :tutorial "You can `use` a spiritstone to bind your life essence to its
-     location. If you later die, your spirit will return here and your body will
-     be resurrected by the stone."))
+   :tutorial "You can `attune` to a spiritstone to bind your life essence to its
+     location. At any time thereafter, you can `recall` to the spiritstone's
+     location. If you happen to die, your spirit will return to the location
+     where you last attuned, and your body will be resurrected by the
+     spiritstone."))
 
 (deflocation square-e (square)
   (:exits ((square-portal :north square-ne :west square-c :south square-se)
