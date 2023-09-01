@@ -105,6 +105,7 @@ human1          $unknown/human1.png
 !! Creatures
 
 kobold          $unknown/kobold.png
+ghost           $unknown/ghost.png
 pink_creature   $unknown/smile-creature.png
 
 !! Other

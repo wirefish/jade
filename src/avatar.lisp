@@ -94,8 +94,10 @@
           (describe-brief (? avatar :race) :article article :capitalize capitalize))))
 
 (defmethod describe-full ((avatar avatar))
-  (format nil "The ghostly spirit of ~a hovers nearby."
-          (or (? avatar :name) (describe-brief (? avatar :race)))))
+  (if (is-dead avatar)
+      (format nil "The ghostly spirit of ~a hovers nearby."
+              (or (? avatar :name) (describe-brief (? avatar :race))))
+      (call-next-method)))
 
 (defmethod get-icon ((avatar avatar))
   (if (is-dead avatar)
@@ -312,6 +314,7 @@ the same character as compared by char-equal."
 
 (defmethod die ((avatar avatar))
   (setf (is-dead avatar) t)
+  (update-avatar avatar :icon)
   (for-avatars-in (a (location avatar))
     (unless (eq a avatar)
       (update-neighbor a avatar :icon :brief))))

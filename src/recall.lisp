@@ -86,7 +86,8 @@ you can choose to resurrect at that same location."
       (when (exit-location actor location nil :force (is-dead actor))
         (when (is-dead actor)
           (setf (? actor :health) 1
-                (is-dead actor) nil))
+                (is-dead actor) nil)
+          (update-avatar actor :icon))
         (enter-location actor dest nil))
       (show actor "Something appears to have gone wrong."))))
 
