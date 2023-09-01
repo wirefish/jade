@@ -50,7 +50,11 @@
    :description "The kobold wears a dented helmet topped with an unlit candle.
      It carries a rusty pickaxe."
    :level 2
-   :attacks (kobold-pickaxe)))
+   :attacks (kobold-pickaxe))
+
+  (:after-enter-world ()
+    (with-random-interval (120 240)
+      (say self "You no take candle!"))))
 
 (limit-spawn-quantity 'kobold-miner 15)
 
