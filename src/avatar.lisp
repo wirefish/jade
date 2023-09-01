@@ -314,6 +314,7 @@ the same character as compared by char-equal."
 
 (defmethod die ((avatar avatar))
   (setf (is-dead avatar) t)
+  (reject-pending-offer avatar)
   (update-avatar avatar :icon)
   (for-avatars-in (a (location avatar))
     (unless (eq a avatar)

@@ -10,8 +10,6 @@
 
 * Handle light and two-handed weapons in (un)equip.
 
-* Add more combat traits.
-
 * When quest state changes, find just those locations on the map that need
   to be updated instead of sending the whole map.
 
@@ -29,6 +27,14 @@
 * Add a badge to the chat pane icon when new chat appears.
 
 * Unify pay-for-item and pay-for-skill and associated checks.
+
+# Combat
+
+* Make sure an avatar leaves combat upon death.
+
+* Upon death, show a notice that `recall` will resurrect you at a spiritstone.
+
+* Add more combat traits.
 
 # Game World
 

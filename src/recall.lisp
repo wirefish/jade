@@ -95,7 +95,7 @@ you can choose to resurrect at that same location."
   (stop-casting actor)
   (show actor "Your attempt to recall has been interrupted."))
 
-(defcommand recall (actor "recall")
+(defcommand (recall :allow-dead t) (actor "recall")
   "Recall to the location of the spiritstone to which your spirit has most
 recently been bound by using the `help:attune` command."
   (begin-activity actor (make-instance 'recall)))

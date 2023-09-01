@@ -318,7 +318,7 @@ slots. This value is cached as the :armor trait."
 (defun begin-attack (actor target)
   (with-slots (current-target current-attack attack-timer) actor
     (when attack-timer
-      (cl-async:remove-event attack-timer))
+      (as:remove-event attack-timer))
     (setf current-target target
           current-attack (select-attack actor target)
           attack-timer (if current-attack
@@ -331,6 +331,7 @@ slots. This value is cached as the :armor trait."
   (show actor "You can't attack ~a." (describe-brief target)))
 
 (defmethod attack :around ((actor combatant) (target combatant))
+  (format-log :info "attack ~a ~a" actor target)
   (process-simple-event attack (actor target)
       (:observers (cons (location actor) (? (location actor) :contents)))
     (call-next-method)))
@@ -380,16 +381,15 @@ slots. This value is cached as the :armor trait."
 (defgeneric describe-death (observer actor target)
   (:method (observer actor target)))
 
-(defgeneric die (actor))
+(defgeneric die (combatant))
 
-(defmethod die ((actor combatant))
-  (despawn-entity actor))
+(defmethod die ((combatant combatant))
+  (despawn-entity combatant))
 
 (defmethod kill ((actor combatant) (target combatant))
-  (show-message (? (location actor) :contents)
-                (lambda (e) (describe-death e actor target)))
+  (show-message (? (location actor) :contents) #`(describe-death % actor target))
   (spawn-corpse target (list actor)) ; FIXME: anyone who did damage
-  (die actor))
+  (die target))
 
 ;;;
 
@@ -433,7 +433,7 @@ slots. This value is cached as the :armor trait."
   (with-slots (battle current-target attack-timer) actor
     (deletef (combatants battle) actor)
     (when attack-timer
-      (cl-async:remove-event attack-timer))
+      (as:remove-event attack-timer))
     (when (> (? actor :health) 0)
       (show-message (combatants battle)
                     (format nil "~a has left the battle."

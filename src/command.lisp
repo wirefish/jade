@@ -1,6 +1,10 @@
 (in-package :jade)
 
-(defstruct command verbs clauses body)
+(defclass command ()
+  ((verbs :initform nil :initarg :verbs :reader command-verbs)
+   (clauses :initform nil :initarg :clauses :reader command-clauses)
+   (body :initform nil :initarg :body :reader command-body)
+   (allow-dead :initform nil :initarg :allow-dead :reader command-allow-dead)))
 
 ;;;
 
@@ -21,6 +25,9 @@
 
 (defun command-help (command)
   (strcat (command-syntax command)
+          (if (command-allow-dead command)
+              (format nil "(This command can be used when you're dead.)~%~%")
+              "")
           (documentation (command-body command) t)))
 
 ;;;
@@ -35,8 +42,8 @@
 ;; command.
 (defparameter *sorted-commands* nil)
 
-(defun add-command (name verbs clauses body)
-  (let ((command (make-command :verbs verbs :clauses clauses :body body)))
+(defun add-command (name verbs clauses args body)
+  (let ((command (apply #'make-instance 'command :verbs verbs :clauses clauses :body body args)))
     (setf *sorted-commands* nil)
     (setf (gethash name *commands*) command)))
 
@@ -110,14 +117,15 @@ an error if the grammar is invalid."
         verbs
         (error "command verbs must be a string or list of strings"))))
 
-(defmacro defcommand (name (actor verbs &rest clauses) &body body)
+(defmacro defcommand (name-and-args (actor verbs &rest clauses) &body body)
   (handler-case
-      (bind ((verbs (parse-verbs verbs))
+      (bind (((name &rest args) (ensure-list name-and-args))
+             (verbs (parse-verbs verbs))
              (clauses (parse-grammar clauses))
              (params (cons actor (mapcar #'car clauses)))
              (body nil doc (parse-body body :documentation t)))
         `(add-command
-          ',name ',verbs ',clauses
+          ',name ',verbs ',clauses ',args
           (lambda ,params
             ,(or doc "No documentation provided.")
             (declare (ignorable ,@params))
@@ -250,10 +258,16 @@ above."
         (setf tokens alias
               verb (string-downcase (first-token-as-string tokens))))
       (setf tokens (remove-first-token tokens))
-      (if-let ((commands (match-commands verb)))
-        (if (> (length commands) 1)
-            (show-error avatar "Ambiguous command. Do you mean ~a?"
-                        (format-list #'car commands "or"))
-            (with-slots (clauses body) (cdar commands)
-              (apply body avatar (parse-clauses clauses tokens))))
-        (show-error avatar "Unknown command ~s. Type \"help\" for help." verb)))))
+      (let ((commands (match-commands verb)))
+        (cond
+          ((null commands)
+           (show-error avatar "Unknown command ~s. Type \"help\" for help." verb))
+          ((> (length commands) 1)
+           (show-error avatar "Ambiguous command. Do you mean ~a?"
+                       (format-list #'car commands "or")))
+          (t
+           (let ((command (cdar commands)))
+             (if (and (is-dead avatar) (not (command-allow-dead command)))
+                 (show avatar "You are too dead to do that right now.")
+                 (with-slots (clauses body) command
+                   (apply body avatar (parse-clauses clauses tokens)))))))))))
