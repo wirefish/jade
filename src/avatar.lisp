@@ -255,8 +255,8 @@ the same character as compared by char-equal."
       (call-next-method)))
 
 (defmethod describe-attack ((avatar avatar) actor target attack damage crit)
-  (with-attributes (brief attack-verb critical-verb) attack
-    (let ((verb (or (when crit critical-verb) attack-verb)))
+  (with-attributes (brief attack-verb critical-verb damage-type) attack
+    (let ((verb (or (when crit critical-verb) attack-verb (attack-verb damage-type))))
       (if (eq avatar target)
           (update-avatar avatar :health)
           (update-neighbor avatar target :health (? target :health)))

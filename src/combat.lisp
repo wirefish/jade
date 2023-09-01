@@ -70,7 +70,7 @@ when the combatant dies."
 
 (defun add-damage-type (key name verb resistance)
   (sethash key *damage-types*
-           (make-damage-type :name name :verb verb :resistance resistance)))
+           (make-damage-type :name name :verb (parse-verb verb) :resistance resistance)))
 
 (defmacro define-damage-types (&body damage-types)
   "Defines damage types. Each element of `damage-types' is a list containing a
@@ -84,6 +84,10 @@ the effect of the type. For example, (fire \"fire\" \"burns\")."
        ,@(loop for (key name verb) in damage-types for resistance in resistances
                collect `(add-damage-type ',key ,name ,verb ',resistance))
        (export '(,@keys ,@resistances)))))
+
+(defun attack-verb (damage-type)
+  (when-let ((dt (gethash damage-type *damage-types*)))
+    (damage-type-verb dt)))
 
 (defun resistance-name (damage-type)
   (format nil "~a resistance" (damage-type-name damage-type)))

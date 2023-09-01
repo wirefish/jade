@@ -9,8 +9,7 @@
    :speed 3
    :base-damage 2
    :damage-type crushing
-   :damage-variance 0.25
-   :attack-verb "hits"))
+   :damage-variance 0.25))
 
 ;;; A natural weapon inherits its user's level. A value of nil for :brief is
 ;;; used here to avoid messages like "Ann kicks Bob with a foot".
