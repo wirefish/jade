@@ -48,6 +48,9 @@ when the combatant dies."
   (declare (ignore quantity article capitalize))
   (format nil (call-next-method) (describe-brief (corpse-entity corpse))))
 
+(defmethod match-subject (tokens (corpse corpse))
+  (match-subject tokens (describe-brief corpse :article nil)))
+
 (defmethod enter-world ((corpse corpse))
   (call-next-method)
   (setf (corpse-decay-timer corpse)
