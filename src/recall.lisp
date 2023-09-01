@@ -11,7 +11,7 @@
 
 (defmethod begin-activity :around (actor (activity attunement))
   (cond
-    ((deadp actor)
+    ((is-dead actor)
      (show actor "You are currently too dead to attune to anything."))
     ((battle actor)
      (show actor "You cannot attune while in combat."))
@@ -83,7 +83,10 @@ you can choose to resurrect at that same location."
     (show-message contents actor "finishes casting recall.")
     (notify-observers (cons location contents) :after-recall actor)
     (if-let ((dest (symbol-value-as 'location (? actor :recall-location) nil)))
-      (when (exit-location actor location nil)
+      (when (exit-location actor location nil :force (is-dead actor))
+        (when (is-dead actor)
+          (setf (? actor :health) 1
+                (is-dead actor) nil))
         (enter-location actor dest nil))
       (show actor "Something appears to have gone wrong."))))
 

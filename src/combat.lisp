@@ -16,7 +16,7 @@
    :attacks nil
    :traits nil
    :attitude :neutral ; or :friendly, :hostile
-   :corpse corpse))
+   :leaves-corpse t))
 
 (defmethod transform-initval (class (name (eql :attacks)) value)
   "The `:attacks' attribute is a list of weapons/attacks which the combatant can
@@ -254,7 +254,7 @@ slots. This value is cached as the :armor trait."
   (with-attributes (health max-health) actor
     (when (< health max-health)
       (setf health (min max-health (+ health (base-health actor))))
-      (for-avatars-in (avatar (location actor))
+      (for-contents (avatar (location actor) :type 'avatar)
         (when (not (eq avatar actor))
           (update-neighbor avatar actor :health health))))))
 
@@ -358,8 +358,8 @@ slots. This value is cached as the :armor trait."
 (defgeneric spawn-corpse (entity attackers))
 
 (defmethod spawn-corpse ((entity entity) attackers)
-  (when-let ((corpse (symbol-value-as 'corpse (? entity :corpse) nil)))
-    (let ((corpse (clone-entity corpse)))
+  (when (? entity :leaves-corpse)
+    (let ((corpse (clone-entity 'corpse)))
       (setf (corpse-entity corpse) entity)
       (enter-world corpse)
       (enter-location corpse (location entity) nil)
@@ -380,17 +380,16 @@ slots. This value is cached as the :armor trait."
 (defgeneric describe-death (observer actor target)
   (:method (observer actor target)))
 
+(defgeneric die (actor))
+
+(defmethod die ((actor combatant))
+  (despawn-entity actor))
+
 (defmethod kill ((actor combatant) (target combatant))
   (show-message (? (location actor) :contents)
                 (lambda (e) (describe-death e actor target)))
   (spawn-corpse target (list actor)) ; FIXME: anyone who did damage
-  ;; FIXME:
-  (if (typep target 'avatar)
-      (progn
-        (setf (? target :health) 1)
-        (when-let ((dest (find-location (? target :respawn-location))))
-          (respawn-entity target dest)))
-      (despawn-entity target)))
+  (die actor))
 
 ;;;
 

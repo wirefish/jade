@@ -22,6 +22,7 @@
    (pending-offer :initform nil :accessor pending-offer)
    (karma :initform 0 :accessor karma)
    (skills :initform (make-hash-table) :accessor skills)
+   (is-dead :initform nil :accessor is-dead)
    (client-state :initform (make-hash-table :test #'equalp) :accessor client-state)))
 
 (defentity avatar (combatant &class avatar)
@@ -82,13 +83,24 @@
 
 ;;;
 
+(defparameter *spirit-noun* (parse-noun "spirit[s] of ~a"))
+
 (defmethod describe-brief ((avatar avatar) &key quantity (article :indefinite) capitalize)
   (declare (ignore quantity))
-  (or (? avatar :name)
-      (describe-brief (? avatar :race) :article article :capitalize capitalize)))
+  (if (is-dead avatar)
+      (format nil (format-noun *spirit-noun* :article article :capitalize capitalize)
+              (or (? avatar :name) (describe-brief (? avatar :race))))
+      (or (? avatar :name)
+          (describe-brief (? avatar :race) :article article :capitalize capitalize))))
+
+(defmethod describe-full ((avatar avatar))
+  (format nil "The ghostly spirit of ~a hovers nearby."
+          (or (? avatar :name) (describe-brief (? avatar :race)))))
 
 (defmethod get-icon ((avatar avatar))
-  (or (call-next-method) (? avatar :race :icon)))
+  (if (is-dead avatar)
+      'ghost
+      (or (call-next-method) (? avatar :race :icon))))
 
 (defmethod match-subject (tokens (subject avatar))
   (best-match-quality (call-next-method)
@@ -117,10 +129,11 @@
 ;;; Regeneration.
 
 (defmethod regenerate ((avatar avatar))
-  (call-next-method)
-  (with-attributes (energy max-energy) avatar
-    (setf energy (min max-energy (+ energy 10)))
-    (update-avatar avatar :health :energy)))
+  (unless (is-dead avatar)
+    (call-next-method)
+    (with-attributes (energy max-energy) avatar
+      (setf energy (min max-energy (+ energy 10)))
+      (update-avatar avatar :health :energy))))
 
 ;;; Experience.
 
@@ -296,6 +309,12 @@ the same character as compared by char-equal."
 
 (defmethod kill :after ((avatar avatar) (target combatant))
   (gain-xp avatar (xp-granted-by-kill (? target :level))))
+
+(defmethod die ((avatar avatar))
+  (setf (is-dead avatar) t)
+  (for-avatars-in (a (location avatar))
+    (unless (eq a avatar)
+      (update-neighbor a avatar :icon :brief))))
 
 (defmethod spawn-corpse ((avatar avatar) attackers)
   (when-let ((corpse (call-next-method)))
