@@ -10,7 +10,7 @@
 
 #|
     A B C D E F G H I J K L M N O P Q R S T U V W
-  
+
 00  . . . . m-m-m-m . . . . . . . . M . . . . . .
             | | | |                 |
 01  . . . m-m-m-m-m-m . . M-M-M . . M . . V . . .
@@ -30,7 +30,7 @@
 08  . . . M-M-M . . . M . . . . M-M-M-M-M-M-M . .
             |         |         |
 09  . . . . M . . . . M . . . . M-M-M . . . . . .
-  
+
 |#
 
 ;;; portal prototypes
@@ -49,6 +49,12 @@
 
 (defentity tiny-passage ()
   (:brief "a tiny hole in the wall"))
+
+(defentity narrow-opening ()
+  (:brief "a narrow opening"))
+
+(defentity ladder ()
+  (:brief "a rickety ladder"))
 
 ;;; mushroom-cave
 
@@ -127,6 +133,8 @@
 
 (defentity mine (location)
   (:name "Mine"
+   :description "This low, narrow tunnel is dimly lit by strange luminescent
+     crystals embedded in the walls."
    :domain :underground
    :surface :stone))
 
@@ -146,7 +154,7 @@
   (:exits ((mine-portal :north mine-Q00 :south mine-Q02))))
 
 (deflocation mine-L02 (mine)
-  (:exits ((mine-portal :north mine-L01 :south mine-L03))))
+  (:exits ((mine-portal :north mine-L01 :south mine-L03-bottom))))
 
 (deflocation mine-O02 (mine)
   (:exits ((mine-portal :northwest mine-N01 :east mine-P02))))
@@ -161,10 +169,14 @@
   (:exits ((mine-portal :south mine-J04 :east mine-K03))))
 
 (deflocation mine-K03 (mine)
-  (:exits ((mine-portal :west mine-J03 :east mine-L03))))
+  (:exits ((mine-portal :west mine-J03 :east mine-L03-top))))
 
-(deflocation mine-L03 (mine)
-  (:exits ((mine-portal :west mine-K03 :north mine-L02 :south mine-L04))))
+(deflocation mine-L03-top (mine)
+  (:exits ((mine-portal :west mine-K03) (ladder :down mine-L03-bottom))))
+
+(deflocation mine-L03-bottom (mine)
+  (:exits ((mine-portal :north mine-L02 :south mine-L04)
+           (ladder :up mine-L03-top))))
 
 (deflocation mine-N03 (mine)
   (:exits ((mine-portal :southwest mine-M04 :east mine-O03))))
@@ -176,7 +188,7 @@
   (:exits ((mine-portal :west mine-O03 :north mine-P02 :east mine-Q03))))
 
 (deflocation mine-Q03 (mine)
-  (:exits ((mine-portal :west mine-P03 :north mine-Q02 :south mine-Q04))))
+  (:exits ((mine-portal :west mine-P03 :north mine-Q02 :south mine-Q04-top))))
 
 (deflocation mine-D04 (mine)
   (:exits ((mine-portal :southwest mine-C05 :east mine-E04))))
@@ -195,13 +207,16 @@
   (:exits ((mine-portal :north mine-J03 :south mine-J05))))
 
 (deflocation mine-L04 (mine)
-  (:exits ((mine-portal :north mine-L03 :south mine-L05 :east mine-M04))))
+  (:exits ((mine-portal :north mine-L03-bottom :south mine-L05 :east mine-M04))))
 
 (deflocation mine-M04 (mine)
   (:exits ((mine-portal :west mine-L04 :northeast mine-N03))))
 
-(deflocation mine-Q04 (mine)
-  (:exits ((mine-portal :north mine-Q03 :south mine-Q05))))
+(deflocation mine-Q04-top (mine)
+  (:exits ((mine-portal :north mine-Q03) (ladder :down mine-Q04-bottom))))
+
+(deflocation mine-Q04-bottom (mine)
+  (:exits ((mine-portal :south mine-Q05) (ladder :up mine-Q04-top))))
 
 (deflocation mine-B05 (mine)
   (:exits ((mine-portal :east mine-C05))))
@@ -213,13 +228,13 @@
   (:exits ((mine-portal :north mine-G04 :south mine-G06))))
 
 (deflocation mine-J05 (mine)
-  (:exits ((mine-portal :north mine-J04 :south mine-J06))))
+  (:exits ((mine-portal :north mine-J04 :south mine-J06-top))))
 
 (deflocation mine-L05 (mine)
   (:exits ((mine-portal :north mine-L04))))
 
 (deflocation mine-N05 (mine)
-  (:exits ((mine-portal :southwest mine-M06 :east mine-O05))))
+  (:exits ((mine-portal :southwest mine-M06-bottom :east mine-O05))))
 
 (deflocation mine-O05 (mine)
   (:exits ((mine-portal :west mine-N05 :east mine-P05))))
@@ -228,7 +243,7 @@
   (:exits ((mine-portal :west mine-O05 :south mine-P06 :east mine-Q05))))
 
 (deflocation mine-Q05 (mine)
-  (:exits ((mine-portal :west mine-P05 :north mine-Q04))))
+  (:exits ((mine-portal :west mine-P05 :north mine-Q04-bottom))))
 
 (deflocation mine-T05 (mine)
   (:exits ((mine-portal :north guard-station-T04 :south mine-T06 :east mine-U05))))
@@ -258,19 +273,29 @@
   (:exits ((mine-portal :west mine-G06 :east mine-I06))))
 
 (deflocation mine-I06 (mine)
-  (:exits ((mine-portal :west mine-H06 :east mine-J06))))
+  (:exits ((mine-portal :west mine-H06 :east mine-J06-bottom))))
 
-(deflocation mine-J06 (mine)
-  (:exits ((mine-portal :west mine-I06 :north mine-J05 :south mine-J07 :east mine-K06))))
+(deflocation mine-J06-top (mine)
+  (:exits ((mine-portal :north mine-J05 :south mine-J07)
+           (ladder :down mine-J06-bottom))))
+
+(deflocation mine-J06-bottom (mine)
+  (:exits ((mine-portal :west mine-I06 :east mine-K06)
+           (ladder :up mine-J06-top))))
 
 (deflocation mine-K06 (mine)
-  (:exits ((mine-portal :west mine-J06 :east mine-L06))))
+  (:exits ((mine-portal :west mine-J06-bottom :east mine-L06))))
 
 (deflocation mine-L06 (mine)
-  (:exits ((mine-portal :west mine-K06 :east mine-M06))))
+  (:exits ((mine-portal :west mine-K06 :east mine-M06-top))))
 
-(deflocation mine-M06 (mine)
-  (:exits ((mine-portal :west mine-L06 :northeast mine-N05 :southeast mine-N07))))
+(deflocation mine-M06-top (mine)
+  (:exits ((mine-portal :west mine-L06)
+           (ladder :down mine-M06-bottom))))
+
+(deflocation mine-M06-bottom (mine)
+  (:exits ((mine-portal :northeast mine-N05 :southeast mine-N07)
+           (ladder :up mine-M06-top))))
 
 (deflocation mine-P06 (mine)
   (:exits ((mine-portal :north mine-P05 :south mine-P07))))
@@ -288,10 +313,10 @@
   (:exits ((mine-portal :southwest mine-F08 :north mine-G06))))
 
 (deflocation mine-J07 (mine)
-  (:exits ((mine-portal :north mine-J06 :south mine-J08))))
+  (:exits ((mine-portal :north mine-J06-top :south mine-J08))))
 
 (deflocation mine-N07 (mine)
-  (:exits ((mine-portal :northwest mine-M06 :east mine-O07))))
+  (:exits ((mine-portal :northwest mine-M06-bottom :east mine-O07))))
 
 (deflocation mine-O07 (mine)
   (:exits ((mine-portal :west mine-N07 :east mine-P07))))
@@ -333,19 +358,27 @@
   (:exits ((mine-portal :west mine-Q08 :north mine-R07 :east mine-S08))))
 
 (deflocation mine-S08 (mine)
-  (:exits ((mine-portal :west mine-R08 :east mine-T08))))
+  (:exits ((mine-portal :west mine-R08 :east mine-T08-top))))
 
-(deflocation mine-T08 (mine)
-  (:exits ((mine-portal :west mine-S08 :east mine-U08))))
+(deflocation mine-T08-top (mine)
+  (:exits ((mine-portal :west mine-S08) (ladder :down mine-T08-bottom))))
+
+(deflocation mine-T08-bottom (mine)
+  (:exits ((mine-portal :east mine-U08) (ladder :up mine-T08-top))))
 
 (deflocation mine-U08 (mine)
-  (:exits ((mine-portal :west mine-T08 :northeast mine-V07))))
+  (:exits ((mine-portal :west mine-T08-bottom :northeast mine-V07))))
 
 (deflocation mine-E09 (mine)
   (:exits ((mine-portal :north mine-E08))))
 
 (deflocation mine-J09 (mine)
-  (:exits ((mine-portal :north mine-J08))))
+  (:name "Mine Entrance"
+   :description "This is the entrance to an abandoned mine. A narrow opening,
+     once boarded up, leads south toward the forest. The floor slants steeply
+     down to the north, into the hillside."
+   :exits ((mine-portal :north mine-J08)
+           (narrow-opening :south jade.silverwood::forest-F00))))
 
 (deflocation mine-O09 (mine)
   (:exits ((mine-portal :north mine-O08 :east mine-P09))))
@@ -398,4 +431,3 @@
 
 (deflocation guard-station-T04 (guard-station)
   (:exits ((mine-portal :north vaulted-hall-T03 :south mine-T05))))
-

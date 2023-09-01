@@ -75,4 +75,5 @@
              (:file "isle-of-dawn")
              (:file "arwyck")
              (:file "silverwood")
+             (:file "copper-mine")
              ))))
