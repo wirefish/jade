@@ -38,11 +38,9 @@
 (defentity kobold (combatant)
   (:icon kobold))
 
-(defentity kobold-pickaxe (weapon)
+(defentity kobold-pickaxe (one-handed-weapon)
   (:brief "a rusty pickaxe"
    :level 2
-   :speed 3
-   :base-damage 4
    :damage-type piercing))
 
 (defentity kobold-miner (kobold)
@@ -58,9 +56,10 @@
 
 (limit-spawn-quantity 'kobold-miner 15)
 
-(defentity kobold-shortsword (shortsword)
-  (:level 3
-   :material "rusty"))
+(defentity kobold-shortsword (one-handed-weapon)
+  (:brief "a rusty shortsword"
+   :level 3
+   :damage-type slashing))
 
 (defentity kobold-guard (kobold)
   (:brief "a kobold guard"
