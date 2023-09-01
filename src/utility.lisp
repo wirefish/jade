@@ -148,6 +148,18 @@ two values for the same key. Returns `output'."
 
 (set-dispatch-macro-character #\# #\h #'|#h-reader|)
 
+;;; Enable #`(...) syntax to define unary lambda expression. Any occurence of %
+;;; in the body is replaced with the parameter name.
+
+(defun |#`-reader| (stream char arg)
+  (declare (ignore char arg))
+  (let* ((param (gensym))
+         (body (mapleaves (lambda (x) (if (eq x '%) param x)) (read stream t nil t))))
+    `(lambda (,param)
+       ,body)))
+
+(set-dispatch-macro-character #\# #\` #'|#`-reader|)
+
 ;;; Generic access to an element of a (possibly nested) data structure.
 
 (defgeneric ? (obj key &rest keys)

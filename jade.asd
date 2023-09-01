@@ -42,6 +42,7 @@
              (:file "help")
              (:file "tutorial")
              (:file "offer")
+             (:file "recall")
              (:file "inspect")
              (:file "inventory")
              (:file "vendor")
