@@ -11,6 +11,8 @@
 
 (defmethod begin-activity :around (actor (activity attunement))
   (cond
+    ((deadp actor)
+     (show actor "You are currently too dead to attune to anything."))
     ((battle actor)
      (show actor "You cannot attune while in combat."))
     ((some #`(entity-isa % 'spiritstone) (? (location actor) :contents))
