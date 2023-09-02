@@ -106,11 +106,15 @@ element `x' for which (predicate item x) returns true."
   (setf (gethash key hash-table) value))
 
 (defun sethash* (hash-table &rest keys-and-values)
+  "Given `keys-and-values' is a list of alternating keys and values, sets the
+value for each key in `hash-table'."
   (loop for (key value) on keys-and-values by #'cddr do
     (sethash key hash-table value))
   hash-table)
 
 (defun gethash* (hash-table &rest keys)
+  "Returns the values associated with `keys' in `hash-table' as multiple
+values."
   (apply #'values (loop for key in keys collect (gethash key hash-table))))
 
 (declaim (inline pophash))
@@ -121,6 +125,8 @@ there was no such value, returns `default'."
     (remhash key hash-table)))
 
 (defun pophash* (hash-table &rest keys)
+  "Removes the values associated with `keys' from `hash-table' and returns them
+as multiple values."
   (apply #'values (loop for key in keys collect (pophash key hash-table))))
 
 (defun merge-hash-tables (output fn &rest inputs)
@@ -131,6 +137,12 @@ two values for the same key. Returns `output'."
       (multiple-value-bind (output-value found) (gethash key output)
         (sethash key output (if found (funcall fn output-value value) value)))))
   output)
+
+(defun maphash* (fn hash-table)
+  "Like maphash, but returns a list of the results of applying `fn' to each key
+and value in `hash-table'."
+  (loop for key being the hash-keys in hash-table using (hash-value value)
+        collect (funcall fn key value)))
 
 ;;; Enable #h(...) syntax for hash-table literals. If the number of elements is
 ;;; odd, the first is a list of arguments to pass to `make-hash-table'.
