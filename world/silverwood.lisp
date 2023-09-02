@@ -54,7 +54,7 @@
    :base-damage 4))
 
 (defentity spider-silk (item) ; FIXME: item-group?
-  (:brief "a clump of spider silk"
+  (:brief "a clump[s] of spider silk"
    :description "The spider silk can be turned into thread by a skilled weaver."
    :icon spider-web
    :level 1
