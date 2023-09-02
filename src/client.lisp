@@ -238,13 +238,14 @@ name and whose subsequent elements are arguments to that command."
 
 (defun update-combat (avatar)
   (with-slots (cached-traits) avatar
-    (let ((attack (select-attack avatar nil)))
+    (bind ((attack (select-attack avatar nil))
+           (min max (damage-range avatar attack)))
       (send-client-command
        avatar "updateCombat"
-       (format nil "~$" (attack-level avatar attack))
-       (format nil "~$" (defense-level avatar nil))
+       (format nil "~$" (attack-rating avatar attack))
+       (format nil "~$" (defense-rating avatar nil))
        (format nil "~$" (or (? attack :speed) 5))
-       (format nil "~$" (average-damage avatar attack))
+       (format nil "~$--~$" min max)
        (mapcar (lambda (trait) (list trait (gethash trait cached-traits 0)))
                (hash-table-keys *combat-traits*))
        nil))))

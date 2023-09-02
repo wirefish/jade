@@ -72,8 +72,7 @@
    :damage-type piercing
    :attack-verb "pokes"
    :proficiency dagger-proficiency
-   :mastery dagger-mastery
-   :nonproficiency-penalty 0.5))
+   :mastery dagger-mastery))
 
 (defweapons dagger
   (1 "copper" 15)
@@ -93,8 +92,7 @@
    :damage-type arcane
    :attack-verb "zaps"
    :proficiency wand-proficiency
-   :mastery dagger-mastery
-   :nonproficiency-penalty 0.25))
+   :mastery dagger-mastery))
 
 (defweapons wand
   (1 "pine" 15)
@@ -114,8 +112,7 @@
    :damage-variance 0.2
    :attack-verb "smashes"
    :proficiency mace-proficiency
-   :mastery mace-mastery
-   :nonproficiency-penalty 0.5))
+   :mastery mace-mastery))
 
 (defweapons mace
   (1 "copper" 20)
@@ -135,8 +132,7 @@
    :damage-variance 0.2
    :attack-verb "smashes"
    :proficiency maul-proficiency
-   :master maul-mastery
-   :nonproficiency-penalty 0.25))
+   :master maul-mastery))
 
 (defweapons maul
   (1 "copper" 35)
@@ -156,8 +152,7 @@
    :damage-variance 0.3
    :attack-verb "slashes"
    :proficiency sword-proficiency
-   :mastery sword-mastery
-   :nonproficiency-penalty 0.25))
+   :mastery sword-mastery))
 
 (defweapons sword
   (1 "copper" 20)
@@ -188,8 +183,7 @@
    :damage-variance 0.3
    :attack-verb "slashes"
    :proficiency greatsword-proficiency
-   :mastery greatsword-mastery
-   :nonproficiency-penalty 0.25))
+   :mastery greatsword-mastery))
 
 (defweapons greatsword
   (1 "copper" 35)
@@ -209,8 +203,7 @@
    :damage-variance 0.33
    :attack-verb "slashes"
    :proficiency axe-proficiency
-   :mastery axe-mastery
-   :nonproficiency-penalty 0.5))
+   :mastery axe-mastery))
 
 (defweapons axe
   (1 "copper" 20)
@@ -230,8 +223,7 @@
    :damage-variance 0.33
    :attack-verb "slashes"
    :proficiency battle-axe-proficiency
-   :mastery battle-axe-mastery
-   :nonproficiency-penalty 0.25))
+   :mastery battle-axe-mastery))
 
 (defweapons battle-axe
   (1 "copper" 35)
@@ -250,8 +242,7 @@
    :damage-type piercing
    :attack-verb "pierces"
    :proficiency spear-proficiency
-   :mastery spear-mastery
-   :nonproficiency-penalty 0.25))
+   :mastery spear-mastery))
 
 (defweapons spear
   (1 "copper" 35)
@@ -270,8 +261,7 @@
    :damage-type arcane
    :attack-verb "zaps"
    :proficiency staff-proficiency
-   :mastery staff-mastery
-   :nonproficiency-penalty 0.25))
+   :mastery staff-mastery))
 
 (defweapons staff
   (1 "pine" 35)

@@ -69,7 +69,8 @@ when the combatant dies."
   (plist-hash-table
    '(:vitality "vitality"
      :precision "precision"
-     :ferocity "ferocity")))
+     :ferocity "ferocity"
+     :alacrity "alacrity")))
 
 (defun combat-trait-name (trait)
   (gethash trait *combat-traits*))
@@ -94,6 +95,11 @@ when the combatant dies."
   "Each point of :ferocity increases critical hit damage by 1%."
   (softcap (* 0.01 (gethash :ferocity (cached-traits combatant) 0))
            1.0))
+
+(defun attack-speed-bonus (combatant)
+  "Each point of :alacrity reduces auto attack delay by 0.5%."
+  (softcap (* 0.005 (gethash :alacrity (cached-traits combatant) 0))
+           0.25))
 
 ;;; Damage types. The game world code should use `define-damage-types' to define
 ;;; them. Damage types and their resistances are also considered combat traits
@@ -151,8 +157,8 @@ the effect of the type. For example, (fire \"fire\" \"burns\")."
 
 ;;; Armor.
 
-;; Weights for slots equipment slots that contribute to the armor trait. The
-;; values must add up to one.
+;; Weights for equipment slots that contribute to the armor trait. The values
+;; must add up to one.
 (defparameter *armor-slots*
   (plist-hash-table
    (list
@@ -181,67 +187,86 @@ slots. This value is cached as the :armor trait."
                    *armor-slots*)))
 
 (defun armor-speed-multiplier (avatar)
+  "Returns the total speed multiplier for `avatar' due to all items worn in
+armor slots. This value is cached as the :armor-speed trait."
   (apply #'+
          (maphash* (lambda (slot weight)
                      (* weight (or (? avatar :equipment slot :speed-multiplier) 1.0)))
                    *armor-slots*)))
 
-;;; Attack.
+;;; Attack rating. The value is based on the actor's level, the attack level
+;;; (which defaults to the actor's level if null, e.g. for natural weapons), the
+;;; actor's proficiency or mastery with the attack, and the actor's affinity for
+;;; the attack's damage type.
 
-(defun attack-level (actor attack)
-  (print (list actor attack (? attack :level)))
-  (let* ((actor-level (? actor :level))
-         (attack-level (or (? attack :level) actor-level)))
-    (+ actor-level
-       (* (1+ (affinity-bonus actor (? attack :damage-type)))
-          attack-level))))
+(defun attack-rating (actor attack)
+  (with-slots (skills) actor
+    (let* ((actor-level (? actor :level))
+           (attack-level
+             (* (or (? attack :level) actor-level)
+                (if-let ((proficiency (? attack :proficiency)))
+                  (cond
+                    ((gethash (? attack :mastery) skills) 1.25)
+                    ((gethash proficiency skills) 1.0)
+                    (t 0.5))
+                  1.0))))
+      (* 10
+         (1+ (affinity-bonus actor (? attack :damage-type)))
+         (+ actor-level attack-level)))))
 
-;;; Defense. Note that the defense trait describes natural defense, and the
-;;; armor trait describes defense gained from wearing armor.
+;;; Defense rating. Note that the defense trait describes natural defense, and
+;;; the armor trait describes defense gained from wearing armor.
 
-(defun defense-level (target attack)
+(defun defense-rating (target attack)
   (with-slots (cached-traits) target
     (let ((target-level (? target :level))
           (armor (gethash :armor cached-traits 0))
           (defense (gethash :defense cached-traits 0)))
-      (+ target-level
-         (* (1+ (resistance-bonus target (? attack :damage-type)))
-            (+ armor defense))))))
+      (* 10
+         (1+ (resistance-bonus target (? attack :damage-type)))
+         (+ target-level armor defense)))))
+
+;;; Attack timing.
+
+(defun auto-attack-delay (actor attack)
+  "Returns the time between auto attacks by `actor' with `attack', in seconds."
+  (* (? attack :speed)
+     (gethash :armor-speed (cached-traits actor) 1.0)
+     (- 1.0 (attack-speed-bonus actor))))
 
 ;;; Computing damage for an attack.
 
 (defun smoothstep (x &optional (from 0.0) (to 1.0))
+  "A function whose value smoothly transitions from 0 when `x' <= `from' to 1 when
+`x' >= `to'."
   (let ((x (max 0.0 (min 1.0 (/ (- x from) (- to from))))))
     (* x x (- 3.0 (* x 2.0)))))
 
 (defun attack-effectiveness (att def)
-  (* 2.0 (smoothstep (- att def) -20 20)))
+  (* 2.0 (smoothstep (- att def) -100 100)))
 
-(defun average-damage (actor attack)
-  (with-attributes (level speed base-damage proficiency nonproficiency-penalty) attack
-    (let* ((proficient (or (null proficiency) (skill-rank actor proficiency)))
-           (actor-level (? actor :level))
-           (level (if level (* 0.5 (+ actor-level level)) actor-level)))
-      (* (1+ (* 0.25 (1- level)))
-         base-damage
-         speed
-         (if proficient 1.0 nonproficiency-penalty)))))
+(defun level-scale (level)
+  "Returns a level-based scale factor used when computing health and damage."
+  (+ 0.75 (* level 0.25)))
+
+(defun damage-range (actor attack)
+  "Returns two values containing the minimum and maximum damage done by `actor'
+with `attack'."
+  (with-attributes (speed level base-damage damage-variance) attack
+    (let* ((k (* base-damage damage-variance))
+           (level (or level (? actor :level)))
+           (scale (* speed (level-scale level))))
+      (values (* scale (- base-damage k))
+              (* scale (+ base-damage k))))))
 
 (defun roll-damage (actor attack)
-  (with-attributes (level base-damage damage-variance proficiency nonproficiency-penalty) attack
-    (let* ((proficient (or (null proficiency) (skill-rank actor proficiency)))
-           (actor-level (? actor :level))
-           (level (if level (* 0.5 (+ actor-level level)) actor-level))
-           (k (* base-damage damage-variance)))
-      (* (1+ (* 0.25 (1- level)))
-         (random-float (- base-damage k) (+ base-damage k))
-         (if proficient 1.0 nonproficiency-penalty)))))
+  (multiple-value-call #'random-float (damage-range actor attack)))
 
 (defun resolve-attack (actor attack target)
   "Computes the damage done by an instance of `actor' using `attack' against
 `target'. The secondary return value is true if the attack was a critical hit."
-  (let* ((att (attack-level actor attack))
-         (def (defense-level target attack))
+  (let* ((att (attack-rating actor attack))
+         (def (defense-rating target attack))
          (eff (attack-effectiveness att def))
          (damage (* eff (roll-damage actor attack)))
          (crit-chance (+ 0.05 (critical-chance-bonus actor))))
@@ -255,7 +280,7 @@ slots. This value is cached as the :armor trait."
   (or (? combatant :race :base-health) (? combatant :base-health) 1))
 
 (defun max-health (combatant)
-  (floor (* (1+ (* 0.5 (1- (? combatant :level))))
+  (floor (* (level-scale (? combatant :level))
             (base-health combatant)
             (1+ (health-bonus combatant)))))
 
