@@ -242,10 +242,10 @@ name and whose subsequent elements are arguments to that command."
            (min max (damage-range avatar attack)))
       (send-client-command
        avatar "updateCombat"
-       (format nil "~$" (attack-rating avatar attack))
-       (format nil "~$" (defense-rating avatar nil))
-       (format nil "~$" (or (? attack :speed) 5))
-       (format nil "~$--~$" min max)
+       (format nil "~1$" (attack-rating avatar attack))
+       (format nil "~1$" (defense-rating avatar nil))
+       (format nil "~1$" (or (? attack :speed) 5))
+       (format nil "~1$" (/ (+ min max) 2))
        (mapcar (lambda (trait) (list trait (gethash trait cached-traits 0)))
                (hash-table-keys *combat-traits*))
        nil))))

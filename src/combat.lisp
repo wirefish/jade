@@ -171,10 +171,10 @@ the effect of the type. For example, (fire \"fire\" \"burns\")."
 
 (defun armor-value (item)
   "Returns the defense contributed by a piece of armor, or nil if the item is
-equippable as armor."
+not equippable as armor."
   (when-attributes (level equippable-slot armor-multiplier) item
     (when-let ((weight (gethash equippable-slot *armor-slots*)))
-      (* (float weight) level armor-multiplier))))
+      (* 10 (float weight) level armor-multiplier))))
 
 (defun armor-defense (avatar)
   "Returns the total defense provided to `avatar' by all items worn in armor

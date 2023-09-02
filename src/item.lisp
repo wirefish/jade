@@ -108,7 +108,7 @@
   (let ((traits
           (nconc (list (format nil "Level ~d" (? item :level)))
                  (when-let ((armor (armor-value item)))
-                   (list (format nil "armor ~$" armor)))
+                   (list (format nil "armor ~1$" armor)))
                  (describe-traits (? item :traits)))))
     (format nil "~{~a~^, ~}." traits)))
 
