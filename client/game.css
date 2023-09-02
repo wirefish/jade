@@ -529,6 +529,17 @@ a:link {
     text-align: center;
 }
 
+#attack_defense {
+    display: flex;
+    margin: 8px 0;
+}
+
+#attack_defense > div {
+    flex: 0 0 25%;
+    text-align: center;
+    font-size: 12pt;
+}
+
 #combat_traits {
     width: 100%;
 }

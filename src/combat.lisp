@@ -127,13 +127,17 @@ the effect of the type. For example, (fire \"fire\" \"burns\")."
 ;;; increases effective defense level for related attacks by one percent.
 
 (defun affinity-bonus (combatant damage-type)
-  (softcap (* 0.01 (gethash damage-type (cached-traits combatant) 0))
-           1.0))
+  (if damage-type
+      (softcap (* 0.01 (gethash damage-type (cached-traits combatant) 0))
+               1.0)
+      0))
 
 (defun resistance-bonus (combatant damage-type)
-  (let ((resistance (damage-type-resistance (gethash damage-type *damage-types*))))
-    (softcap (* 0.01 (gethash resistance (cached-traits combatant) 0))
-             1.0)))
+  (if damage-type
+      (let ((resistance (damage-type-resistance (gethash damage-type *damage-types*))))
+        (softcap (* 0.01 (gethash resistance (cached-traits combatant) 0))
+                 1.0))
+      0))
 
 ;;; Armor.
 
@@ -157,15 +161,16 @@ the effect of the type. For example, (fire \"fire\" \"burns\")."
   "Returns the total defense provided to `avatar' by all items worn in armor
 slots. This value is cached as the :armor trait."
   (apply #'+
-         (maphash (lambda (slot weight)
-                    (if-let ((item (? avatar :equipment slot)))
-                      (* (float weight) (? item :level) (or (? item :armor-multiplier) 1))
-                      0))
-                  *armor-slots*)))
+         (maphash* (lambda (slot weight)
+                     (if-let ((item (? avatar :equipment slot)))
+                       (* (float weight) (? item :level) (or (? item :armor-multiplier) 1))
+                       0))
+                   *armor-slots*)))
 
 ;;; Attack.
 
 (defun attack-level (actor attack)
+  (print (list actor attack (? attack :level)))
   (let* ((actor-level (? actor :level))
          (attack-level (or (? attack :level) actor-level)))
     (+ actor-level
@@ -192,6 +197,16 @@ slots. This value is cached as the :armor trait."
 
 (defun attack-effectiveness (att def)
   (* 2.0 (smoothstep (- att def) -20 20)))
+
+(defun average-damage (actor attack)
+  (with-attributes (level speed base-damage proficiency nonproficiency-penalty) attack
+    (let* ((proficient (or (null proficiency) (skill-rank actor proficiency)))
+           (actor-level (? actor :level))
+           (level (if level (* 0.5 (+ actor-level level)) actor-level)))
+      (* (1+ (* 0.25 (1- level)))
+         base-damage
+         speed
+         (if proficient 1.0 nonproficiency-penalty)))))
 
 (defun roll-damage (actor attack)
   (with-attributes (level base-damage damage-variance proficiency nonproficiency-penalty) attack

@@ -254,7 +254,13 @@ function createDiv(id, num_children) {
     return div;
 }
 
-MessageHandler.prototype.updateCombat = function(traits, damage_types) {
+MessageHandler.prototype.updateCombat = function(attack, defense, speed, damage,
+                                                 traits, damage_types) {
+    document.getElementById('attack').innerHTML = `Attack<br/>${attack}`;
+    document.getElementById('defense').innerHTML = `Defense<br/>${defense}`;
+    document.getElementById('speed').innerHTML = `Speed<br/>${speed}`;
+    document.getElementById('damage').innerHTML = `Damage<br/>${damage}`;
+
     if (traits) {
         var parent = document.getElementById('combat_traits');
         for (const [name, value] of traits) {

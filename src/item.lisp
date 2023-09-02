@@ -19,6 +19,15 @@
    :price nil
    :stackable nil))
 
+;;;
+
+(defun describe-item-traits (item)
+  ;; FIXME:
+  (format nil "Level ~d." (? item :level)))
+
+(defmethod describe-full ((item item))
+  (format nil "~a ~a" (call-next-method) (describe-item-traits item)))
+
 ;;; Items can be sorted based on their :item-group, :level, and :brief
 ;;; attributes.
 ;;;

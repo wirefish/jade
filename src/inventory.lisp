@@ -68,6 +68,7 @@ present, display a more detailed description of matching items."
   (update-cached-traits actor)
   (update-equipment actor (list slot))
   (update-inventory actor (list item))
+  (update-combat actor)
   (show actor "You place ~a into your backpack." (describe-brief item)))
 
 (defcommand unequip (actor ("unequip" "un") item "from" slot)
@@ -135,11 +136,12 @@ item is removed from a specific equipment slot."
   (update-cached-traits actor)
   (update-equipment actor (list slot))
   (update-inventory actor nil (list item))
+  (update-combat actor)
   (show actor "You equip ~a." (describe-brief item))
   (when-let ((proficiency (? item :proficiency)))
     (when (not (skill-rank actor proficiency))
-      (show actor "You are not proficient with ~a. Its efficacy will be reduced."
-            (describe-brief item :article :definite)))))
+      (show-notice actor "You are not proficient with ~a. Its efficacy will be reduced."
+                   (describe-brief item :article :definite)))))
 
 (defcommand equip (actor ("equip" "eq") item "on" slot)
   "When no item is specified, view a list of the items that you currently have equipped.

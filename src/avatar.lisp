@@ -259,9 +259,7 @@ the same character as compared by char-equal."
 ;;; Avatar-specific implementations of combat-related generic functions.
 
 (defmethod merge-traits ((avatar avatar) cache)
-  (maphash-values (lambda (item)
-                    (merge-traits item cache))
-                  (? avatar :equipment))
+  (maphash-values #`(merge-traits % cache) (? avatar :equipment))
   (when-let ((race (? avatar :race)))
     (merge-traits race cache))
   (sethash :armor cache (armor-defense avatar))

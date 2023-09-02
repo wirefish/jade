@@ -236,12 +236,17 @@ name and whose subsequent elements are arguments to that command."
 
 ;;; Manage the combat pane.
 
-(defun update-combat (avatar &optional traits)
+(defun update-combat (avatar)
   (with-slots (cached-traits) avatar
-    (send-client-command
-     avatar "updateCombat"
-     (mapcar (lambda (trait) (list trait (gethash trait cached-traits 0))) *combat-traits*)
-     nil)))
+    (let ((attack (select-attack avatar nil)))
+      (send-client-command
+       avatar "updateCombat"
+       (format nil "~$" (attack-level avatar attack))
+       (format nil "~$" (defense-level avatar nil))
+       (format nil "~$" (or (? attack :speed) 5))
+       (format nil "~$" (average-damage avatar attack))
+       (mapcar (lambda (trait) (list trait (gethash trait cached-traits 0))) *combat-traits*)
+       nil))))
 
 ;;; Manage the skills pane.
 
