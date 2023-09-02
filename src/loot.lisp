@@ -18,7 +18,8 @@
   (if-let ((items (when-let ((loot (? (corpse-entity corpse) :loot)))
                     (remove-if-not (lambda (x) (can-see avatar x)) (funcall loot)))))
     (receive avatar nil items)
-    (show avatar "You find nothing of value.")))
+    (show avatar "You search ~a but find nothing of value."
+          (describe-brief corpse :article :definite))))
 
 (defcommand loot (actor "loot" corpse)
   "Search a corpse for valuables. You can only loot a corpse of a creature that
