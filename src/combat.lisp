@@ -157,15 +157,18 @@ the effect of the type. For example, (fire \"fire\" \"burns\")."
   (plist-hash-table
    (list
     :head 3/16
-    :torso 4/16
-    :back 1/16
+    :torso 5/16
     :hands 2/16
-    :waist 1/16
-    :legs 3/16
+    :legs 4/16
     :feet 2/16
     )))
 
-(assert (= 1 (apply #'+ (hash-table-values *armor-slots*))))
+(defun armor-value (item)
+  "Returns the defense contributed by a piece of armor, or nil if the item is
+equippable as armor."
+  (when-attributes (level equippable-slot armor-multiplier) item
+    (when-let ((weight (gethash equippable-slot *armor-slots*)))
+      (* (float weight) level armor-multiplier))))
 
 (defun armor-defense (avatar)
   "Returns the total defense provided to `avatar' by all items worn in armor
@@ -173,8 +176,14 @@ slots. This value is cached as the :armor trait."
   (apply #'+
          (maphash* (lambda (slot weight)
                      (if-let ((item (? avatar :equipment slot)))
-                       (* (float weight) (? item :level) (or (? item :armor-multiplier) 1))
+                       (* (float weight) (? item :level) (or (? item :armor-multiplier) 0))
                        0))
+                   *armor-slots*)))
+
+(defun armor-speed-multiplier (avatar)
+  (apply #'+
+         (maphash* (lambda (slot weight)
+                     (* weight (or (? avatar :equipment slot :speed-multiplier) 1.0)))
                    *armor-slots*)))
 
 ;;; Attack.

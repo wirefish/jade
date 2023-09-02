@@ -262,7 +262,9 @@ the same character as compared by char-equal."
   (maphash-values #`(merge-traits % cache) (? avatar :equipment))
   (when-let ((race (? avatar :race)))
     (merge-traits race cache))
-  (sethash :armor cache (armor-defense avatar))
+  (sethash* cache
+            :armor (armor-defense avatar)
+            :armor-speed (armor-speed-multiplier avatar))
   (call-next-method))
 
 (defmethod select-attack ((actor avatar) target)

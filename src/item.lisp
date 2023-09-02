@@ -105,8 +105,11 @@
       brief)))
 
 (defun describe-item-traits (item)
-  (let ((traits (cons (format nil "Level ~d" (? item :level))
-                      (describe-traits (? item :traits)))))
+  (let ((traits
+          (nconc (list (format nil "Level ~d" (? item :level)))
+                 (when-let ((armor (armor-value item)))
+                   (list (format nil "armor ~$" armor)))
+                 (describe-traits (? item :traits)))))
     (format nil "~{~a~^, ~}." traits)))
 
 (defmethod describe-full ((item item))

@@ -92,5 +92,16 @@ To look at items in your inventory or equipment, use the `inventory` command."
      (if-let ((matches (find-matches subject (? (location actor) :contents))))
        (loop for match in matches do
          (show-raw actor (write-to-string (encode-entity match))))
-       (show actor "There is nothing here that matches \"~a\"."
+       (show actor "There is nothing here that matches ~s."
              (join-tokens subject))))))
+
+(defcommand traits (actor "traits" subject)
+  "Prints the raw representation of matching entities."
+  (if-let ((matches (if subject
+                        (find-matches subject (? (location actor) :contents))
+                        (list actor))))
+    (loop for match in matches do
+      (when (entity-isa match 'combatant)
+        (show-raw actor (write-to-string (hash-table-plist (cached-traits match))))))
+    (show actor "There is nothing here that matches ~s."
+          (join-tokens subject))))
