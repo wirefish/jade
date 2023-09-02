@@ -19,15 +19,6 @@
    :price nil
    :stackable nil))
 
-;;;
-
-(defun describe-item-traits (item)
-  ;; FIXME:
-  (format nil "Level ~d." (? item :level)))
-
-(defmethod describe-full ((item item))
-  (format nil "~a ~a" (call-next-method) (describe-item-traits item)))
-
 ;;; Items can be sorted based on their :item-group, :level, and :brief
 ;;; attributes.
 ;;;
@@ -113,11 +104,17 @@
       (format nil brief (noun-article material) (noun-singular material))
       brief)))
 
+(defun describe-item-traits (item)
+  (let ((traits (cons (format nil "Level ~d" (? item :level))
+                      (describe-traits (? item :traits)))))
+    (format nil "~{~a~^, ~}." traits)))
+
 (defmethod describe-full ((item item))
   (let ((description (call-next-method)))
-    (if-let ((material (? item :material)))
-      (format nil description (noun-article material) (noun-singular material))
-      description)))
+    (when-let ((material (? item :material)))
+      (setf description (format nil description
+                                (noun-article material) (noun-singular material))))
+    (format nil "~a ~a" description (describe-item-traits item))))
 
 ;;; If the item is associated with a quest, the `:quest' attribute is the label
 ;;; of the quest.

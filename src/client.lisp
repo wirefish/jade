@@ -245,7 +245,8 @@ name and whose subsequent elements are arguments to that command."
        (format nil "~$" (defense-level avatar nil))
        (format nil "~$" (or (? attack :speed) 5))
        (format nil "~$" (average-damage avatar attack))
-       (mapcar (lambda (trait) (list trait (gethash trait cached-traits 0))) *combat-traits*)
+       (mapcar (lambda (trait) (list trait (gethash trait cached-traits 0)))
+               (hash-table-keys *combat-traits*))
        nil))))
 
 ;;; Manage the skills pane.

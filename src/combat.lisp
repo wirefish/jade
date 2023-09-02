@@ -61,43 +61,18 @@ when the combatant dies."
   (call-next-method)
   (as:remove-event (corpse-decay-timer corpse)))
 
-;;; Damage types. The game world code should use `define-damage-types' to define them.
-
-(defstruct damage-type
-  name verb resistance)
-
-(defparameter *damage-types* (make-hash-table))
-
-(defun add-damage-type (key name verb resistance)
-  (sethash key *damage-types*
-           (make-damage-type :name name :verb (parse-verb verb) :resistance resistance)))
-
-(defmacro define-damage-types (&body damage-types)
-  "Defines damage types. Each element of `damage-types' is a list containing a
-symbol to represent the type, a string to name the type, and a verb to describe
-the effect of the type. For example, (fire \"fire\" \"burns\")."
-  (let* ((keys (mapcar #'first damage-types))
-         (resistances (mapcar (lambda (key)
-                                (format-symbol (symbol-package key) "~a-RESISTANCE" key))
-                              keys)))
-    `(progn
-       ,@(loop for (key name verb) in damage-types for resistance in resistances
-               collect `(add-damage-type ',key ,name ,verb ',resistance))
-       (export '(,@keys ,@resistances)))))
-
-(defun attack-verb (damage-type)
-  (when-let ((dt (gethash damage-type *damage-types*)))
-    (damage-type-verb dt)))
-
-(defun resistance-name (damage-type)
-  (format nil "~a resistance" (damage-type-name damage-type)))
-
 ;;; Combat traits. Each trait's value is computed based on equipment, race, etc.
 ;;; and is cached in a combatant's `cached-traits' slot. Each trait has a
 ;;; specific effect as defined by the functions below.
 
 (defparameter *combat-traits*
-  '(:vitality :precision :ferocity))
+  (plist-hash-table
+   '(:vitality "vitality"
+     :precision "precision"
+     :ferocity "ferocity")))
+
+(defun combat-trait-name (trait)
+  (gethash trait *combat-traits*))
 
 (defun softcap (n k)
   (if (<= n k)
@@ -120,11 +95,40 @@ the effect of the type. For example, (fire \"fire\" \"burns\")."
   (softcap (* 0.01 (gethash :ferocity (cached-traits combatant) 0))
            1.0))
 
-;;; In addition to those described above, damage types and their resistances are
-;;; also considered combat traits and are cached in the same way. Each point in
-;;; a damage type (here called an "affinity") increases effective attack level
-;;; for related attacks by one percent. Similarly, each point in a resistance
-;;; increases effective defense level for related attacks by one percent.
+;;; Damage types. The game world code should use `define-damage-types' to define
+;;; them. Damage types and their resistances are also considered combat traits
+;;; and are cached in the same way. Each point in a damage type (here called an
+;;; "affinity") increases effective attack level for related attacks by one
+;;; percent. Similarly, each point in a resistance increases effective defense
+;;; level for related attacks by one percent.
+
+(defstruct damage-type
+  name verb resistance)
+
+(defparameter *damage-types* (make-hash-table))
+
+(defun add-damage-type (key name verb resistance)
+  (sethash key *damage-types*
+           (make-damage-type :name name :verb (parse-verb verb) :resistance resistance))
+  (sethash key *combat-traits* name)
+  (sethash resistance *combat-traits* (format nil "~a resistance" name)))
+
+(defmacro define-damage-types (&body damage-types)
+  "Defines damage types. Each element of `damage-types' is a list containing a
+symbol to represent the type, a string to name the type, and a verb to describe
+the effect of the type. For example, (fire \"fire\" \"burns\")."
+  (let* ((keys (mapcar #'first damage-types))
+         (resistances (mapcar (lambda (key)
+                                (format-symbol (symbol-package key) "~a-RESISTANCE" key))
+                              keys)))
+    `(progn
+       ,@(loop for (key name verb) in damage-types for resistance in resistances
+               collect `(add-damage-type ',key ,name ,verb ',resistance))
+       (export '(,@keys ,@resistances)))))
+
+(defun attack-verb (damage-type)
+  (when-let ((dt (gethash damage-type *damage-types*)))
+    (damage-type-verb dt)))
 
 (defun affinity-bonus (combatant damage-type)
   (if damage-type
@@ -138,6 +142,12 @@ the effect of the type. For example, (fire \"fire\" \"burns\")."
         (softcap (* 0.01 (gethash resistance (cached-traits combatant) 0))
                  1.0))
       0))
+
+(defun describe-traits (traits)
+  (when traits
+    (loop for trait being the hash-keys in traits using (hash-value value)
+          collect
+          (format nil "~a ~d" (gethash trait *combat-traits*) value))))
 
 ;;; Armor.
 
