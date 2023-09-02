@@ -10,7 +10,7 @@
                     (and resources (funcall resources)))))
     (if obtained
         (progn
-          (receive avatar "obtain" obtained)
+          (receive avatar "You obtain ~a." obtained)
           (with-attributes (required-skill required-rank) node
             (increase-skill-rank avatar required-skill required-rank)))
         (show avatar "You do not obtain anything from ~a."

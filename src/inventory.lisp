@@ -380,7 +380,7 @@ location."
     (entity (show avatar "~a gives you ~a."
                   (describe-brief source :article :definite :capitalize t)
                   (format-list #'describe-brief items)))
-    (string (show avatar "You ~a ~a." source (format-list #'describe-brief items)))
+    (string (show avatar source (format-list #'describe-brief items)))
     (t (show avatar "You receive ~a." source (format-list #'describe-brief items))))
   (update-inventory avatar
                     (loop for item in items
@@ -399,5 +399,5 @@ location."
          (proto (symbol-value-or-nil (first args))))
     (if proto
         (let ((item (apply #'clone-entity proto (rest args))))
-          (receive avatar nil (list item)))
+          (receive avatar "You create ~a." (list item)))
         (show avatar "You can't create that."))))

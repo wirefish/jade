@@ -17,7 +17,10 @@
 (defmethod loot ((avatar avatar) (corpse corpse))
   (if-let ((items (when-let ((loot (? (corpse-entity corpse) :loot)))
                     (remove-if-not (lambda (x) (can-see avatar x)) (funcall loot)))))
-    (receive avatar nil items)
+    (receive avatar
+             (format nil "You search ~a and find ~~a."
+                     (describe-brief corpse :article :definite))
+             items)
     (show avatar "You search ~a but find nothing of value."
           (describe-brief corpse :article :definite))))
 
