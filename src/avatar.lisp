@@ -273,25 +273,29 @@ the same character as compared by char-equal."
 
 (defmethod describe-attack ((avatar avatar) actor target attack damage crit)
   (with-attributes (brief attack-verb critical-verb damage-type) attack
-    (let ((verb (or (when crit critical-verb) attack-verb (attack-verb damage-type))))
+    (let ((verb (or (when crit critical-verb) attack-verb (attack-verb damage-type)))
+          (prefix (if crit "Critical hit! " "")))
       (if (eq avatar target)
           (update-avatar avatar :health)
           (update-neighbor avatar target :health (? target :health)))
       (cond
         ((eq avatar actor)
-         (format nil "You ~a ~a ~@[with ~a ~]for ~d damage!"
+         (format nil "~aYou ~a ~a ~@[with ~a ~]for ~d damage!"
+                 prefix
                  (or (and verb (verb-plural verb)) "attack")
                  (describe-brief target)
                  (and brief (describe-brief attack))
                  damage))
         ((eq avatar target)
-         (format nil "~a ~a you ~@[with ~a ~]for ~d damage!"
+         (format nil "~a~a ~a you ~@[with ~a ~]for ~d damage!"
+                 prefix
                  (describe-brief actor :capitalize t)
                  (or (and verb (verb-singular verb)) "attacks")
                  (and brief (describe-brief attack))
                  damage))
         (t
-         (format nil "~a ~a ~a ~@[with ~a ~]for ~d damage!"
+         (format nil "~a~a ~a ~a ~@[with ~a ~]for ~d damage!"
+                 prefix
                  (describe-brief actor :capitalize t)
                  (or (and verb (verb-singular verb)) "attacks")
                  (describe-brief target)
