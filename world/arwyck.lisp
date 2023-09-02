@@ -1646,7 +1646,8 @@
   (:name "Lingum"
    :description "Lingum is a goblin, and rather small even for his kind. He
      wears a conical leather hat that has been dyed bright green."
-   :sells nil) ; FIXME: thin leather cap tunic gloves leggings boots
+   :sells ( thin-leather-helm thin-leather-brigandine thin-leather-gloves
+            thin-leather-leggings thin-leather-boots))
 
   (:when-talk (actor self topic)
     (tell self actor "Greetings, greetings, well met and greetings! Welcome to

@@ -64,6 +64,7 @@
                       ((:file "definitions")
                        (:file "currency")
                        (:file "clothing")
+                       (:file "armor")
                        (:file "weapons")
                        (:file "portals")
                        (:file "vehicles")
