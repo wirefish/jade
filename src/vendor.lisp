@@ -1,8 +1,7 @@
 (in-package :jade)
 
-;;; A vendor is an entity with a `:sells' attribute, which is a list describing
-;;; items that are for sale. Each list element can be a label, indicating an
-;;; item available in unlimited quantity, or a list (label quantity).
+;;; A vendor is an entity with a `:sells' attribute, which is a list of labels
+;;; defining items that are for sale.
 
 (defclass vendor (entity) ())
 
@@ -10,56 +9,40 @@
   (:brief "a vendor"
    :sells nil))
 
-(defmethod clone-entity ((proto vendor) &rest attributes)
-  (declare (ignore attributes))
-  (let ((clone (call-next-method)))
-    (setf (? clone :sells)
-          (loop for info in (? clone :sells)
-                collect (bind (((label &optional (quantity t)) (ensure-list info)))
-                          (clone-entity label :quantity quantity))))
-    clone))
+(defmethod transform-initval ((class (eql 'vendor)) (name (eql :sells)) value)
+  (mapcar #'clone-entity value))
 
 (defun vendors-in-location (location)
   (remove-if-not (lambda (x) (typep x 'vendor)) (? location :contents)))
 
 ;;; Specialize the receive event.
 
-(defun buyer-can-pay (buyer item)
-  (let ((price (? item :price)))
-    (find-item-isa buyer :inventory
-                   (entity-type price)
-                   (* (? item :quantity) (? price :quantity)))))
+(defun actor-can-pay (actor price &optional (quantity 1))
+  (find-item-isa actor :inventory (entity-type price) (* quantity (? price :quantity))))
+
+(defun pay-vendor (actor vendor price &optional (quantity 1))
+  "Assumes `actor-can-pay' returned true."
+  (bind ((paid remaining (remove-item-isa actor :inventory (entity-type price)
+                                          (* quantity (? price :quantity)))))
+    (when paid
+      (show actor "You give ~a to ~a." (describe-brief paid) (describe-brief vendor))
+      (if remaining
+          (update-inventory actor (list remaining) nil)
+          (update-inventory actor nil (list paid))))))
 
 (defmethod receive :around ((avatar avatar) (vendor vendor) items)
   (let ((item (first items)))
-    (if (buyer-can-pay avatar item)
+    (if (actor-can-pay avatar (? item :price) (? item :quantity))
         (call-next-method)
         (progn
-          (show avatar "You cannot pay for that.")
+          (show avatar "You don't have enough ~a to pay for ~a."
+                (describe-brief (? item :price) :quantity t)
+                (describe-brief item))
           nil))))
-
-(defun pay-for-item (buyer vendor item)
-  (let* ((price (? item :price))
-         (stack (find-item-isa buyer :inventory (entity-type price)))
-         (paid (remove-item buyer :inventory stack
-                            (* (? item :quantity) (? price :quantity)))))
-    (show buyer "You give ~a ~a."
-          (describe-brief vendor)
-          (describe-brief paid))
-    (if (eq paid stack)
-        (update-inventory buyer nil (list stack))
-        (update-inventory buyer (list stack) nil))))
-
-(defun reduce-vendor-stock (vendor item)
-  (let ((stock (find-item-isa vendor :sells (entity-type item))))
-    (assert stock)
-    (unless (eq (? stock :quantity) t)
-      (decf (? stock :quantity) (? item :quantity)))))
 
 (defmethod receive ((avatar avatar) (vendor vendor) items)
   (let ((item (first items)))
-    (pay-for-item avatar vendor item)
-    (reduce-vendor-stock vendor item)
+    (pay-vendor avatar vendor (? item :price) (? item :quantity))
     (call-next-method)))
 
 ;;; Buy command.
@@ -71,46 +54,28 @@
    :no-match "There are no vendors here matching ~s."
    :multi-match (format nil "Do you want to ~a ~~a?" verb)))
 
-(defun quantity-available (actor vendor item desired-quantity)
-  (cond
-    ((eq (? item :quantity) t)
-     (if (eq desired-quantity t)
-         (progn
-           (show actor "You cannot buy all of an unlimited item.")
-           nil)
-         desired-quantity))
-    ((= (? item :quantity) 0)
-     (show actor "~a is out of ~a."
-           (describe-brief vendor :article :definite :capitalize t)
-           (describe-brief item :quantity t))
-     nil)
-    ((eq desired-quantity t)
-     (? item :quantity))
-    ((<= desired-quantity (? item :quantity))
-     desired-quantity)
-    (t
-     (show actor "~a only has ~a."
-           (describe-brief vendor :article :definite :capitalize t)
-           (describe-brief item))
-     nil)))
-
 (defun match-vendor-item (actor tokens vendor)
-    (bind ((tokens quantity (split-quantity tokens))
-           (quantity (or quantity 1))
-           (items (find-matches tokens (can-see actor (? vendor :sells)))))
-      (case (length items)
-        (0
-         (show actor "~a doesn't sell anything that matches ~s."
-               (describe-brief vendor :article :definite :capitalize t)
-               (join-tokens tokens))
-         nil)
-        (1
-         (when-let ((quantity (quantity-available actor vendor (first items) quantity)))
-           (values (first items) quantity)))
-        (t
-         (show actor "Do you want to buy ~a?"
-               (format-list #'describe-brief items "or"))
-         nil))))
+  "Returns two values: an item sold by `vendor' and the desired quantity of that item."
+  (bind ((tokens quantity (split-quantity tokens))
+         (quantity (or quantity 1))
+         (items (find-matches tokens (can-see actor (? vendor :sells)))))
+    (cond
+      ((eq quantity t)
+       (show actor "You can't buy all of an unlimited item.")
+       nil)
+      ((and (integerp quantity) (<= quantity 0))
+       (show actor "You can't buy less than one of something.")
+       nil)
+      ((null items)
+       (show actor "~a doesn't sell anything that matches ~s."
+             (describe-brief vendor :article :definite :capitalize t)
+             (join-tokens tokens))
+       nil)
+      ((second items)
+       (show actor "Do you want to buy ~a?" (format-list #'describe-brief items "or"))
+       nil)
+      (t
+       (values (first items) quantity)))))
 
 (defclass buy-offer ()
   ((item :initarg :item)
@@ -118,14 +83,13 @@
 
 (defmethod extend-offer (avatar (offer buy-offer))
   (with-slots (item vendor) offer
-    (let* ((currency (? item :price))
-           (total-price (* (? item :quantity) (? currency :quantity))))
+    (with-attributes (price quantity) item
       (show-notice
        avatar
        "~a has offered to sell you ~a for ~a. Type `accept` to complete the purchase."
        (describe-brief vendor :article :definite :capitalize t)
        (describe-brief item)
-       (describe-brief currency :quantity total-price)))))
+       (describe-brief price :quantity (* (? price :quantity) quantity))))))
 
 (defmethod accept-offer (actor (offer buy-offer))
   (with-slots (item vendor) offer

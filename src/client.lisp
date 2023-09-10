@@ -193,7 +193,7 @@ name and whose subsequent elements are arguments to that command."
    (loop for item in items
          collect (list (describe-brief item :quantity 1 :article nil)
                        (describe-brief (? item :price))
-                       (? item :quantity)))))
+                       (get-icon item)))))
 
 ;;;
 

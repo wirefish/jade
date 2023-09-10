@@ -576,15 +576,10 @@ MessageHandler.prototype.showVendorItems = function(heading, vendor, verb, items
     var header = makeTextElement('div', heading);
 
     var entries = [];
-    for (const [brief, price, avail] of items) {
-        console.log(brief, price, avail);
+    for (const [brief, price, icon] of items) {
         var div;
         const buy_link = link(brief, 'buy', 'buy $ from {0}'.format(vendor));
-        if (avail == true) {
-            div = makeTextElement('li', '{0} ({1})'.format(buy_link, price))
-        } else {
-            div = makeTextElement('li', '{0} ({1}, limit {2})'.format(buy_link, price, avail))
-        }
+        div = makeTextElement('li', '{0} ({1})'.format(buy_link, price))
         entries.push(div);
     }
     var ul = wrapElements('ul', entries);
