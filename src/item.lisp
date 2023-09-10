@@ -151,23 +151,23 @@
 represents `count' of the same item. Returns nil if entity cannot be split."
   (when-attributes (quantity) item
     (when (> quantity count)
-      (prog1
-          (clone-entity (entity-proto item) :quantity count)
-        (decf (? item :quantity) count)))))
+      (decf quantity count)
+      (clone-entity (entity-proto item) :quantity count))))
 
 (defun remove-item (container slot item &optional (quantity t))
   "Attemps to remove `quantity' of `item' from slot `slot' of `container'. If
-`quantity' is t or equal to the actual quantity of item, removes the entire
+`quantity' is t or equal to the actual quantity of `item', removes the entire
 stack. If `quantity' is less than the actual quantity of `item', splits the
 desired quantity and returns the resulting new entity. If `quantity' is greater
-than the actual quantity of `item', does nothing and returns nil."
+than the actual quantity of `item', does nothing and returns nil. The secondary
+return value is the remaining stack if a stack was split."
   (let ((item-quantity (? item :quantity)))
     (cond
       ((or (eq quantity t) (= quantity item-quantity))
        (deletef (? container slot) item)
        item)
       ((< quantity item-quantity)
-       (split-item item quantity)))))
+       (values (split-item item quantity) item)))))
 
 (defun remove-items-if (container slot pred)
   (bind ((kept removed (loop for item in (? container slot)
