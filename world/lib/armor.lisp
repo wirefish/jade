@@ -19,7 +19,7 @@
 (defentity light-helm (light-armor)
   (:brief "~a ~a helm"
    :description "The ~*~a helm provides basic protection to its wearer's head."
-   :icon light-helm
+   :icon leather-head
    :equippable-slot :head
    :item-group (armor head)))
 
@@ -32,7 +32,7 @@
   (:brief "~a ~a brigandine"
    :description "The ~*~a brigandine provides basic protection to its wearer's
      torso."
-   :icon light-brigandine
+   :icon leather-torso
    :equippable-slot :torso
    :item-group (armor torso)))
 
@@ -45,7 +45,7 @@
   (:brief "a pair of ~*~a gloves"
    :description "The ~*~a gloves provide basic protection to their wearer's
      hands."
-   :icon light-gloves
+   :icon leather-hands
    :equippable-slot :hands
    :item-group (armor hands)))
 
@@ -58,7 +58,7 @@
   (:brief "a pair of ~*~a leggings"
    :description "The ~*~a leggings provide basic protection to their wearer's
      legs."
-   :icon light-leggings
+   :icon leather-legs
    :equippable-slot :legs
    :item-group (armor legs)))
 
@@ -70,7 +70,7 @@
 (defentity light-boots (light-armor)
   (:brief "a pair of ~*~a boots"
    :description "The ~*~a boots provide basic protection to their wearer's feet."
-   :icon light-boots
+   :icon leather-feet
    :equippable-slot :feet
    :item-group (armor feet)))
 

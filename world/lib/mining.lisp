@@ -43,6 +43,7 @@
   (:brief "~a ~a pickaxe"
    :description "The ~*~a pickaxe is a basic mining tool."
    :icon pickaxe
+   :item-group (tool mining)
    :equippable-slot :tool))
 
 (defentity copper-pickaxe (pickaxe)

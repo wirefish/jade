@@ -27,6 +27,8 @@ staff           $weapons/Staves_01.png
 # Clothing
 cloth_belt      $armor/Belts_04.png
 shirt           $resources/Common_Clothing.png
+pants           $armor/Mage1_03.png
+shoes           $resources/Shoes.png
 
 # Light armor
 leather_head    $armor/Leather_01.png
@@ -41,10 +43,12 @@ chain_torso     $armor/Chain_02.png
 chain_legs      $armor/Chain_03.png
 chain_hands     $armor/Chain_05.png
 chain_feet      $armor/Chain_06.png
-wooden_shield   $weapons/Shields_01.png
-metal_shield    $weapons/Shields_02.png
 
 # Heavy armor
+
+# Shields
+wooden_shield   $weapons/Shields_01.png
+metal_shield    $weapons/Shields_02.png
 heavy_shield    $weapons/Shields_03.png
 
 # Accessories
@@ -52,6 +56,8 @@ copper_ring     $armor/Rings_01.png
 
 # Containers
 small_pack      $inventory/Bag_Small.png
+medium_pack     $inventory/Bag_Medium.png
+large_pack      $inventory/Bag_Large.png
 pouch           $loot/Pouch.png
 
 # Botany
@@ -64,12 +70,24 @@ wood_log_2      $resources/Wood_Log_2.png
 
 # Mining
 pickaxe         $resources/Pickaxe.png
+iron_ore        $resources/Metal_1_Ore.png
 copper_ore      $resources/Metal_2_Ore.png
+silver_ore      $resources/Metal_3_Ore.png
+gold_ore        $resources/Metal_4_Ore.png
+special_ore     $resources/Metal_5_Ore.png
 turquoise       $loot/Turquoise.png
 sapphire_small  $loot/Sapphire_Small.png
 
 # Skinning
 skinning_knife  $weapons/Knives_07.png
+
+# Smelting
+bellows         $resources/Bellows.png
+iron_ingot      $resources/Metal_1_Ingot.png
+copper_ingot    $resources/Metal_2_Ingot.png
+silver_ingot    $resources/Metal_3_Ingot.png
+gold_ingot      $resources/Metal_4_Ingot.png
+special_ingot   $resources/Metal_5_Ingot.png
 
 # Fishing
 
@@ -78,9 +96,16 @@ raw_silk        $resources/Silkworm_Cocoon.png
 
 # Smithing
 hammer          $resources/Hammer.png
+iron_plate      $resources/Metal_1_Plate.png
+copper_plate    $resources/Metal_2_Plate.png
+silver_plate    $resources/Metal_3_Plate.png
+gold_plate      $resources/Metal_4_Plate.png
+special_plate   $resources/Metal_5_Plate.png
 
 # Currency
+bronze_coin     $inventory/Bronze_Coin.png
 silver_coin     $inventory/Silver_Coin.png
+gold_coin       $inventory/Gold_Coin.png
 
 # Keys
 gold_key        $loot/Key_Type_1.png
