@@ -84,9 +84,9 @@ machine of the Jade source code, i.e. the directory that contains "jade.asd".
 ### Build the Client Data
 
 In the `$JADE` directory, type `make`. This will create a `build` directory,
-which itself contains a few subdirectories. The `client` subdirectory contains
-everything that will be served to the user's browser via nginx. The `data`
-subdirectory contains files consumed by the game server.
+which itself contains a few files and subdirectories. The `client` subdirectory
+contains everything that will be served to the user's browser via nginx. The
+`data` subdirectory contains files consumed by the game server.
 
 ### Link to the Client Directory
 
@@ -100,10 +100,11 @@ directory.
 Jade uses NGINX as a webserver that sits in front of the game server to serve
 static content and provide TLS functionality.
 
-After installing NGINX and building Jade, you can start it as follows:
+After installing NGINX and building Jade, you can start it as follows (from
+within the top-level Jade directory):
 
 ```
-nginx -c $JADE/build/nginx.conf
+nginx -p `pwd`/build -c nginx.conf
 ```
 
 ### Create the Database
