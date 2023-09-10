@@ -503,8 +503,9 @@ a:link {
 }
 
 #inventory_contents > div > div:nth-child(2) {
-    flex-grow: 1
-    line-height: 20px;
+    flex-grow: 1;
+    height: 24px;
+    line-height: 24px;
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
@@ -713,6 +714,27 @@ a:link {
     transition-property: width;
     transition-timing-function: linear;
     transition-duration: 1s;
+}
+
+.vendor_item {
+    flex: 0 0 100%;
+    display: flex;
+    margin: 5px 10px;
+}
+
+.vendor_item > div:nth-child(1) {
+    width: 24px;
+    height: 24px;
+}
+
+.vendor_item > div:nth-child(2) {
+    flex-grow: 1;
+    height: 24px;
+    line-height: 24px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    margin-left: 8px;
 }
 
 /* The right buttonbox allows the player to assign macros to buttons that

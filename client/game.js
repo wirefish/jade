@@ -575,16 +575,24 @@ MessageHandler.prototype.showLinks = function(heading, prefix, topics) {
 MessageHandler.prototype.showVendorItems = function(heading, vendor, verb, items) {
     var header = makeTextElement('div', heading);
 
-    var entries = [];
+    var entries = [header];
     for (const [brief, price, icon] of items) {
-        var div;
+
+        var div = document.createElement('div');
+        div.className = "vendor_item";
+
+        var icon_div = document.createElement('div');
+        setIcon(icon_div, "inventory", icon);
+        div.appendChild(icon_div);
+
         const buy_link = link(brief, 'buy', 'buy $ from {0}'.format(vendor));
-        div = makeTextElement('li', '{0} ({1})'.format(buy_link, price))
+        var label_div = makeTextElement('div', `${buy_link} --- ${price}`);
+        div.appendChild(label_div);
+
         entries.push(div);
     }
-    var ul = wrapElements('ul', entries);
 
-    appendBlock(wrapElements('div', [header, ul]));
+    appendBlock(wrapElements('div', entries));
 }
 
 MessageHandler.prototype.showTrainerSkills = function(heading, trainer, skills) {
