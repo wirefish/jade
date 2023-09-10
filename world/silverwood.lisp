@@ -53,11 +53,12 @@
   (:speed 2.5
    :base-damage 4))
 
-(defentity spider-silk (item) ; FIXME: item-group?
+(defentity spider-silk (item)
   (:brief "a clump[s] of spider silk"
    :description "The spider silk can be turned into thread by a skilled weaver."
-   :icon spider-web
+   :icon raw-silk
    :level 1
+   :item-group (resource weaving) ; FIXME: inherit weaving-material?
    :size +tiny+
    :stackable t))
 
@@ -107,6 +108,7 @@
 
 (defentity maple-log (logging-resource)
   (:brief "a maple log"
+   :icon wood-log-1
    :required-rank 1))
 
 (defentity maple-tree (resource-node)
@@ -122,6 +124,7 @@
 
 (defentity birch-log (logging-resource)
   (:brief "a birch log"
+   :icon wood-log-2
    :required-rank 20))
 
 (defentity birch-tree (resource-node)

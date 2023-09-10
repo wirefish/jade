@@ -86,7 +86,7 @@
   (:brief "~a ~a wand"
    :description "This light weapon appears to be a simple piece of polished
      wood, but it radiates a magical aura."
-   :icon staves-01
+   :icon wand
    :item-group (weapon wand)
    :speed 2.5
    :damage-type arcane
@@ -216,7 +216,7 @@
   (:brief "~a ~a battle axe"
    :description "This weapon has a large blade attached to one end of a long
      wooden haft, and requires both hands to wield."
-   :icon battleaxe
+   :icon battle-axe
    :item-group (weapon battle-axe)
    :speed 5
    :damage-type slashing

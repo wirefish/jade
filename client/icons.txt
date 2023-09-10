@@ -59,6 +59,8 @@ sickle          $resources/Sickle.png
 
 # Logging
 logging_axe     $resources/Axe.png
+wood_log_1      $resources/Wood_Log_1.png
+wood_log_2      $resources/Wood_Log_2.png
 
 # Mining
 pickaxe         $resources/Pickaxe.png
@@ -70,6 +72,9 @@ sapphire_small  $loot/Sapphire_Small.png
 skinning_knife  $weapons/Knives_07.png
 
 # Fishing
+
+# Weaving
+raw_silk        $resources/Silkworm_Cocoon.png
 
 # Smithing
 hammer          $resources/Hammer.png

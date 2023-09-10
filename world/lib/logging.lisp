@@ -4,6 +4,7 @@
 
 (defentity logging-resource (resource)
   (:required-skill logging
+   :icon wood-log-1
    :item-group (resource logging)))
 
 ;;; Nodes.

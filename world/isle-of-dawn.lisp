@@ -916,6 +916,7 @@
    :description "The seashell's polished surface is covered with an intricate
      pattern of white and orange whorls."
    :alts ("a shiny shell")
+   :icon seashell
    :stackable t
    :item-group (miscellany)))
 
