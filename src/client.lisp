@@ -207,7 +207,7 @@ name and whose subsequent elements are arguments to that command."
                          summary
                          (when price (describe-brief price))
                          karma
-                         (gethash label (skills avatar)))))))
+                         (and (gethash label (skills avatar)) t))))))
 
 ;;;
 
